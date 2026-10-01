@@ -260,7 +260,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ① 機体のモデルについて【誤前提のカマかけ】
   {
     id: 'p1_luke_model',
-    thoughtText: 'その姿は『ルーク』がモデルの機体かとカマをかける',
+    thoughtText: '『ルーク』によく似た外見',
     contextCategory: 'body',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_dist_loyalty', 'p1_touch_shoulder'],
@@ -286,7 +286,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ② ディストへの忠誠について【嫌悪の挑発】
   {
     id: 'p1_dist_loyalty',
-    thoughtText: 'タルロウXのようにディストを尊敬しているか挑発する',
+    thoughtText: '造ったディストのこと',
     contextCategory: 'body',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_luke_model', 'p1_tarlow_zura'],
@@ -312,7 +312,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ③ 不意打ちで頭に手を伸ばす【条件反射テスト】
   {
     id: 'p1_touch_shoulder',
-    thoughtText: '不意打ちで頭に手を伸ばしてみる',
+    thoughtText: '不意に頭へ手を伸ばす',
     contextCategory: 'body',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_luke_model', 'p1_octopus_meal'],
@@ -336,7 +336,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ④ 宝刀ガルディオスについて【有罪知識テスト】
   {
     id: 'p1_galdios_sword',
-    thoughtText: '壁際の『宝刀ガルディオス』を覚えているか聞いてみる',
+    thoughtText: '壁際の『宝刀ガルディオス』',
     contextCategory: 'past',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_natalia_rumor', 'p1_asch_rumor'],
@@ -361,7 +361,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑤ ナタリアの噂話について【有罪知識・誤前提のカマかけ】
   {
     id: 'p1_natalia_rumor',
-    thoughtText: 'ナタリアがルークと婚約して幸せそうだったと振る',
+    thoughtText: '王女『ナタリア』のこと',
     contextCategory: 'friends',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_galdios_sword', 'p1_peony_rabbits'],
@@ -386,7 +386,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑥ ピオニー陛下のブウサギについて【挑発のカマかけ】
   {
     id: 'p1_peony_rabbits',
-    thoughtText: 'ピオニー陛下のブウサギに『アッシュ』がいると話す',
+    thoughtText: 'ピオニー陛下のブウサギ',
     contextCategory: 'daily',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_octopus_meal', 'p1_natalia_rumor'],
@@ -411,7 +411,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑦ 食事の勧め（タコ料理）【誤前提のカマかけ】
   {
     id: 'p1_octopus_meal',
-    thoughtText: '美味いタコ料理の店があるから食べないかと勧める',
+    thoughtText: '食事はとるのか',
     contextCategory: 'daily',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_peony_rabbits', 'p1_touch_shoulder'],
@@ -438,7 +438,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑧ 鮮血のアッシュの噂について【誤前提のカマかけ】
   {
     id: 'p1_asch_rumor',
-    thoughtText: '『鮮血のアッシュ』は低身長を気にしていたと振る',
+    thoughtText: '『鮮血のアッシュ』の噂',
     contextCategory: 'past',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_galdios_sword', 'p1_luke_model'],
@@ -463,7 +463,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑨ タルロウXの語尾について【絶対反応しないブラフ枠①】
   {
     id: 'p1_tarlow_zura',
-    thoughtText: 'タルロウXの後継機なら語尾に「ズラ」がつくか聞く',
+    thoughtText: '『タルロウX』の語尾',
     contextCategory: 'body',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_dist_loyalty', 'p1_why_sneaking'],
@@ -489,7 +489,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ⑩ 研究室で何をしていたのか【絶対反応しないブラフ枠②】
   {
     id: 'p1_why_sneaking',
-    thoughtText: '研究室でディストの助手でもしていたのか聞く',
+    thoughtText: '研究室の隅で何をしていたか',
     contextCategory: 'daily',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_tarlow_zura', 'p1_luke_model'],

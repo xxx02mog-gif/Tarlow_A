@@ -28,6 +28,8 @@ import {
 } from './types/game';
 import {
   ANGRY_COOLDOWN_REACTION,
+  ANGRY_COOLDOWN_REACTIONS,
+  ANGRY_GLANCE_CAUGHT_LINES,
   AWAY_RETURN_REACTIONS,
   CONTEXT_IDLE_REACTIONS,
   CONVERSATION_TOPICS,
@@ -472,6 +474,7 @@ export default function App() {
   // アッシュの機嫌パラメータ（-5 〜 +5、0が通常、マイナスが不機嫌・怒り、プラスが軟化・上機嫌）
   const [mood, setMood] = useState<number>(0);
   const moodRef = useRef<number>(0);
+  const moodWarningGivenRef = useRef<boolean>(false);
   useEffect(() => {
     moodRef.current = mood;
   }, [mood]);
@@ -562,6 +565,23 @@ export default function App() {
   const terminalGazeReactionCountRef = useRef<number>(0);
   const terminalUnrevealedReactionCountRef = useRef<number>(0);
   const totalIdleReactionCountRef = useRef<number>(0);
+  const angryCooldownCountRef = useRef<number>(0);
+  const angryCooldownTargetSecRef = useRef<number>(35);
+  const isAngryGlancingRef = useRef<boolean>(false);
+  const angryGlancesDoneInWaitRef = useRef<number>(0);
+  const angryGlancesMaxInWaitRef = useRef<number>(1);
+  const nextAngryGlanceAtSecRef = useRef<number>(12);
+  const angryGlanceEndAtSecRef = useRef<number>(0);
+  const badMoodRefusalCountRef = useRef<number>(0);
+  const badMoodHintShownRef = useRef<boolean>(false);
+
+  const resetAngryGlanceSchedule = useCallback(() => {
+    isAngryGlancingRef.current = false;
+    angryGlancesDoneInWaitRef.current = 0;
+    angryGlancesMaxInWaitRef.current = Math.random() < 0.5 ? 1 : 2;
+    nextAngryGlanceAtSecRef.current = Math.floor(10 + Math.random() * 9);
+    angryGlanceEndAtSecRef.current = 0;
+  }, []);
   const tabHiddenAtRef = useRef<number | null>(null);
   const lastAwayReactionAtRef = useRef<number>(0);
   const awayReactionCountRef = useRef<number>(0);
@@ -622,10 +642,26 @@ export default function App() {
 
   const activeFaceParts: FaceParts = computedSceneParts;
 
-  const updateMood = useCallback((delta: number) => {
-    if (delta === 0) return;
-    setMood((prev) => Math.max(-5, Math.min(5, prev + delta)));
-  }, []);
+  const updateMood = useCallback(
+    (delta: number) => {
+      if (delta === 0) return;
+      setMood((prev) => {
+        const next = Math.max(-5, Math.min(5, prev + delta));
+        if (prev >= 0 && next < 0) {
+          angryCooldownTargetSecRef.current = Math.floor(
+            25 + Math.random() * 26
+          );
+          resetAngryGlanceSchedule();
+        } else if (next >= 0) {
+          isAngryGlancingRef.current = false;
+          badMoodRefusalCountRef.current = 0;
+        }
+        moodRef.current = next;
+        return next;
+      });
+    },
+    [resetAngryGlanceSchedule]
+  );
 
   const updateGuyMood = useCallback((delta: number) => {
     if (delta === 0) return;
@@ -1086,33 +1122,124 @@ export default function App() {
         return;
       }
 
-      // 怒っている（mood < 0）ときに56秒間そっとしておくと、アッシュが自分で頭を冷やして落ち着く（フェーズ2以降のみ）
+      // 怒っている（mood < 0）ときのチラ見（目が合うタイミング）＆25〜50秒放置での自然沈静化（最大3回まで・フェーズ2以降のみ）
       if (
         linkTags.includes('phase2_started') &&
         mood < 0 &&
-        idleMs > ANGRY_COOLDOWN_REACTION.thresholdSec * 1000 &&
         idleStageRef.current === 0
       ) {
-        idleStageRef.current = 1;
-        setMood(0);
-        setGuyMood((prev) => Math.max(0, prev));
-        setLinkTags((prev) =>
-          prev.filter((t) => t !== 'cold_clash_escalated')
-        );
-        setLastRefusedTopicId(null);
-        setStats((prev) => ({
-          ...prev,
-          idleTimeoutCount: prev.idleTimeoutCount + 1,
-        }));
-        appendLog('INFO', ANGRY_COOLDOWN_REACTION.logMessage);
-        playAschReactionLines(
-          ANGRY_COOLDOWN_REACTION.text,
-          ANGRY_COOLDOWN_REACTION.expression,
-          ANGRY_COOLDOWN_REACTION.faceParts,
-          ['normal'],
-          240
-        );
-        return;
+        if (
+          angryCooldownCountRef.current < 3 &&
+          idleMs >= angryCooldownTargetSecRef.current * 1000
+        ) {
+          const cooldownIdx = angryCooldownCountRef.current;
+          angryCooldownCountRef.current += 1;
+          idleStageRef.current = 1;
+          isAngryGlancingRef.current = false;
+          badMoodRefusalCountRef.current = 0;
+          moodRef.current = 0;
+          setMood(0);
+          setGuyMood((prev) => Math.max(0, prev));
+          setLinkTags((prev) =>
+            prev.filter((t) => t !== 'cold_clash_escalated')
+          );
+          setLastRefusedTopicId(null);
+          setStats((prev) => ({
+            ...prev,
+            idleTimeoutCount: prev.idleTimeoutCount + 1,
+          }));
+          const cooldownReaction =
+            ANGRY_COOLDOWN_REACTIONS[cooldownIdx] ??
+            ANGRY_COOLDOWN_REACTIONS[ANGRY_COOLDOWN_REACTIONS.length - 1];
+          appendLog('INFO', cooldownReaction.logMessage);
+          playAschReactionLines(
+            cooldownReaction.text,
+            cooldownReaction.expression,
+            cooldownReaction.faceParts,
+            ['normal'],
+            240
+          );
+          return;
+        }
+
+        // 待っている間、1回の無言放置につき1〜2回だけチラッとこちらを見る（または伏し目がちになる）
+        if (
+          !isAngryGlancingRef.current &&
+          angryGlancesDoneInWaitRef.current <
+            angryGlancesMaxInWaitRef.current &&
+          currentWaitSec >= nextAngryGlanceAtSecRef.current
+        ) {
+          isAngryGlancingRef.current = true;
+          angryGlancesDoneInWaitRef.current += 1;
+          angryGlanceEndAtSecRef.current = currentWaitSec + 4;
+          const glancePatterns: {
+            expression: ExpressionId;
+            faceParts: Partial<FaceParts>;
+          }[] = [
+            {
+              expression: 'normal',
+              faceParts: {
+                brow: 'sad',
+                eyes: 'normal',
+                mouth: 'close',
+                effects: [],
+              },
+            },
+            {
+              expression: 'glare',
+              faceParts: {
+                brow: 'angry',
+                eyes: 'normal',
+                mouth: 'frown',
+                effects: ['sweat'],
+              },
+            },
+            {
+              expression: 'normal',
+              faceParts: {
+                brow: 'sad',
+                eyes: 'normal',
+                mouth: 'frown',
+                effects: ['sweat'],
+              },
+            },
+            {
+              expression: 'look_away',
+              faceParts: {
+                brow: 'sad',
+                eyes: 'down',
+                mouth: 'close',
+                effects: ['sweat'],
+              },
+            },
+          ];
+          const pickedGlance =
+            glancePatterns[Math.floor(Math.random() * glancePatterns.length)];
+          setOverrideExpression(pickedGlance.expression);
+          setOverrideFaceParts(pickedGlance.faceParts);
+        } else if (
+          isAngryGlancingRef.current &&
+          currentWaitSec >= angryGlanceEndAtSecRef.current
+        ) {
+          isAngryGlancingRef.current = false;
+          if (
+            angryGlancesDoneInWaitRef.current < angryGlancesMaxInWaitRef.current
+          ) {
+            nextAngryGlanceAtSecRef.current = Math.max(
+              currentWaitSec + 8,
+              Math.floor(24 + Math.random() * 13)
+            );
+          } else {
+            nextAngryGlanceAtSecRef.current = 9999;
+          }
+          setOverrideExpression('glare');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'away',
+            mouth: 'frown',
+            effects: [],
+          });
+        }
       }
 
       // 通常〜上機嫌時の放置リアクション（全セッション通じて最大3回まで・すべて別セリフ）
@@ -1368,12 +1495,16 @@ export default function App() {
     'p2_sword_limiter',
     'p2_why_10yo_body',
     'p2_sleep_and_dreams',
+    'p2_voice_discomfort',
+    'p2_unscarred_hands',
   ].filter(isDeepTopicDone).length;
 
   const deepAxisBCount = [
     'p2_friends_news',
     'p2_why_hide_truth',
     'p2_future_whereabouts',
+    'p2_lab_pastime',
+    'p2_jade_suspicion',
   ].filter(isDeepTopicDone).length;
 
   const deepAxisCCount = [
@@ -1381,6 +1512,7 @@ export default function App() {
     'p2_tarlow_broken_reason',
     'p2_deep_truth_dilemma',
     'p2_manor_memories',
+    'p2_parents_thought',
   ].filter(isDeepTopicDone).length;
 
   const hasEnoughDeepTalkForPhase3 =
@@ -1505,6 +1637,21 @@ export default function App() {
     }));
 
     const wasIdleBeforeClick = idleStageRef.current >= 1;
+    const isPhase1Now = !linkTags.includes('phase2_started');
+    const caughtAngryGlance =
+      !isPhase1Now && mood < 0 && isAngryGlancingRef.current;
+    if (caughtAngryGlance) {
+      isAngryGlancingRef.current = false;
+      badMoodRefusalCountRef.current = 0;
+      moodRef.current = 0;
+      setMood(0);
+      setGuyMood((prev) => Math.max(0, prev));
+      setLinkTags((prev) => prev.filter((t) => t !== 'cold_clash_escalated'));
+      appendLog(
+        'INFO',
+        '対象が視線を向けたタイミングで声をかけたため、態度が軟化し不機嫌状態が解消されました。'
+      );
+    }
     const prevContextCategory = lastContextCategoryRef.current;
     idleStageRef.current = 0;
     setIdleWaitSec(0);
@@ -1538,7 +1685,15 @@ export default function App() {
         ]
       : null;
 
-    const guyLines = currentStage.spokenText
+    const isBackedOffOnce = linkTags.includes(`backed_off_${topic.id}`);
+    const effectiveSpokenText =
+      (isBackedOffOnce && currentStage.retrySpokenText) ||
+      currentStage.spokenText;
+    const effectiveStageAschText =
+      (isBackedOffOnce && currentStage.retryAschText) ||
+      currentStage.aschText;
+
+    const guyLines = effectiveSpokenText
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
@@ -1546,6 +1701,7 @@ export default function App() {
     // 気まずい・不機嫌な空気の中で別の通常話題を振って会話を続ける場合、ガイが言い淀みながら切り出す（IMMUTABLE_RULES 6-②）
     const shouldPrependAwkwardPrefix =
       linkTags.includes('phase2_started') &&
+      !caughtAngryGlance &&
       (mood < 0 || guyMood < 0 || isHatredMode) &&
       askCount === 0 &&
       topic.contextCategory !== 'fight' &&
@@ -1604,8 +1760,7 @@ export default function App() {
       guyLines.length > 0 ? guyLines[guyLines.length - 1].length : 6;
 
     // --- 機嫌による反応分岐の判定（フェーズ1ではまだタルロウAを演じているため不機嫌拒否を発生させない） ---
-    const isPhase1Now = !linkTags.includes('phase2_started');
-    const isAngryNow = mood < 0 && !isPhase1Now;
+    const isAngryNow = mood < 0 && !isPhase1Now && !caughtAngryGlance;
     const isGoodMoodNow = mood >= 2 && !isPhase1Now;
 
     let chosenPhase1SlipVariant: Phase1SlipVariant | null = null;
@@ -1688,7 +1843,7 @@ export default function App() {
           ? currentStage.goodMoodResponse!.aschText
           : isPhase1RewriteSlip
             ? chosenPhase1SlipVariant!.slipCorrectedText!
-            : currentStage.aschText;
+            : effectiveStageAschText;
 
     // 逆質問が停止されている場合、末尾の逆質問セリフを省いて自然な会話として完結させる
     const resolvedAschText =
@@ -1737,8 +1892,26 @@ export default function App() {
       setLastRefusedTopicId(topic.id);
     }
 
-    // 無言（放置）から復帰した直後の声かけ時は、アッシュが短い復帰反応を挟んでから本題に答える
-    if (wasIdleBeforeClick && !isAngryNow && !isHatredMode) {
+    // 無言（放置）から復帰した直後の声かけ時、または不機嫌中にチラ見して目が合った瞬間の声かけ時は、アッシュが短い一言を挟んでから本題に答える
+    if (caughtAngryGlance) {
+      const glanceLine =
+        ANGRY_GLANCE_CAUGHT_LINES[
+          nextTotalTurns % ANGRY_GLANCE_CAUGHT_LINES.length
+        ];
+      steps.push({
+        delayMs: Math.min(1100, Math.max(700, lastGuyLineLen * 26)),
+        action: () => {
+          setOverrideExpression('look_away');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'down',
+            mouth: 'frown',
+            effects: ['sweat'],
+          });
+          pushScreenBubble('ASCH', glanceLine, 'normal');
+        },
+      });
+    } else if (wasIdleBeforeClick && !isAngryNow && !isHatredMode) {
       const idleReturnLine =
         RETURN_FROM_IDLE_LINES[
           nextTotalTurns % RETURN_FROM_IDLE_LINES.length
@@ -1810,6 +1983,7 @@ export default function App() {
     }
 
     const hasAschPreBubbleToOverwrite =
+      caughtAngryGlance ||
       (wasIdleBeforeClick && !isAngryNow && !isHatredMode) ||
       Boolean(seriousToBrightTransition && !isRefusedByBadMood) ||
       Boolean(
@@ -1913,8 +2087,7 @@ export default function App() {
             setOverrideFaceParts(resolvedFaceParts ?? null);
 
             if (shouldAdvanceStage) {
-              const nextStageCount =
-                topic.id === 'topic_41_apologize' ? 0 : askCount + 1;
+              const nextStageCount = askCount + 1;
               setTopicAskCounts((prev) => ({
                 ...prev,
                 [topic.id]: nextStageCount,
@@ -1990,7 +2163,11 @@ export default function App() {
 
               if (topic.id === 'topic_41_apologize') {
                 // 素直に謝って仲直りした場合は、双方の不機嫌および衝突フラグを解消する
-                setMood((prev) => Math.max(0, prev + mDelta));
+                setMood((prev) => {
+                  const next = Math.max(0, prev + mDelta);
+                  moodRef.current = next;
+                  return next;
+                });
                 setGuyMood((prev) =>
                   Math.max(0, prev + (currentStage.guyMoodDelta ?? 3))
                 );
@@ -2198,6 +2375,7 @@ export default function App() {
           return;
         }
         if (moodRef.current < 0 && linkTags.includes('phase2_started')) {
+          resetAngryGlanceSchedule();
           setOverrideExpression('glare');
           setOverrideFaceParts({
             brow: 'angry',
@@ -2205,6 +2383,20 @@ export default function App() {
             mouth: 'frown',
             effects: [],
           });
+          if (isRefusedByBadMood) {
+            badMoodRefusalCountRef.current += 1;
+            if (
+              badMoodRefusalCountRef.current >= 2 &&
+              !badMoodHintShownRef.current
+            ) {
+              badMoodHintShownRef.current = true;
+              pushScreenBubble(
+                'GUY',
+                '（・・・・・・今は何を聞いても突っぱねられそうだな。少し落ち着くまで、このまま黙って様子を見てみるか・・・・・・）',
+                'normal'
+              );
+            }
+          }
         }
         // フェーズ1で5回質問し終えたら、自動的にフェーズ終了時の指摘・結論パート（推理ステップ1）へ移行する
         if (isPhase1Now && nextPhase1QCount >= 5) {
@@ -2771,10 +2963,159 @@ export default function App() {
 
     steps.push({
       delayMs: 480,
-      action: () => {},
+      action: () => {
+        if (
+          linkTags.includes('phase2_started') &&
+          (option.moodDelta ?? 0) < 0 &&
+          moodRef.current <= -3
+        ) {
+          if (!moodWarningGivenRef.current) {
+            moodWarningGivenRef.current = true;
+            appendLog(
+              'WARNING',
+              '【WARNING】対象の感情波形が危険域に到達。これ以上の精神的負荷は対話打ち切り（帰還）を招きます。'
+            );
+            playAschReactionLines(
+              '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
+              'glare',
+              {
+                brow: 'angry',
+                eyes: 'glare',
+                mouth: 'grit',
+                effects: ['sweat'],
+              },
+              ['shout'],
+              320
+            );
+          } else {
+            triggerMoodLimitDeparture();
+            return;
+          }
+        }
+        if (moodRef.current < 0 && linkTags.includes('phase2_started')) {
+          resetAngryGlanceSchedule();
+        }
+      },
     });
 
     enqueueSequence(steps);
+  };
+
+  // === 機嫌ライフ限界（2回目の危険域到達）による対話打ち切り・帰還処理 ===
+  const triggerMoodLimitDeparture = () => {
+    setActiveTopicReply(null);
+    setActiveAschQuestion(null);
+    setIsDecisionMenuOpen(false);
+
+    if (
+      hasEnoughDeepTalkForPhase3 ||
+      linkTags.includes('p2_heard_true_reason')
+    ) {
+      appendLog(
+        'WARNING',
+        '【PHASE 3 強制移行】対象の感情波形が限界を超過。対話を打ち切り、最終質問へ移行します。'
+      );
+      const leaveSteps: QueuedStep[] = [
+        {
+          delayMs: 360,
+          action: () => {
+            setOverrideExpression('glare');
+            setOverrideFaceParts({
+              brow: 'angry',
+              eyes: 'away',
+              mouth: 'frown',
+              effects: [],
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・もういい、話は終わりだ。俺はディストの研究所へ戻る。',
+              'normal'
+            );
+          },
+        },
+        {
+          delayMs: 1150,
+          action: () => {
+            setOverrideExpression('normal');
+            setOverrideFaceParts({
+              brow: 'sad',
+              eyes: 'normal',
+              mouth: 'close',
+              effects: [],
+            });
+            setPreviewPage(0);
+            setActiveTopicReply({
+              topicId: 'p3_final_who_am_i',
+              options: PHASE3_WHO_AM_I_OPTIONS,
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・その前に1つだけ聞かせろ。おまえから見て、今の俺は誰に見える？',
+              'normal'
+            );
+          },
+        },
+        {
+          delayMs: 420,
+          action: () => {},
+        },
+      ];
+      enqueueSequence(leaveSteps);
+    } else {
+      appendLog(
+        'WARNING',
+        '【対話打ち切り】対象の感情波形が限界を超過。対象が研究所へ帰還しました。'
+      );
+      const leaveSteps: QueuedStep[] = [
+        {
+          delayMs: 360,
+          action: () => {
+            setOverrideExpression('glare');
+            setOverrideFaceParts({
+              brow: 'angry',
+              eyes: 'glare',
+              mouth: 'shout',
+              effects: ['blush'],
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・言ったはずだぞ、これ以上鬱陶しい真似をするなら帰るとな！',
+              'shout'
+            );
+          },
+        },
+        {
+          delayMs: 1100,
+          action: () => {
+            setOverrideExpression('look_away');
+            setOverrideFaceParts({
+              brow: 'angry',
+              eyes: 'away',
+              mouth: 'frown',
+              effects: [],
+            });
+            pushScreenBubble(
+              'ASCH',
+              'もう話は終わりだ、俺はディストの研究所へ戻る。じゃあな、ガイ！',
+              'normal'
+            );
+          },
+        },
+        {
+          delayMs: 1350,
+          action: () => {
+            setCustomEndingKey('END_PHASE2_INCOMPLETE');
+            setStats((prev) => ({
+              ...prev,
+              endTime: Date.now(),
+            }));
+            setEndingStep(0);
+            setGamePhase('ENDING');
+          },
+        },
+      ];
+      enqueueSequence(leaveSteps);
+    }
   };
 
   // === 話題内の複数リアクション選択肢（replyOptions）に対するガイの返答処理 ===
@@ -2961,6 +3302,11 @@ export default function App() {
                     ...prev,
                     [currentReplyTopicId]: 0,
                   }));
+                  setLinkTags((prev) =>
+                    Array.from(
+                      new Set([...prev, `backed_off_${currentReplyTopicId}`])
+                    )
+                  );
                 } else if (
                   option.completesTopic &&
                   currentCount < targetTopic.stages.length
@@ -3009,6 +3355,49 @@ export default function App() {
           }));
           setEndingStep(0);
           setGamePhase('ENDING');
+        } else if (
+          linkTags.includes('phase2_started') &&
+          currentReplyTopicId !== 'p2_deep_truth_dilemma' &&
+          !currentReplyTopicId.startsWith('p3_') &&
+          (option.moodDelta ?? 0) < 0 &&
+          moodRef.current <= -3
+        ) {
+          if (!moodWarningGivenRef.current) {
+            moodWarningGivenRef.current = true;
+            appendLog(
+              'WARNING',
+              '【WARNING】対象の感情波形が危険域に到達。これ以上の精神的負荷は対話打ち切り（帰還）を招きます。'
+            );
+            playAschReactionLines(
+              '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
+              'glare',
+              {
+                brow: 'angry',
+                eyes: 'glare',
+                mouth: 'grit',
+                effects: ['sweat'],
+              },
+              ['shout'],
+              320
+            );
+          } else {
+            triggerMoodLimitDeparture();
+            return;
+          }
+        }
+        if (
+          moodRef.current < 0 &&
+          linkTags.includes('phase2_started') &&
+          !(option.followUpOptions && option.followUpOptions.length > 0)
+        ) {
+          resetAngryGlanceSchedule();
+          setOverrideExpression('glare');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'away',
+            mouth: 'frown',
+            effects: [],
+          });
         }
       },
     });
@@ -3066,7 +3455,15 @@ export default function App() {
       });
     }
 
-    if (sectorId === 'SEC-12') {
+    if (sectorId === 'SEC-08') {
+      setLinkTags((prev) =>
+        Array.from(new Set([...prev, 'talked_sword_limiter', 'hint_sleep_dreams']))
+      );
+    } else if (sectorId === 'SEC-10' || sectorId === 'SEC-11') {
+      setLinkTags((prev) =>
+        Array.from(new Set([...prev, 'talked_clothes', 'hint_manor_parents']))
+      );
+    } else if (sectorId === 'SEC-12') {
       setLinkTags((prev) =>
         Array.from(new Set([...prev, 'p2_heard_true_reason']))
       );
@@ -3115,15 +3512,20 @@ export default function App() {
     setReadSectorIds((prev) =>
       prev.includes(sectorId) ? prev : [...prev, sectorId]
     );
+    setPreviewPage(0);
   };
 
   const handleReadSector = (sectorId: string) => {
     terminalActionTakenRef.current = true;
     const alreadyRead = readSectorIds.includes(sectorId);
 
-    setReadSectorIds((prev) =>
-      prev.includes(sectorId) ? prev : [...prev, sectorId]
-    );
+    setReadSectorIds((prev) => {
+      const filtered = prev.filter((id) => id !== sectorId);
+      return [...filtered, sectorId];
+    });
+    if (!alreadyRead) {
+      setPreviewPage(0);
+    }
 
     if (sectorId === 'SEC-18' && !alreadyRead) {
       appendLog(
@@ -3136,11 +3538,17 @@ export default function App() {
         sectors.some((s) => s.id === 'SEC-20' && s.unlocked);
       setPreviewTab('端末');
       setPreviewPage(0);
+      setLinkTags((prev) =>
+        Array.from(
+          new Set([
+            ...prev,
+            'sec19_unlocked',
+            ...(otherUnlocked ? ['climax_ready'] : []),
+          ])
+        )
+      );
       if (otherUnlocked) {
         pendingClimaxDilemmaRef.current = true;
-        setLinkTags((prev) =>
-          Array.from(new Set([...prev, 'climax_ready']))
-        );
       }
       if (!alreadyRead) {
         appendLog(
@@ -3181,6 +3589,11 @@ export default function App() {
     setPhase1AccuseStep('NONE');
     setPhase1AccusedTopicId(null);
     setActiveTopicReply(null);
+    moodWarningGivenRef.current = false;
+    angryCooldownCountRef.current = 0;
+    isAngryGlancingRef.current = false;
+    badMoodRefusalCountRef.current = 0;
+    badMoodHintShownRef.current = false;
     setVisibleBubbles([]);
     setDialogueHistory([]);
     setOralInfos([]);
@@ -3234,6 +3647,8 @@ export default function App() {
     setSessionSeed(Math.floor(Math.random() * 10000));
     setTrustLevel(0);
     setHatredPoints(0);
+    moodRef.current = 0;
+    moodWarningGivenRef.current = false;
     setMood(0);
     setGuyMood(0);
     setLinkTags([]);
@@ -3273,6 +3688,10 @@ export default function App() {
     terminalGazeReactionCountRef.current = 0;
     terminalUnrevealedReactionCountRef.current = 0;
     totalIdleReactionCountRef.current = 0;
+    angryCooldownCountRef.current = 0;
+    isAngryGlancingRef.current = false;
+    badMoodRefusalCountRef.current = 0;
+    badMoodHintShownRef.current = false;
     awayReactionCountRef.current = 0;
     lastHoveredChoiceIdRef.current = null;
     lastContextCategoryRef.current = 'daily';
@@ -3415,6 +3834,12 @@ export default function App() {
 
   const filteredTopicReplyOptions = activeTopicReply
     ? activeTopicReply.options.filter((opt) => {
+        if (
+          opt.resetsTopicProgress &&
+          linkTags.includes(`backed_off_${activeTopicReply.topicId}`)
+        ) {
+          return false;
+        }
         if (opt.requireLinkTag && !linkTags.includes(opt.requireLinkTag)) {
           return false;
         }
@@ -3512,7 +3937,7 @@ export default function App() {
                   OBSERVATION DIALOGUE ADV
                 </p>
                 <h1 className="text-[28px] tracking-[0.18em] text-zinc-100">
-                  REPLICA // アッシュ対話記録（仮）
+                  Ghost in the mASCHine
                 </h1>
               </div>
 
@@ -3626,6 +4051,32 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
+                    soundEngine.playTerminalTab();
+                    setIsTerminalOpen(false);
+                    setIsDialogueLogOpen((prev) => !prev);
+                  }}
+                  title="セリフログ"
+                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1.5 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
+                    isDialogueLogOpen
+                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
+                      : 'text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/80'
+                  }`}
+                >
+                  <svg
+                    className="w-3 h-3 stroke-current"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>LOG</span>
+                </button>
+
+                <button
+                  onClick={() => {
                     soundEngine.unlockOnUserInteraction();
                     const nextMuted = !isSoundMuted;
                     setIsSoundMuted(nextMuted);
@@ -3635,7 +4086,7 @@ export default function App() {
                     }
                   }}
                   title="BGM・SEを一括でON/OFF切り替え"
-                  className={`flex items-center gap-1.5 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
+                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1.5 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isSoundMuted
                       ? 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700'
                       : 'text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/80'
@@ -3650,7 +4101,7 @@ export default function App() {
                     soundEngine.playTerminalTab();
                     setIsManualOpen(true);
                   }}
-                  className="flex items-center gap-1 px-2.5 py-0.5 text-[12px] text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 bg-zinc-900/80 transition-colors cursor-pointer"
+                  className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 bg-zinc-900/80 transition-colors cursor-pointer"
                 >
                   <span>?</span>
                   <span>説明書</span>
@@ -3706,8 +4157,8 @@ export default function App() {
                   })}
                 </div>
 
-                {/* 下部：ガイの思考選択肢（absolute bottom-3.5 で下部に完全ピン留めし、吹き出しに一切押し出されない） */}
-                <div className="absolute left-7 right-3 bottom-3.5 max-w-[395px] h-[116px] flex flex-col justify-start">
+                {/* 下部：ガイの思考選択肢（absolute bottom-4 で下部に完全ピン留めし、吹き出しに一切押し出されない） */}
+                <div className="absolute left-7 right-3 bottom-4 max-w-[395px] h-[116px] flex flex-col justify-start">
                   {!isInteractionBlocked && (() => {
                     const isPhase1LimitReached =
                       !linkTags.includes('phase2_started') && phase1QuestionsCount >= 5;
@@ -3720,142 +4171,285 @@ export default function App() {
                         isPhase1LimitReached ||
                         displayedRegularTopics.length === 0);
 
-                    // 逆質問・話題進行中ロック・質問上限到達など、タブ切り替え自体をロックすべき状態
+                    // 逆質問・話題進行中ロック・質問上限到達など、切り替え自体をロックすべき状態
                     const isHardForcedEvent =
                       !!activeAschQuestion ||
                       isTopicLockedInProgress ||
                       isPhase1LimitReached ||
                       displayedRegularTopics.length === 0;
-                    const isEventForced = !!activeAschQuestion || isDecisionEventActive;
-                    const effectivePhase2Tab =
-                      activeInProgressTopic?.phase2Tab ?? previewTab;
+
+                    const PAGE_SIZE = 3;
+
+                    // Phase 1 の質問リスト計算
+                    const sortedPhase1 = (() => {
+                      const phase1Topics = CONVERSATION_TOPICS.filter((t) =>
+                        t.id.startsWith('p1_')
+                      );
+                      const remainingQuestions = Math.max(
+                        0,
+                        5 - phase1QuestionsCount
+                      );
+                      const remainingSlipsNeeded = Math.max(
+                        0,
+                        phase1TargetSlipTurns.length -
+                          phase1OccurredSlips.length
+                      );
+                      const mustSlipNow =
+                        remainingSlipsNeeded > 0 &&
+                        remainingQuestions <= remainingSlipsNeeded;
+
+                      const unasked = phase1Topics.filter(
+                        (t) =>
+                          !phase1AskedTopicIds.includes(t.id) &&
+                          (!mustSlipNow ||
+                            PHASE1_TOPIC_SLIP_CONFIGS[t.id]?.canSlip)
+                      );
+                      const asked = phase1Topics.filter((t) =>
+                        phase1AskedTopicIds.includes(t.id)
+                      );
+                      return [...unasked, ...asked];
+                    })();
+
+                    // Phase 2 の統合話題リスト計算（タブ廃止・関連話題や直近解除した端末話題を優先表示）
+                    const sortedPhase2 = activeInProgressTopic
+                      ? [activeInProgressTopic]
+                      : (() => {
+                          const unlockedTopics = CONVERSATION_TOPICS.filter((t) =>
+                            isPhase2TopicUnlocked(t)
+                          );
+                          const lastAskedTopic = lastAskedTopicId
+                            ? CONVERSATION_TOPICS.find(
+                                (x) => x.id === lastAskedTopicId
+                              )
+                            : null;
+                          const relatedIds =
+                            lastAskedTopic?.relatedTopicIds ?? [];
+                          const lastReadSectorId =
+                            readSectorIds.length > 0
+                              ? readSectorIds[readSectorIds.length - 1]
+                              : null;
+
+                          const unreadTopics = unlockedTopics
+                            .filter((t) => {
+                              const c = topicAskCounts[t.id] ?? 0;
+                              return c < t.stages.length;
+                            })
+                            .sort((a, b) => {
+                              const getPrio = (t: ConversationTopic) => {
+                                if (t.id === 'p2_deep_truth_dilemma') return 100;
+                                if (
+                                  t.id === 'p2_cold_destroy_execution' ||
+                                  t.id === 'p2_irritated_clash'
+                                ) {
+                                  return 90;
+                                }
+                                if (
+                                  t.id === 'topic_41_apologize' &&
+                                  (mood < 0 || guyMood < 0)
+                                ) {
+                                  return 85;
+                                }
+                                if (t.calmsAnger && mood < 0) return 80;
+                                if (
+                                  t.requireSectorUnlocked &&
+                                  t.requireSectorUnlocked === lastReadSectorId
+                                ) {
+                                  return 75;
+                                }
+                                if (t.id === 'p2_tarlow_broken_reason') return 70;
+                                if (t.prioritySlot1) return 65;
+                                if (relatedIds.includes(t.id)) return 60;
+                                if (t.requireSectorUnlocked) return 50;
+                                if (t.phase2Tab === '追求') return 40;
+                                if (t.phase2Tab === '端末') return 30;
+                                return 20;
+                              };
+                              return getPrio(b) - getPrio(a);
+                            });
+
+                          return unreadTopics;
+                        })();
+
+                    // Phase 1 の決断メニュー項目
+                    const p1DecisionItems: {
+                      id: string;
+                      label: string;
+                      onSelect: () => void;
+                    }[] = [];
+                    if (!linkTags.includes('phase2_started')) {
+                      if (phase1AskedTopicIds.length > 0) {
+                        p1DecisionItems.push({
+                          id: 'p1_dec_accuse',
+                          label: '『タルロウA』というのは嘘だと矛盾を指摘する',
+                          onSelect: () => {
+                            soundEngine.playTerminalTab();
+                            setPreviewPage(0);
+                            setPhase1AccuseStep('SELECT_TOPIC');
+                          },
+                        });
+                      }
+                      if (hasPhase1LockUnlocked) {
+                        p1DecisionItems.push({
+                          id: 'p1_dec_terminal',
+                          label: '手元の端末の画面（内部記録）を本人に見せる',
+                          onSelect: () => {
+                            handleShowTerminalToAschPhase1();
+                          },
+                        });
+                      }
+                      p1DecisionItems.push({
+                        id: 'p1_dec_return',
+                        label: '『タルロウA』という主張を信じて研究所へ帰す',
+                        onSelect: () => {
+                          handleExecuteDecision('RETURN');
+                        },
+                      });
+                    }
+
+                    // 現在のモードにおける総ページ数（右上固定の [ ▶ 他の話題 ] 用）
+                    const headerTotalPages = activeAschQuestion
+                      ? Math.ceil(visibleAschQuestionOptions.length / PAGE_SIZE) || 1
+                      : activeTopicReply
+                        ? Math.ceil(visibleTopicReplyOptions.length / PAGE_SIZE) || 1
+                        : isDecisionEventActive
+                          ? !linkTags.includes('phase2_started')
+                            ? phase1AccuseStep === 'SELECT_TOPIC'
+                              ? Math.ceil(phase1AskedTopicIds.length / PAGE_SIZE) || 1
+                              : phase1AccuseStep === 'SELECT_REASON'
+                                ? 1
+                                : Math.ceil(p1DecisionItems.length / PAGE_SIZE) || 1
+                            : 1
+                          : !linkTags.includes('phase2_started')
+                            ? Math.ceil(sortedPhase1.length / PAGE_SIZE) || 1
+                            : activeInProgressTopic
+                              ? 1
+                              : Math.ceil(sortedPhase2.length / PAGE_SIZE) || 1;
+
+                    const isReplyingMode =
+                      Boolean(activeAschQuestion) || Boolean(activeTopicReply);
+
+                    // 見出し左側のテキスト
+                    const headerTitleText =
+                      isDecisionEventActive && !activeAschQuestion
+                        ? !linkTags.includes('phase2_started') &&
+                          phase1AccuseStep === 'SELECT_TOPIC'
+                          ? 'どの反応に違和感があったか・・・・・・'
+                          : !linkTags.includes('phase2_started') &&
+                              phase1AccuseStep === 'SELECT_REASON'
+                            ? '何が怪しかったか・・・・・・'
+                            : 'どう切り出そうか・・・・・・'
+                        : isReplyingMode
+                          ? 'どう返そうか・・・・・・'
+                          : !linkTags.includes('phase2_started')
+                            ? `何を聞こうか・・・・・・（${phase1QuestionsCount}/5）`
+                            : '何について話そうか・・・・・・';
 
                     return (
                       <div className="flex flex-col gap-1.5 py-0.5 animate-[fadeIn_0.22s_ease-out]">
-                        {/* 左寄せのタブ切り替え / 推理フェーズ時は推理ステップ見出しを表示 */}
+                        {/* 上部見出しバー：左に見出し、右にボタン群（一番右端は常に [ ▶ 他の話題 ] の固定席） */}
                         <div className="flex items-center justify-between gap-2 mb-1 select-none border-b border-zinc-950/20 text-[12px] font-mono tracking-wider">
-                          {isDecisionEventActive &&
-                          !activeAschQuestion &&
-                          !linkTags.includes('phase2_started') &&
-                          phase1AccuseStep === 'SELECT_TOPIC' ? (
-                            <>
-                              <span className="pb-1 text-zinc-950 font-bold border-b-2 border-zinc-950 -mb-[1px]">
-                                [ ステップ1：どの会話でボロが出たか（10択） ]
-                              </span>
-                              {phase1QuestionsCount < 5 && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    soundEngine.playTerminalTab();
-                                    setPhase1AccuseStep('NONE');
-                                  }}
-                                  className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer"
-                                >
-                                  [ ◀ 戻る ]
-                                </button>
-                              )}
-                            </>
-                          ) : isDecisionEventActive &&
+                          <span className="pb-1 text-zinc-950 font-bold truncate">
+                            {headerTitleText}
+                          </span>
+
+                          <div className="flex items-center justify-end gap-1 shrink-0">
+                            {/* 右側左枠：戻る / 質問を選び直す / 話を切り上げる */}
+                            {isDecisionEventActive &&
                             !activeAschQuestion &&
                             !linkTags.includes('phase2_started') &&
                             phase1AccuseStep === 'SELECT_REASON' ? (
-                            <>
-                              <span className="pb-1 text-zinc-950 font-bold border-b-2 border-zinc-950 -mb-[1px]">
-                                [ ステップ2：何が怪しかったか（3択） ]
-                              </span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
+                                  setPreviewPage(0);
                                   setPhase1AccuseStep('SELECT_TOPIC');
                                 }}
-                                className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer"
+                                className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                               >
                                 [ ◀ 質問を選び直す ]
                               </button>
-                            </>
-                          ) : (
-                            <div className="flex items-center justify-start gap-3.5">
-                              {(!linkTags.includes('phase2_started') ? (
-                                <span
-                                  className={`pb-1 text-left transition-colors ${
-                                    isEventForced
-                                      ? 'text-zinc-500/35 opacity-40 select-none'
-                                      : 'text-zinc-950 font-bold border-b-2 border-zinc-950 -mb-[1px]'
-                                  }`}
+                            ) : isDecisionEventActive &&
+                              !activeAschQuestion &&
+                              !linkTags.includes('phase2_started') &&
+                              phase1AccuseStep === 'SELECT_TOPIC' ? (
+                              phase1QuestionsCount < 5 ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    soundEngine.playTerminalTab();
+                                    setPreviewPage(0);
+                                    setPhase1AccuseStep('NONE');
+                                  }}
+                                  className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                                 >
-                                  [ カマかけ質問（{phase1QuestionsCount}/5） ]
-                                </span>
-                              ) : (
-                                (['雑談', '端末', '追求'] as const).map((t) => {
-                                  const isCurrent =
-                                    !isEventForced && effectivePhase2Tab === t;
-                                  return (
-                                    <button
-                                      key={t}
-                                      disabled={isHardForcedEvent}
-                                      onClick={(e) => {
-                                        if (isHardForcedEvent) return;
-                                        e.stopPropagation();
-                                        soundEngine.playTerminalTab();
-                                        setIsDecisionMenuOpen(false);
-                                        setPreviewTab(t);
-                                        setPreviewPage(0);
-                                      }}
-                                      className={`pb-1 text-left transition-colors ${
-                                        isCurrent
-                                          ? `text-zinc-950 font-bold border-b-2 border-zinc-950 -mb-[1px] ${
-                                              isHardForcedEvent
-                                                ? 'cursor-default'
-                                                : 'cursor-pointer'
-                                            }`
-                                          : isHardForcedEvent
-                                            ? 'text-zinc-500/35 opacity-40 cursor-not-allowed pointer-events-none select-none'
-                                            : 'text-zinc-400 hover:text-zinc-700 cursor-pointer'
-                                      }`}
-                                    >
-                                      [ {t} ]
-                                    </button>
-                                  );
-                                })
-                              ))}
+                                  [ ◀ 戻る ]
+                                </button>
+                              ) : null
+                            ) : isDecisionEventActive &&
+                              !activeAschQuestion &&
+                              !isPhase1LimitReached &&
+                              displayedRegularTopics.length > 0 ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  soundEngine.playTerminalTab();
+                                  setPreviewPage(0);
+                                  setIsDecisionMenuOpen(false);
+                                }}
+                                className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
+                              >
+                                [ ◀ 話題に戻る ]
+                              </button>
+                            ) : !isDecisionEventActive &&
+                              !isHardForcedEvent &&
+                              showDecisionOption ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  soundEngine.playTerminalTab();
+                                  setPreviewPage(0);
+                                  setIsDecisionMenuOpen(true);
+                                }}
+                                className="pb-1 text-[11px] text-zinc-600 hover:text-black cursor-pointer whitespace-nowrap transition-colors"
+                                title="話を切り上げてアッシュの処遇を決める"
+                              >
+                                [ 話を切り上げる ]
+                              </button>
+                            ) : null}
 
-                              {/* 第4のタブ：決断（選んでいない通常時は他のタブと同じグレー、選択時にアクティブ表示） */}
-                              {showDecisionOption && (() => {
-                                const isDecisionSelected =
-                                  isDecisionEventActive && !activeAschQuestion;
-
-                                return (
-                                  <button
-                                    disabled={isEventForced || isTopicLockedInProgress}
-                                    onClick={(e) => {
-                                      if (isEventForced || isTopicLockedInProgress) return;
-                                      e.stopPropagation();
-                                      soundEngine.playTerminalTab();
-                                      setPreviewPage(0);
-                                      setIsDecisionMenuOpen(true);
-                                    }}
-                                    className={`pb-1 text-left transition-colors ${
-                                      activeAschQuestion || isTopicLockedInProgress
-                                        ? 'text-zinc-500/35 opacity-40 cursor-not-allowed pointer-events-none select-none'
-                                        : isDecisionSelected
-                                        ? 'text-zinc-950 font-bold border-b-2 border-zinc-950 -mb-[1px] cursor-default'
-                                        : 'text-zinc-400 hover:text-zinc-700 cursor-pointer'
-                                    }`}
-                                    title="話を切り上げてアッシュの処遇を決める"
-                                  >
-                                    [ 決断 ]
-                                  </button>
+                            {/* 右端固定枠：[ ▶ 他の話題 ]（他ページがない時はグレーアウトで常時配置） */}
+                            <button
+                              disabled={headerTotalPages <= 1}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (headerTotalPages <= 1) return;
+                                soundEngine.playTerminalTab();
+                                setPreviewPage((p) =>
+                                  p + 1 >= headerTotalPages ? 0 : p + 1
                                 );
-                              })()}
-                            </div>
-                          )}
+                              }}
+                              className={`pb-1 text-[11px] whitespace-nowrap select-none transition-colors ${
+                                headerTotalPages > 1
+                                  ? 'text-zinc-800 font-semibold hover:text-black active:text-zinc-500 cursor-pointer'
+                                  : 'text-zinc-400/75 cursor-default pointer-events-none'
+                              }`}
+                              title={
+                                headerTotalPages > 1
+                                  ? '次のページへ切り替え'
+                                  : undefined
+                              }
+                            >
+                              {isReplyingMode
+                                ? '[ ▶ 他の返答 ]'
+                                : '[ ▶ 他の話題 ]'}
+                            </button>
+                          </div>
                         </div>
 
                         {activeAschQuestion ? (
                           /* ① アッシュからの問いかけ（1ページ最大3件・1行固定） */
                           (() => {
-                            const PAGE_SIZE = 3;
                             const totalPages =
                               Math.ceil(visibleAschQuestionOptions.length / PAGE_SIZE) || 1;
                             const safePage = Math.min(previewPage, totalPages - 1);
@@ -3888,7 +4482,7 @@ export default function App() {
                                       setPreviewPage(0);
                                       handleSelectAschQuestionReply(opt);
                                     }}
-                                    className="w-fit max-w-[365px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
+                                    className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
                                   >
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className="flex flex-col justify-center py-0.5 min-w-0">
@@ -3898,29 +4492,12 @@ export default function App() {
                                     </div>
                                   </button>
                                 ))}
-
-                                {totalPages > 1 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      soundEngine.playTerminalTab();
-                                      setPreviewPage((p) =>
-                                        p + 1 >= totalPages ? 0 : p + 1
-                                      );
-                                    }}
-                                    className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                    title="次のページ"
-                                  >
-                                    ▶
-                                  </button>
-                                )}
                               </div>
                             );
                           })()
                         ) : activeTopicReply ? (
                           /* ①-2 進行中の話題に対するガイの複数リアクション選択肢（1ページ最大3件・1行固定） */
                           (() => {
-                            const PAGE_SIZE = 3;
                             const totalPages =
                               Math.ceil(visibleTopicReplyOptions.length / PAGE_SIZE) || 1;
                             const safePage = Math.min(previewPage, totalPages - 1);
@@ -3953,7 +4530,7 @@ export default function App() {
                                       setPreviewPage(0);
                                       handleSelectTopicReplyOption(opt);
                                     }}
-                                    className="w-fit max-w-[365px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
+                                    className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
                                   >
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className="flex flex-col justify-center py-0.5 min-w-0">
@@ -3963,22 +4540,6 @@ export default function App() {
                                     </div>
                                   </button>
                                 ))}
-
-                                {totalPages > 1 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      soundEngine.playTerminalTab();
-                                      setPreviewPage((p) =>
-                                        p + 1 >= totalPages ? 0 : p + 1
-                                      );
-                                    }}
-                                    className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                    title="次のページ"
-                                  >
-                                    ▶
-                                  </button>
-                                )}
                               </div>
                             );
                           })()
@@ -3990,7 +4551,6 @@ export default function App() {
                               phase1AccuseStep === 'SELECT_TOPIC' ? (
                                 (() => {
                                   const orderedTopicIds = phase1AskedTopicIds;
-                                  const PAGE_SIZE = 3;
                                   const totalPages =
                                     Math.ceil(orderedTopicIds.length / PAGE_SIZE) || 1;
                                   const safePage = Math.min(
@@ -4020,7 +4580,7 @@ export default function App() {
                                               );
                                               setPhase1AccuseStep('SELECT_REASON');
                                             }}
-                                            className="w-fit max-w-[365px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                            className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
                                           >
                                             <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                             <div className="flex flex-col justify-center py-0.5 min-w-0">
@@ -4031,22 +4591,6 @@ export default function App() {
                                           </button>
                                         );
                                       })}
-
-                                      {totalPages > 1 && (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            soundEngine.playTerminalTab();
-                                            setPreviewPage((p) =>
-                                              p + 1 >= totalPages ? 0 : p + 1
-                                            );
-                                          }}
-                                          className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                          title="次のページ"
-                                        >
-                                          ▶
-                                        </button>
-                                      )}
                                     </div>
                                   );
                                 })()
@@ -4063,7 +4607,7 @@ export default function App() {
                                           choice
                                         );
                                       }}
-                                      className="w-fit max-w-[380px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                      className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
                                     >
                                       <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                       <div className="flex flex-col justify-center py-0.5 min-w-0">
@@ -4076,51 +4620,6 @@ export default function App() {
                                 </div>
                               ) : (
                                 (() => {
-                                  const p1DecisionItems: {
-                                    id: string;
-                                    label: string;
-                                    onSelect: () => void;
-                                  }[] = [];
-
-                                  if (phase1AskedTopicIds.length > 0) {
-                                    p1DecisionItems.push({
-                                      id: 'p1_dec_accuse',
-                                      label: '『タルロウA』というのは嘘だと矛盾を指摘する',
-                                      onSelect: () => {
-                                        soundEngine.playTerminalTab();
-                                        setPreviewPage(0);
-                                        setPhase1AccuseStep('SELECT_TOPIC');
-                                      },
-                                    });
-                                  }
-                                  if (hasPhase1LockUnlocked) {
-                                    p1DecisionItems.push({
-                                      id: 'p1_dec_terminal',
-                                      label: '手元の端末の画面（内部記録）を本人に見せる',
-                                      onSelect: () => {
-                                        handleShowTerminalToAschPhase1();
-                                      },
-                                    });
-                                  }
-                                  p1DecisionItems.push({
-                                    id: 'p1_dec_return',
-                                    label: '『タルロウA』という主張を信じて研究所へ帰す',
-                                    onSelect: () => {
-                                      handleExecuteDecision('RETURN');
-                                    },
-                                  });
-                                  if (phase1QuestionsCount < 5) {
-                                    p1DecisionItems.push({
-                                      id: 'p1_dec_back',
-                                      label: `まだもう少し質問する（残り${5 - phase1QuestionsCount}回）`,
-                                      onSelect: () => {
-                                        soundEngine.playTerminalTab();
-                                        setIsDecisionMenuOpen(false);
-                                      },
-                                    });
-                                  }
-
-                                  const PAGE_SIZE = 3;
                                   const totalPages =
                                     Math.ceil(p1DecisionItems.length / PAGE_SIZE) || 1;
                                   const safePage = Math.min(previewPage, totalPages - 1);
@@ -4138,7 +4637,7 @@ export default function App() {
                                             e.stopPropagation();
                                             item.onSelect();
                                           }}
-                                          className="w-fit max-w-[365px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                          className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
                                         >
                                           <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                           <div className="flex flex-col justify-center py-0.5 min-w-0">
@@ -4148,22 +4647,6 @@ export default function App() {
                                           </div>
                                         </button>
                                       ))}
-
-                                      {totalPages > 1 && (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            soundEngine.playTerminalTab();
-                                            setPreviewPage((p) =>
-                                              p + 1 >= totalPages ? 0 : p + 1
-                                            );
-                                          }}
-                                          className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                          title="次のページ"
-                                        >
-                                          ▶
-                                        </button>
-                                      )}
                                     </div>
                                   );
                                 })()
@@ -4200,67 +4683,21 @@ export default function App() {
                                     </span>
                                   </div>
                                 </button>
-
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    soundEngine.playTerminalTab();
-                                    setIsDecisionMenuOpen(false);
-                                  }}
-                                  className="group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
-                                >
-                                  <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                  <div className="flex flex-col justify-center py-0.5">
-                                    <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                      まだもう少し話をする
-                                    </span>
-                                  </div>
-                                </button>
                               </>
                             )}
                           </div>
                         ) : (
-                          /* ③ 通常会話時：話題リスト ＋ 下部に「アッシュをどうするか決める（話を切り上げる）」 */
+                          /* ③ 通常会話時：話題リスト */
                           <>
-                            {/* 話題リスト（Phase 1は全10問から未質問を優先・3件ページ送り、Phase 2は通常話題） */}
                             {(() => {
                               if (!linkTags.includes('phase2_started')) {
-                                const phase1Topics = CONVERSATION_TOPICS.filter((t) =>
-                                  t.id.startsWith('p1_')
-                                );
-                                // 残り質問回数が「必要ボロ回数」ギリギリになった場合はブラフ枠を除外して必ずボロが出るように保証
-                                const remainingQuestions = Math.max(
-                                  0,
-                                  5 - phase1QuestionsCount
-                                );
-                                const remainingSlipsNeeded = Math.max(
-                                  0,
-                                  phase1TargetSlipTurns.length -
-                                    phase1OccurredSlips.length
-                                );
-                                const mustSlipNow =
-                                  remainingSlipsNeeded > 0 &&
-                                  remainingQuestions <= remainingSlipsNeeded;
-
-                                const unasked = phase1Topics.filter(
-                                  (t) =>
-                                    !phase1AskedTopicIds.includes(t.id) &&
-                                    (!mustSlipNow ||
-                                      PHASE1_TOPIC_SLIP_CONFIGS[t.id]?.canSlip)
-                                );
-                                const asked = phase1Topics.filter((t) =>
-                                  phase1AskedTopicIds.includes(t.id)
-                                );
-                                const sorted = [...unasked, ...asked];
-
-                                const PAGE_SIZE = 3;
                                 const totalPages =
-                                  Math.ceil(sorted.length / PAGE_SIZE) || 1;
+                                  Math.ceil(sortedPhase1.length / PAGE_SIZE) || 1;
                                 const safePage = Math.min(
                                   previewPage,
                                   totalPages - 1
                                 );
-                                const currentSlice = sorted.slice(
+                                const currentSlice = sortedPhase1.slice(
                                   safePage * PAGE_SIZE,
                                   safePage * PAGE_SIZE + PAGE_SIZE
                                 );
@@ -4281,7 +4718,7 @@ export default function App() {
                                             if (isRead) return;
                                             handleSelectTopic(topic);
                                           }}
-                                          className={`w-fit max-w-[365px] group text-left flex items-stretch transition-all duration-300 ease-out ${
+                                          className={`w-fit max-w-[385px] group text-left flex items-stretch transition-all duration-300 ease-out ${
                                             isRead
                                               ? 'opacity-35 cursor-default'
                                               : 'opacity-100 cursor-pointer hover:translate-x-1'
@@ -4308,57 +4745,10 @@ export default function App() {
                                         </button>
                                       );
                                     })}
-
-                                    {totalPages > 1 && (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          soundEngine.playTerminalTab();
-                                          setPreviewPage((p) =>
-                                            p + 1 >= totalPages ? 0 : p + 1
-                                          );
-                                        }}
-                                        className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                        title="次のページ"
-                                      >
-                                        ▶
-                                      </button>
-                                    )}
                                   </div>
                                 );
                               }
 
-                              // 話題が進行中の場合は、その話題が完了するまで他の話題を表示せず、進行中の話題の続きのみを表示する
-                              const sortedPhase2 = activeInProgressTopic
-                                ? [activeInProgressTopic]
-                                : (() => {
-                                    const tabTopics = CONVERSATION_TOPICS.filter(
-                                      (t) =>
-                                        isPhase2TopicUnlocked(t) &&
-                                        (t.phase2Tab ?? '雑談') === previewTab
-                                    );
-                                    const unreadTopics = tabTopics
-                                      .filter((t) => {
-                                        const c = topicAskCounts[t.id] ?? 0;
-                                        return c === 0;
-                                      })
-                                      .sort((a, b) => {
-                                        const getPrio = (t: ConversationTopic) => {
-                                          if (t.id === 'p2_deep_truth_dilemma') return 3;
-                                          if (t.id === 'p2_tarlow_broken_reason') return 2;
-                                          if (t.prioritySlot1) return 1;
-                                          return 0;
-                                        };
-                                        return getPrio(b) - getPrio(a);
-                                      });
-                                    const completedTopics = tabTopics.filter((t) => {
-                                      const c = topicAskCounts[t.id] ?? 0;
-                                      return c >= t.stages.length;
-                                    });
-                                    return [...unreadTopics, ...completedTopics];
-                                  })();
-
-                              const PAGE_SIZE = 3;
                               const totalPages = activeInProgressTopic
                                 ? 1
                                 : Math.ceil(sortedPhase2.length / PAGE_SIZE) || 1;
@@ -4380,8 +4770,13 @@ export default function App() {
                                       topic.stages.length - 1,
                                       askCount
                                     );
+                                    const isBackedOff = linkTags.includes(
+                                      `backed_off_${topic.id}`
+                                    );
                                     const label =
-                                      topic.stages[stageIdx]?.thoughtText ??
+                                      (isBackedOff &&
+                                        topic.stages[stageIdx]?.retryThoughtText) ||
+                                      topic.stages[stageIdx]?.thoughtText ||
                                       topic.thoughtText;
 
                                     return (
@@ -4393,7 +4788,7 @@ export default function App() {
                                           if (isCompleted) return;
                                           handleSelectTopic(topic);
                                         }}
-                                        className={`w-fit max-w-[365px] group text-left flex items-stretch transition-all duration-300 ease-out ${
+                                        className={`w-fit max-w-[385px] group text-left flex items-stretch transition-all duration-300 ease-out ${
                                           isCompleted
                                             ? 'opacity-35 cursor-default'
                                             : 'opacity-100 cursor-pointer hover:translate-x-1'
@@ -4420,22 +4815,6 @@ export default function App() {
                                       </button>
                                     );
                                   })}
-
-                                  {totalPages > 1 && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        soundEngine.playTerminalTab();
-                                        setPreviewPage((p) =>
-                                          p + 1 >= totalPages ? 0 : p + 1
-                                        );
-                                      }}
-                                      className="absolute top-[54px] right-2 h-[24px] flex items-center justify-center text-[9px] text-zinc-950 font-bold hover:text-black active:text-zinc-400 active:scale-90 cursor-pointer select-none px-1.5 leading-none transition-all"
-                                      title="次のページ"
-                                    >
-                                      ▶
-                                    </button>
-                                  )}
                                 </div>
                               );
                             })()}
@@ -4503,20 +4882,20 @@ export default function App() {
             </main>
 
             {/* 下部黒帯フッター */}
-            <footer className="relative z-30 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-between px-5 border-t border-zinc-900 shrink-0">
-              <div className="flex items-center gap-3">
-                {/* データ端末ボタン */}
+            <footer className="relative z-30 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
+              <div className="flex items-center">
+                {/* データ端末ボタン（見た目は上部ボタンと揃えた小ぶりなサイズ・透明タップ判定を周囲に拡大） */}
                 <button
                   onClick={handleToggleTerminal}
                   title="データ端末"
-                  className={`relative h-8 px-3 flex items-center gap-1.5 text-[11.5px] border transition-colors cursor-pointer ${
+                  className={`relative after:content-[''] after:absolute after:-inset-y-2.5 after:-inset-x-4 px-2.5 py-0.5 flex items-center gap-1.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isTerminalOpen
                       ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
-                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-700'
+                      : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500'
                   }`}
                 >
                   <svg
-                    className="w-3.5 h-3.5 stroke-current"
+                    className="w-3 h-3 stroke-current"
                     viewBox="0 0 24 24"
                     fill="none"
                     strokeWidth="2"
@@ -4531,33 +4910,6 @@ export default function App() {
                   {hasUnreadSector && !isTerminalOpen && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
                   )}
-                </button>
-
-                {/* セリフログボタン */}
-                <button
-                  onClick={() => {
-                    soundEngine.playTerminalTab();
-                    setIsTerminalOpen(false);
-                    setIsDialogueLogOpen((prev) => !prev);
-                  }}
-                  title="セリフログ"
-                  className={`h-8 px-3 flex items-center gap-1.5 text-[11.5px] border transition-colors cursor-pointer ${
-                    isDialogueLogOpen
-                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
-                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-700'
-                  }`}
-                >
-                  <svg
-                    className="w-3.5 h-3.5 stroke-current"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <span>LOG</span>
                 </button>
               </div>
             </footer>

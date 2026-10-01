@@ -176,8 +176,11 @@ export interface AschIncomingQuestion {
 
 export interface TopicExchangeStage {
   thoughtText?: string;            // 2段階目以降の「直前の続き」として出る選択肢テキスト
+  retryThoughtText?: string;       // 1度引き下がった後に再度聞き直す際の選択肢テキスト
   spokenText: string;              // ガイが喋るセリフ
+  retrySpokenText?: string;        // 1度引き下がった後に再度聞き直す際のガイのセリフ
   aschText: string;                // アッシュの通常返答（\n区切りで複数枠）
+  retryAschText?: string;          // 1度引き下がった後に再度聞き直す際のアッシュの返答
   aschTextCorrupted?: string;      // 高エラー時の返答（任意）
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;

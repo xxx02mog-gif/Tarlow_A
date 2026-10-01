@@ -263,6 +263,94 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     discovered: false,
     unlocked: false,
   },
+  {
+    id: 'SEC-13',
+    code: 'EM-008',
+    capturedQuote: '「・・・・・・別に、何もしていない。ただ音機関を休めているだけだ。」',
+    capturedContext: '研究所にこもっている間の暇つぶしについて尋ねた際の発言',
+    unlockedTitle: '空き部屋での一人チェス稼働記録と駒位置の修正ログ',
+    unlockedCategory: '情動観測',
+    unlockedContent:
+      '本人は「何もしていない」と述べているが、研究所の空き部屋に置かれたチェス盤を前に1人二役で対局を繰り返していた稼働記録が残っている。なお、黒番（自身側）が詰みかけた際、周囲に誰もいないことを確認してから密かに駒を1つ元の位置へ戻した動作ログが記録されている。',
+    dialogueUnlockedContent:
+      'ディストと差すとルールを捻じ曲げられるため、研究所の空き部屋で1人でチェスの詰み筋を考えて時間を潰していたことが判明した。',
+    errorCost: 0,
+    reactionLine: '',
+    reactionExpression: 'normal',
+    discovered: false,
+    unlocked: false,
+  },
+  {
+    id: 'SEC-14',
+    code: 'MC-007',
+    capturedQuote: '「・・・・・・声くらいなんだっていいだろうが。いちいち人の声を聞き比べるな。」',
+    capturedContext: '10歳当時の声（声変わり前）の違和感について尋ねた際の発言',
+    unlockedTitle: '声帯ユニットの周波数誤差と換装直後の筆談要求履歴',
+    unlockedCategory: '機体仕様',
+    unlockedContent:
+      '10歳当時の予備素体であるため、発声器官も声変わり前の高音域仕様となっている。2ヶ月前の素体換装直後、生前の感覚で低く威嚇しようとして音声が裏返り、強い羞恥波形を記録。その後約2日間「声帯が壊れている」と主張して発声を拒否し、ディストに対して筆談のみで要求を突きつけていた履歴が残っている。',
+    dialogueUnlockedContent:
+      '生前のつもりで怒鳴ろうとすると声変わり前の高い声が出て調子が狂うため、今の声に強い羞恥とやりづらさを感じていることが分かった。',
+    errorCost: 0,
+    reactionLine: '',
+    reactionExpression: 'normal',
+    discovered: false,
+    unlocked: false,
+  },
+  {
+    id: 'SEC-15',
+    code: 'EM-009',
+    capturedQuote:
+      '「・・・・・・今さら父上や母上の話などしてどうなる。あの屋敷にはもう、帰るべき息子が戻っているだろうが。」',
+    capturedContext: 'ファブレ公爵夫妻（父上・母上）への思いについて尋ねた際の発言',
+    unlockedTitle: 'ファブレ公爵夫妻に関する情動反応と接触回避波形',
+    unlockedCategory: '情動観測',
+    unlockedContent:
+      '父上および母上（スザーヌ夫人）に関する話題が入力された際、攻撃波形や憎悪波形は一切検出されず、微弱な思慕波形と同時に「一度死んだ自分が10歳の機械の姿で現れることで母上たちを混乱させ傷つけること」を恐れる強い接触回避波形が記録されている。',
+    dialogueUnlockedContent:
+      '屋敷にはルークが戻っているからそれでいいと考え、死んだはずの自分が10歳の機械の姿で母上の前に出て混乱させるわけにはいかないと距離を置いていることが語られた。',
+    errorCost: 0,
+    reactionLine: '',
+    reactionExpression: 'normal',
+    discovered: false,
+    unlocked: false,
+  },
+  {
+    id: 'SEC-16',
+    code: 'MC-008',
+    capturedQuote:
+      '「・・・・・・当たり前だ。7年前に造られた新品の予備素体だからな。人の手をジロジロ見るな。」',
+    capturedContext: '掌や腕に剣ダコや生前の傷跡がないことについて触れた際の発言',
+    unlockedTitle: '右掌の接触反復動作と身体違和感の継続ログ',
+    unlockedCategory: '機体仕様',
+    unlockedContent:
+      '予備素体の人工表皮には生前の鍛錬による剣ダコや古傷が一切存在しない。被験体は無意識下に自身の右掌（生前に剣ダコが存在した部位）を左親指で擦る動作を1日平均40回以上繰り返しており、生前の身体感覚との不一致による微弱なストレス波形が継続している。',
+    dialogueUnlockedContent:
+      '長年の鍛錬で刻まれた剣ダコや傷跡がすべて消えた真っ白な掌を見るたび、自分の身体ではない作り物の人形だと痛感させられていることが分かった。',
+    errorCost: 0,
+    reactionLine: '',
+    reactionExpression: 'normal',
+    discovered: false,
+    unlocked: false,
+  },
+  {
+    id: 'SEC-17',
+    code: 'EM-010',
+    capturedQuote:
+      '「・・・・・・あの眼鏡の話をするな！　あいつが研究所に来た時はいつも物陰に隠れていたんだ、気づかれているはずがないだろうが。」',
+    capturedContext: '研究所を訪れていたジェイドに正体を気づかれていないか尋ねた際の発言',
+    unlockedTitle: '要注意人物『ジェイド・カーティス』接近時の警戒波形ログ',
+    unlockedCategory: '情動観測',
+    unlockedContent:
+      '3ヶ月前、ジェイドがディストの研究所を訪れた際、部屋の隅で停止を装っていた小型機体『タルロウA』の前で3秒間立ち止まり、意味深に微笑んで「せいぜい壊れないようにしてくださいね」とだけ言い残して立ち去った映像記録が残っている。被験体はその瞬間から現在までジェイドに対する警戒レベルを最高値に設定している。',
+    dialogueUnlockedContent:
+      'タルロウAだった頃に研究所を訪れたジェイドに声をかけなかった最大の理由が、あの死霊使いに正体を知られて実験材料にされるのを警戒してのことだと判明した。',
+    errorCost: 0,
+    reactionLine: '',
+    reactionExpression: 'normal',
+    discovered: false,
+    unlocked: false,
+  },
 
   // ==========================================
   // 【フェーズ2〜裏の秘密：エルドラント最期の記憶（SEC-18）とディストによる最深部封印（SEC-19・SEC-20）】
@@ -339,7 +427,7 @@ export const TERMINAL_UNREVEALED_REACTIONS: {
     logMessage: '対象は手元の板の用途を訝しんでいます（自身の内部モニターだとは気づいていません）。',
   },
   {
-    text: '・・・・・・さっきからその板ばかり見やがって・・・・・・。用がないなら俺は戻るぞ。',
+    text: '・・・・・・さっきからその板ばかり見やがって・・・・・・。用がないなら俺は戻るからな。',
     expression: 'glare',
     faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
     moodDelta: -1,
@@ -545,7 +633,7 @@ export const CONTEXT_IDLE_REACTIONS: Record<
 };
 
 export const ANGRY_COOLDOWN_REACTION = {
-  thresholdSec: 56,
+  thresholdSec: 35,
   text: '・・・・・・はぁ。・・・・・・俺も少し大人気なかったな。もういい、話したければ話せ。',
   expression: 'look_away' as ExpressionId,
   faceParts: {
@@ -557,6 +645,52 @@ export const ANGRY_COOLDOWN_REACTION = {
   moodDelta: 3,
   logMessage: '無言の経過により対象の情動波形が鎮静化しました。',
 };
+
+export const ANGRY_COOLDOWN_REACTIONS: {
+  text: string;
+  expression: ExpressionId;
+  faceParts: Partial<FaceParts>;
+  logMessage: string;
+}[] = [
+  {
+    text: '・・・・・・はぁ。・・・・・・俺も少し大人気なかったな。もういい、話したければ話せ。',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'sad',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
+    },
+    logMessage: '無言の経過により対象の情動波形が鎮静化しました（1回目）。',
+  },
+  {
+    text: '・・・・・・おい。さっきから黙り込んで、今度は貴様が不貞腐れているのか？\n・・・・・・チッ、さっきのは俺が悪かったと言っているだろう。いつまでも黙っているな。',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'sad',
+      eyes: 'down',
+      mouth: 'frown',
+      effects: ['sweat'],
+    },
+    logMessage: '対象がガイの沈黙を気にして自ら歩み寄りました（2回目）。',
+  },
+  {
+    text: '・・・・・・なあ、ガイ。まさか本気で腹を立てているんじゃないだろうな・・・・・・？\n・・・・・・悪かったよ。もう突っかかったりしないから、何か言ったらどうだ。',
+    expression: 'normal',
+    faceParts: {
+      brow: 'sad',
+      eyes: 'normal',
+      mouth: 'close',
+      effects: ['sweat'],
+    },
+    logMessage: '対象がガイの機嫌を案じて完全に態度を軟化させました（3回目・以降放置回復停止）。',
+  },
+];
+
+export const ANGRY_GLANCE_CAUGHT_LINES: string[] = [
+  '・・・・・・っ、別に今おまえの顔を窺っていたわけじゃない！　・・・・・・もういい、その話なら聞いてやる。',
+  '・・・・・・な、なんだよ。たまたま目が合っただけだろうが。・・・・・・ふん、用件があるなら言え。',
+];
 
 export const AWAY_RETURN_REACTIONS = {
   phase1: [
@@ -607,7 +741,7 @@ export const AWAY_RETURN_REACTIONS = {
       logMessage: '離席復帰時の反応（怒り・1回目）を記録。',
     },
     {
-      text: '・・・・・・人の顔も見ずに考え事か。感じが悪いぞ、ガイ。',
+      text: '・・・・・・人の顔も見ずに考え事か。感じが悪いな、ガイ。',
       expression: 'glare' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
@@ -766,6 +900,7 @@ export const TURN_MILESTONE_QUESTIONS: {
           faceParts: { brow: 'smile', eyes: 'away', mouth: 'close', effects: [] },
           moodDelta: 1,
           trustDelta: 1,
+          grantsLinkTags: ['hint_lab_comms'],
           hideWhenBadMoodOrCold: true,
         },
         {

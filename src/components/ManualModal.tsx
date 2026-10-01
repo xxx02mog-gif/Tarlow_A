@@ -40,8 +40,8 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
             <div>
               <span className="text-zinc-100 font-semibold">■ 会話の進め方</span>
               <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
-                ・画面左下のタブを切り替えて話題を選ぶことで、相手に話しかけられます（選択肢が多い場合は右下の <span className="text-zinc-300">▶</span> でページを送れます）。<br />
-                ・会話を進めたり、端末のデータを確認したりすることで新しい話題を入手し、他の話もできるようになります。<br />
+                ・画面左下の話題リストから項目を選ぶことで、相手に話しかけられます（他にも話題がある場合は見出し右端の <span className="text-zinc-300">[ ▶ 他の話題 ]</span> でページを送れます）。<br />
+                ・会話を進めたり、端末のデータを確認したりすることで新しい話題が追加され、関連する話題が優先表示されます。<br />
                 ・相手が不機嫌になると一部の話題に答えなくなりますが、気遣う話題を選ぶかしばらく無言で放置すると落ち着きます。
               </p>
             </div>
@@ -49,7 +49,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
             <div>
               <span className="text-zinc-100 font-semibold">■ データ端末（全2ページ）</span>
               <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
-                ・<span className="text-zinc-300">開き方</span>：画面下部の <span className="text-zinc-300">[ 端末 ] アイコン（ボタン）</span> をクリックするとデータ端末を表示します（未読データ追加時は赤い点が付きます）。<br />
+                ・<span className="text-zinc-300">開き方</span>：画面右下の <span className="text-zinc-300">[ 端末 ] アイコン（ボタン）</span> をクリックするとデータ端末を表示します（未読データ追加時は赤い点が付きます）。<br />
                 ・<span className="text-zinc-300">1/2 : MONITOR</span>：現在の感情波形（EMOTION_WAVE）とシステム稼働ログ（SYSTEM_LOG）を確認できます。<br />
                 ・<span className="text-zinc-300">2/2 : INFO</span>：会話や観測で記録されたデータ（MC:機体ログ / EM:情動反応 / DP:深層記憶）を閲覧できます。伏字の <span className="text-zinc-300">[PROTECTED] 項目は、長押しすることでロックを強制解除</span>して閲覧することも可能です。
               </p>

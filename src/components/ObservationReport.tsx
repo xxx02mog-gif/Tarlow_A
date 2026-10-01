@@ -121,7 +121,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       {/* 下部フッター：クレジット ＆ 最初からやり直す */}
       <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0">
         <span className="text-[10.5px] text-zinc-600">
-          REPLICA // OBSERVATION REPORT
+          Ghost in the mASCHine // OBSERVATION REPORT
         </span>
 
         <div className="flex items-center gap-2.5">
