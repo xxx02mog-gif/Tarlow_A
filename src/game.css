@@ -19,6 +19,14 @@
   }
 }
 
+:root,
+html,
+body {
+  --font-sans: "WDXL Lubrifont JP N", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-mono: "WDXL Lubrifont JP N", monospace;
+  font-family: "WDXL Lubrifont JP N", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
 /* ゲームの雰囲気に合わせたカスタムスクロールバー */
 * {
   scrollbar-width: thin;

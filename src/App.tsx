@@ -63,6 +63,7 @@ import { ManualModal } from './components/ManualModal';
 import { ObservationReport } from './components/ObservationReport';
 import { soundEngine } from './utils/chiptuneAudio';
 import { getAssetUrl } from './utils/assetPath';
+import './game.css';
 
 const STAGE_WIDTH = 800;
 const STAGE_HEIGHT = 450;
