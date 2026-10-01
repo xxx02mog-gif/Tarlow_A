@@ -35,9 +35,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・研究所にあった予備機体を仮で使っているだけだ。',
         flashText: 'ふざけるな、これは俺の・・・・・・ッ！',
         guyPointOutSpoken:
-          'さっき「ルークをモデルに作ったのか」って聞いたとき、「ふざけるな、これは俺の――」って口を滑らせたよな。\nただの機械が、なんでこの機体を「俺の」なんて言うんだ？',
+          'さっき、「ふざけるな、これは俺の――」って口を滑らせたよな。\nただの機械が、なんでこの機体を「俺の」なんて言うんだ？',
         terminalRecordSummary:
-          '機体モデルの質問時、「ふざけるな、これは俺の」と自己同一性を示す未フィルタ音声を検出し、直後に訂正。自己防衛衝動を検知。',
+          '機体モデルに関する質問時、「ふざけるな、これは俺の」という未フィルタ音声を出力。0.4秒後に「研究所にあった予備機体」へ発言を修正。',
       },
       {
         type: 'PRE_FACE',
@@ -48,9 +48,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'さっき「ルークをモデルに作ったのか」って聞いた瞬間、答える前にすごく忌々しそうに俺を睨んだよな。\nただの機械が、ルークの複製扱いされたくらいでなんでそんなにムキになるんだ？',
+          'さっき、俺を睨みつけたよな。\nルークに似てるって言われたくらいで、ただの機械がなんで睨むんだ？',
         terminalRecordSummary:
-          '機体モデルの質問直後、発話前の0.7秒間に強い反発・憤慨を示す表情筋反応と情動波形スパイクを検出。',
+          '機体モデルに関する質問直後、発話前の0.7秒間に眉間および口元の筋電位が急上昇し、音素出力スパイクを記録。',
       },
     ],
   },
@@ -65,9 +65,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・ディストは俺の管理者だ。それ以上でも以下でもない。',
         flashText: '誰があの変態を・・・・・・ッ！',
         guyPointOutSpoken:
-          'さっきディストを尊敬してるのかって聞いたとき、「誰があの変態を」って口走ってから「管理者だ」って言い直したよな。\n造物主のことを「あの変態」なんて呼ぶ機械がいるかよ。',
+          'さっき、「誰があの変態を」って口走ったよな。\n自分を作ったディストのことを「あの変態」なんて呼ぶ機械がいるかよ。',
         terminalRecordSummary:
-          '管理者（ディスト）への忠誠確認時、「誰があの変態を」という強い個人的嫌悪語を検出。忠誠心は皆無であり、強い感情反発を記録。',
+          '管理者（ディスト）に関する質問時、「誰があの変態を」という未フィルタ音声を出力し、直後に定型文へ修正。',
       },
       {
         type: 'PRE_FACE',
@@ -78,9 +78,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'さっきディストを尊敬してるのかって聞いた瞬間、答える前に虫唾が走るみたいな嫌そうな顔をして目を逸らしたよな。\n忠実な後継機が、造物主の名前でそんな顔をするわけないだろ。',
+          'さっき、嫌そうな顔をして目を逸らしたよな。\n自分を作ったディストの名前で、機械がそんな顔をするわけないだろ。',
         terminalRecordSummary:
-          '管理者（ディスト）への忠誠確認直後、発話前の0.7秒間に強い嫌悪を示す表情変化と情動スパイクを検出。',
+          '管理者（ディスト）に関する質問直後、発話前の0.7秒間に視線回避動作および音素周波数の乱れを記録。',
       },
     ],
   },
@@ -95,9 +95,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・ガ、ガキ扱いするな！',
         flashText: 'なっ、ガイッ！？',
         guyPointOutSpoken:
-          'さっき頭に手を伸ばしたとき、咄嗟に「なっ、ガイッ！？」って俺の名前を呼んだよな。\n「おまえなんか知らない」って言ってたのに、なんで俺の名前が出るんだ？',
+          'さっき、「なっ、ガイッ！？」って俺の名前を呼んだよな。\n俺を知らないって言ってたのに、なんで名前が出るんだ？',
         terminalRecordSummary:
-          '頭部への接触動作時、反射的に「なっ、ガイッ！？」と相手の個体名を呼称。条件反射的な親密性と元体記憶の表層化を検出。',
+          '頭部への接近動作を検知した瞬間、0.1秒で「なっ、ガイッ！？」と対象人物の個人名を音声出力。直後に発言を修正。',
       },
     ],
   },
@@ -112,9 +112,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・いや、その剣がなんだろうと俺には関係ない。',
         flashText: 'そうか、おまえの手に戻ったんだな・・・・・・。',
         guyPointOutSpoken:
-          'さっき宝刀ガルディオスを覚えているか聞いたとき、「そうか、おまえの手に戻ったんだな」って安心したように漏らしたよな。\n初対面の機械が、俺の家の刀の事情を知ってるわけがないだろ。',
+          'さっき、「そうか、おまえの手に戻ったんだな」って漏らしたよな。\n初対面の機械が、俺の家の刀の事情を知ってるわけがないだろ。',
         terminalRecordSummary:
-          '『宝刀ガルディオス』を視認した際、「そうか、おまえの手に戻ったんだな」と個人的安堵を示す音声を検出。所有権回復への安堵と懐旧を記録。',
+          '『宝刀ガルディオス』視認時、「そうか、おまえの手に戻ったんだな」という音声出力と共に音素波形が鎮静化。直後に無関係を装う発言へ修正。',
       },
     ],
   },
@@ -125,26 +125,26 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
     variants: [
       {
         type: 'REWRITE',
-        slipPrefixText: 'そうか・・・・・・あいつが幸せなら・・・・・・。',
+        slipPrefixText: '・・・・・・っ、ルークと・・・・・・！？　・・・・・・いや、あいつが幸せなら、それで・・・・・・',
         slipCorrectedText: '・・・・・・知らん。他国の王族の話など、俺には何の関係もないことだ。',
-        flashText: 'そうか・・・・・・あいつが幸せなら・・・・・・。',
+        flashText: '・・・・・・っ、ルークと・・・・・・！？　・・・・・・いや、あいつが幸せなら、それで・・・・・・',
         guyPointOutSpoken:
-          'さっきナタリアが幸せそうに笑ってたって話したとき、「知らん」って突き放す前に「そうか、あいつが幸せなら」って漏らしたよな。\nあれはどう見ても、あいつの幸せを願ってた人間の反応だったぞ。',
+          'さっき、「ルークと！？」って息を呑んでから「あいつが幸せなら」って言いかけたよな。\n赤の他人の機械が、彼女の婚約相手を聞いてそんな反応をするわけないだろ。',
         terminalRecordSummary:
-          'ナタリアに関する話題提示時、「そうか、あいつが幸せなら」という強い情愛を含む応答を検出。直後に無関心文へ上書きを試みるも動揺を検知。',
+          'バチカル王女に関する質問時、「ルークと！？」「あいつが幸せなら」という音声出力と最大振幅の波形乱れを記録。直後に発言を修正。',
       },
       {
         type: 'PRE_FACE',
         preFaceParts: {
-          brow: 'sad',
+          brow: 'pain',
           eyes: 'down',
-          mouth: 'close',
-          effects: [],
+          mouth: 'grit',
+          effects: ['pale'],
         },
         guyPointOutSpoken:
-          'さっきナタリアが幸せそうだったって話した瞬間、答える前に一瞬だけ切なそうに目を伏せたよな。\n他国の王族を本当に知らないなら、そんな表情になるはずがないだろ。',
+          'さっき、息を呑んで目を伏せたよな。\n赤の他人なら、彼女の婚約の話でそんな顔になるはずがないだろ。',
         terminalRecordSummary:
-          'ナタリアに関する話題提示直後、発話前の0.7秒間に強い惜別・安堵の情動スパイクと伏し目反応を検出。',
+          'バチカル王女に関する質問直後、発話前の0.7秒間に視線降下および音素出力の急激な乱れを記録。',
       },
     ],
   },
@@ -159,9 +159,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・だから何だ。他人のペットの話など俺には関係ない。',
         flashText: 'なっ・・・・・・！？ なんで俺の名前が・・・・・・ッ！',
         guyPointOutSpoken:
-          'さっきピオニー陛下のブウサギに『アッシュ』って名前がついてるって話したとき、「なんで俺の名前が」って声を荒げたよな。\n自分がアッシュじゃないなら、ブウサギの名前くらいで怒るわけないだろ。',
+          'さっき、「なんで俺の名前が」って声を荒げたよな。\n自分がアッシュじゃないなら、ブウサギの名前くらいで怒るわけないだろ。',
         terminalRecordSummary:
-          'ブウサギの個体名『アッシュ』を聞いた瞬間、「なんで俺の名前が」という激しい自己同一性反応を検出。ペットへの命名に対する憤慨を記録。',
+          'ブウサギの個体名『アッシュ』が入力された瞬間、「なんで俺の名前が」という未フィルタ音声を出力し、直後に発言を修正。',
       },
       {
         type: 'PRE_FACE',
@@ -172,9 +172,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'さっきブウサギに『アッシュ』って名前がついてるって話した瞬間、答える前に怒った顔で睨んできたよな。\n自分の名前をペットにつけられてたから、思わず反応したんだろ。',
+          'さっき、俺を睨みつけたよな。\n他人のペットの名前くらいで、なんでそんなに睨むんだ？',
         terminalRecordSummary:
-          'ブウサギの個体名『アッシュ』を聞いた直後、発話前の0.7秒間に憤慨を示す表情変化と情動スパイクを検出。',
+          'ブウサギの個体名『アッシュ』が入力された直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録。',
       },
     ],
   },
@@ -189,9 +189,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '・・・・・・俺は機械だから食事は摂らない。音素の供給さえあれば稼働に問題はない。',
         flashText: '嫌がらせか・・・・・・？',
         guyPointOutSpoken:
-          'さっきタコ料理を勧めたとき、「嫌がらせか？」って食ってかかったよな。\nタコが苦手で、しかも俺に嫌われてるって自覚があるアッシュじゃなきゃ、そんな言葉は出ないはずだぞ。',
+          'さっき、「嫌がらせか？」って食ってかかったよな。\nただ飯を勧めただけなのに、「嫌がらせか」なんて返すのタコ嫌いのおまえくらいだぞ。',
         terminalRecordSummary:
-          'タコ料理の提案時、「嫌がらせか・・・・・・？」と嫌悪および対人負い目に基づく未フィルタ音声を検出。個人の食嗜好の完全な残存を記録。',
+          'タコ料理の提案に対し、「嫌がらせか・・・・・・？」という未フィルタ音声を出力。生体時（20歳時点）の嫌悪食品データと完全一致。',
       },
       {
         type: 'PRE_FACE',
@@ -202,9 +202,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'さっきタコ料理を勧めた瞬間、答える前に苦々しそうに目を伏せたよな。\n初対面の機械が、食事を勧められただけでそんな顔をするか？',
+          'さっき、露骨に顔をしかめたよな。\n機械がタコ料理を勧められただけで、なんでそんな嫌そうな顔をするんだ？',
         terminalRecordSummary:
-          'タコ料理の提案直後、発話前の0.7秒間に嫌悪と苦々しさを示す伏し目反応および情動波形スパイクを検出。',
+          'タコ料理の提案直後、発話前の0.7秒間に視線降下および拒絶波形スパイクを記録。',
       },
     ],
   },
@@ -219,9 +219,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         slipCorrectedText: '知らん。俺には関係ない。',
         flashText: '気にしてなど・・・・・・ッ！',
         guyPointOutSpoken:
-          'さっき『鮮血のアッシュが身長が低いことを気にしてた』って噂を振ったとき、「気にしてなど――」ってムキになって言い返しかけたよな。\n他人事ならそんなに怒るはずがないだろ。',
+          'さっき、「気にしてなど――」って言い返しかけたよな。\n他人事ならそんなに怒るはずがないだろ。',
         terminalRecordSummary:
-          '身長に関する言及に対し、「気にしてなど」と即座に反応。六神将当時のコンプレックスの表層化を記録。',
+          '『鮮血のアッシュ』の身長に関する言及に対し、「気にしてなど」という未フィルタ音声を出力し、直後に発言を修正。',
       },
       {
         type: 'PRE_FACE',
@@ -232,9 +232,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'さっき『鮮血のアッシュが身長を気にしてた』って話した瞬間、答える前に強い怒りで睨みつけてきたよな。\n死んだ人間の噂話に、なんでおまえがそこまでキレるんだ？',
+          'さっき、俺を睨みつけたよな。\n死んだ人間の身長の話に、なんでおまえがそこまでムキになるんだ？',
         terminalRecordSummary:
-          '身長に関する言及直後、発話前の0.7秒間に強い怒り（睨みつけ）の表情筋反応と情動スパイクを検出。',
+          '『鮮血のアッシュ』の身長に関する言及直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録。',
       },
     ],
   },
@@ -278,7 +278,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '機体換装の事実を交えた回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: FRAME_MODEL',
       },
     ],
   },
@@ -304,7 +304,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '管理者に関する定型回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: ADMINISTRATOR',
       },
     ],
   },
@@ -328,7 +328,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '頭部への接触試行に対し拒絶を記録。',
+        systemLog: 'REFLEX ACTION DETECTED // PROXIMITY ALERT',
       },
     ],
   },
@@ -353,7 +353,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
         },
         voiceEffects: ['normal'],
         grantsLinkTags: ['talked_galdios_p1'],
-        systemLog: '室内の武器確認を理由とした回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: GALDIOS_SWORD',
       },
     ],
   },
@@ -378,7 +378,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '他国王族に関する無関心を装った回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: BATICUL_ROYAL',
       },
     ],
   },
@@ -403,7 +403,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: 'ペットの話題に対する切り捨て回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: MALKUTH_PET',
       },
     ],
   },
@@ -430,7 +430,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
         },
         voiceEffects: ['normal'],
         grantsLinkTags: ['talked_meal_spec'],
-        systemLog: '動力源を理由とした食事拒否回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: ORGANIC_INTAKE',
       },
     ],
   },
@@ -455,7 +455,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '過去の人物に関する無関心を装った回答。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: ORACLE_GENERAL',
       },
     ],
   },
@@ -481,7 +481,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '音声出力・情動波形ともに安定。対象は冷静に旧型機との違いを主張しています。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: SPEECH_SETTING (WAVE STABLE)',
       },
     ],
   },
@@ -498,7 +498,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
         spokenText:
           '俺がディストの研究室に入ったとき、部屋の隅にいたよな。あそこでディストの実験の助手でもしていたのか？',
         aschText:
-          '俺は管理用の機体だ。研究室の備品と音機関の稼働状況を確認していただけで、怪しまれるようなことはしていない。',
+          '俺はあの部屋の管理機体だ。待機していただけだ、怪しまれる覚えはない。',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -507,7 +507,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
           effects: [],
         },
         voiceEffects: ['normal'],
-        systemLog: '管理業務を理由とした回答。情動波形に異常なし。',
+        systemLog: 'RESPONSE LOGGED // TOPIC: STANDBY_STATE (WAVE STABLE)',
       },
     ],
   },

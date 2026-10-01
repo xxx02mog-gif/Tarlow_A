@@ -36,7 +36,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
     id: 'p3_ans_asch',
     thoughtText: '「アッシュだ」',
     spokenText:
-      '・・・・・・アッシュだ。身体が10歳の機械だろうが、記憶にどんな空白があろうが、俺の目の前で憎まれ口を叩いているおまえは、紛れもなくアッシュだよ。',
+      '・・・・・・アッシュだ。身体がどんなだろうと、今俺の目の前にいるおまえは、紛れもなくアッシュだよ。',
     aschText:
       '・・・・・・っ、馬鹿か貴様は。こんな不格好な機械の身体を見て、よくそんなことが言えるな。\n・・・・・・本物の俺は、3年前のエルドラントでもう死んだんだ。それでもおまえは、俺をアッシュだと呼ぶ気か？',
     expression: 'look_away',
@@ -53,7 +53,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
         id: 'p3_ans_asch_2a',
         thoughtText: '「ああ、何度でも呼ぶさ。その不器用さもプライドも、おまえ自身のものだからな」',
         spokenText:
-          'ああ、何度でも呼ぶさ。その不器用さも、素直に礼ひとつ言えないプライドの高さも、他の誰でもないおまえ自身のものだからな。',
+          'ああ、何度でも呼ぶさ。その不器用さもプライドの高さも、他の誰でもないおまえ自身のものだからな。',
         aschText:
           '・・・・・・ふん、勝手にしろ。おまえのそういうお人好しなところは、昔から本当に虫酸が走る。\n・・・・・・だが、まあ・・・・・・悪くはなかった。茶くらいなら、また飲みに来てやらなくもない。じゃあな、ガイ。',
         expression: 'normal',
@@ -72,7 +72,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
         spokenText:
           '昔、ファブレ邸でおまえの背中をずっと睨んでいた俺が言うんだ。おまえがアッシュかどうかくらい、俺が間違えるわけないだろ。',
         aschText:
-          '・・・・・・ハッ、違いないな。元復讐者にそこまで太鼓判を押されりゃ、嫌でも認めるしかなさそうだ。\n・・・・・・今日のところは帰る。外の連中には黙っておけよ、ガイ。',
+          '・・・・・・ハッ、昔の俺を散々睨んでいたおまえが言うなら、間違いないんだろうな。\n・・・・・・今日のところは帰る。外の連中には黙っておけよ、ガイ。',
         expression: 'look_away',
         faceParts: {
           brow: 'smile',
@@ -94,7 +94,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
     spokenText:
       '・・・・・・ディストが造った、ただの自律型機体『タルロウA』だな。アッシュは3年前のエルドラントで死んだよ。',
     aschText:
-      '・・・・・・そうか。最初からそう言っていれば、お互いに無駄な時間を過ごさずに済んだものを。\n・・・・・・それでいい。死んだ人間がいつまでも亡霊みたいにうろつく道理はないからな。',
+      '・・・・・・そうか。最初からそう言っていれば、お互いに無駄な時間を過ごさずに済んだものを。\n・・・・・・それでいい。',
     expression: 'look_away',
     faceParts: {
       brow: 'sad',
@@ -105,9 +105,9 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
     followUpOptions: [
       {
         id: 'p3_ans_machine_2a',
-        thoughtText: '「死んだアッシュの分まで背負わず、ただの機械として気楽に稼働しろよ」',
+        thoughtText: '「死んだアッシュのしがらみなんか背負わず、ただの機械として気楽に稼働しろよ」',
         spokenText:
-          '・・・・・・ああ。だからおまえは、死んだアッシュの過去やしがらみなんか全部忘れて、ただの機械として気楽に稼働していろよ。',
+          '・・・・・・ああ。死んだアッシュのしがらみなんか背負わず、ただの機械として気楽に稼働していろよ。',
         aschText:
           '・・・・・・余計なお世話だ。機械に気楽もクソもあるか。\n・・・・・・研究所へ戻る。次に研究所へ来ても、二度と俺に構うなよ。',
         expression: 'look_away',
@@ -122,9 +122,9 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
       },
       {
         id: 'p3_ans_machine_2b',
-        thoughtText: '「これ以上ここにいても過去の亡霊に振り回されるだけだ。研究所へ戻れ」',
+        thoughtText: '「これ以上ここにいてもお互いになんの得にもならない。研究所へ戻れ」',
         spokenText:
-          'これ以上ここにいても、お互いに過去の亡霊に振り回されるだけだ。ディストの研究所へ戻れよ。',
+          'これ以上ここにいても、お互いになんの得にもならないからな。ディストの研究所へ戻れよ。',
         aschText:
           '・・・・・・言われなくてもそうする。じゃあな、ガイ・セシル。',
         expression: 'look_away',
@@ -183,9 +183,9 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
     id: 'p3_ans_present_you',
     thoughtText: '「アッシュでも機械でもない。今の、おまえだよ」',
     spokenText:
-      '3年前に死んだ生前のアッシュそのものでもないし、かといってただの機械でもない。・・・・・・今ここで俺と向き合って、自分の意志で喋っている『今のおまえ』だよ。',
+      '3年前に死んだアッシュそのものでもないし、ただの機械でもない。・・・・・・今ここで俺と向き合っている『今のおまえ』だよ。',
     aschText:
-      '・・・・・・『今の俺』だと？　生前のアッシュでもなく、ただのタルロウAでもなく・・・・・・。\n・・・・・・妙なことを言う奴だな、おまえは。そんな中途半端な存在に、何の意味があると言うんだ。',
+      '・・・・・・『今の俺』だと？\n妙なことを言う奴だな。そんな中途半端な存在に、何の意味がある。',
     expression: 'normal',
     faceParts: {
       brow: 'doubt',
@@ -202,7 +202,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
         spokenText:
           '意味なんて、これから自分で作っていけばいいさ。かつてレプリカとして生まれたルークだって、おまえの影じゃなく、あいつ自身の足で歩いたんだからな。',
         aschText:
-          '・・・・・・っ！　・・・・・・あいつと一緒にするなと言いたいところだが、今の俺には何も言い返せそうにないな。\n・・・・・・ふん、少しは考えておいてやる。また気が向いたら顔を出してやるから、茶でも用意しておけ。',
+          '・・・・・・っ！　・・・・・・あいつと一緒にするな。\n・・・・・・ふん、少しは考えておいてやる。また気が向いたら顔を出してやるから、茶でも用意しておけ。',
         expression: 'look_away',
         faceParts: {
           brow: 'smile',
@@ -219,7 +219,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
         spokenText:
           '大層な意味なんてなくたっていいだろ。少なくとも、今こうして俺の部屋で向き合って憎まれ口を叩いている、それだけで十分じゃないか。',
         aschText:
-          '・・・・・・どこまでも呑気な奴だな、おまえは。\n・・・・・・だが、そうやって定義を押し付けられないのは、案外悪くない。じゃあな、ガイ。',
+          '・・・・・・どこまでも呑気な奴だな、おまえは。\n・・・・・・だが、まあ、そういうのも悪くはない。じゃあな、ガイ。',
         expression: 'normal',
         faceParts: {
           brow: 'smile',
@@ -288,44 +288,6 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
       },
     ],
   },
-
-  // 【クライマックス深層解読後限定】切ない機能停止（介錯）ルート
-  {
-    id: 'p3_ans_mercy_destroy',
-    thoughtText: '「・・・・・・もう十分苦しんだだろ。俺の手で、アッシュとして眠らせてやる」',
-    requireLinkTag: 'climax_ready',
-    spokenText:
-      '・・・・・・おまえは紛れもなくアッシュだ。だけど、ルークの居場所を守るために消えようとしたおまえを、これ以上ディストの玩具として機械の身体に閉じ込めておくわけにはいかない。',
-    aschText:
-      '・・・・・・っ、ガイ・・・・・・貴様、全部知っていやがったのか。\n・・・・・・それで、どうする気だ。その剣を抜いて、ここで俺を壊すか？',
-    expression: 'normal',
-    faceParts: {
-      brow: 'sad',
-      eyes: 'normal',
-      mouth: 'close',
-      effects: ['pale'],
-    },
-    followUpOptions: [
-      {
-        id: 'p3_ans_mercy_destroy_2a',
-        thoughtText: '「ああ。二度とノイズにも記憶にも苦しまないよう、俺の手で終わらせる」と剣を抜く',
-        spokenText:
-          '・・・・・・ああ。二度とノイズにも、消えない記憶にも苦しまなくていいように、俺の手で終わらせてやる。・・・・・・おやすみ、アッシュ。',
-        aschText:
-          '・・・・・・ふん。元復讐者の貴様に介錯されるなら、悪くない幕引きだな。\n・・・・・・悪かったな、ガイ・・・・・・。',
-        expression: 'normal',
-        faceParts: {
-          brow: 'smile',
-          eyes: 'close',
-          mouth: 'close',
-          effects: ['pale', 'tears'],
-        },
-        voiceEffects: ['tremble'],
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_MERCY_DESTROY',
-      },
-    ],
-  },
 ];
 
 // 【選択肢5】無言（タイムアウト）発生後のガイの最終反応2択
@@ -367,7 +329,7 @@ export const PHASE3_SILENT_TIMEOUT_OPTIONS: AschQuestionReplyOption[] = [
 export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   END_PHASE1_TARLOW: {
     spokenText:
-      '・・・・・・まあ、おまえがそこまで『自分はタルロウAだ』と言い張るし、予備素体の話も筋が通っているなら、本当にディストが造った機械なんだろうな。引き止めて悪かった、研究所へ戻っていいよ。',
+      '・・・・・・まあ、おまえがそこまで『自分はタルロウAだ』と言い張るし、予備機体の話も筋が通っているなら、本当にディストが造った機械なんだろうな。引き止めて悪かった、研究所へ戻っていいよ。',
     aschText:
       '・・・・・・ああ、そうだ。俺はただの自律機械タルロウAだ。\n分かったなら、もう二度と研究所から俺を連れ出すな。',
     expression: 'look_away',
@@ -425,7 +387,7 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
     spokenText:
       '・・・・・・開けられるからって、全部開けて見るんじゃなかったな・・・・・・。',
     aschText:
-      '・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ。\n・・・・・・もういい。二度と俺に関わるな、ガイ。',
+      '・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・。',
     expression: 'empty',
     faceParts: {
       brow: 'sad',
@@ -536,7 +498,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: 'ルークが戻ってきてくれたと心から思っていたのに、俺が勝手にこいつの封印を暴いたせいで、帰ってきた『ルーク』の存在さえ揺らいでしまった・・・・・・。',
+        text: '1年前にタタル渓谷へ戻ってきたあいつを、俺はこれからどんな目で見ていけばいいんだ・・・・・・。',
       },
     ],
     summaryText:
@@ -617,37 +579,19 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
 
   END_PHASE3_MERCY_DESTROY: {
     id: 'END_PHASE3_MERCY_DESTROY',
-    title: 'END 09 // 静かな機能停止',
-    subtitle: 'PHASE 3 END // MERCIFUL SHUTDOWN',
+    title: 'END 09 // ただの機械と言い聞かせて',
+    subtitle: 'PHASE 2 END // FOR LUKE\'S REALITY',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '・・・・・・ルークのためにひとりで記憶を切り離して、消えようとまでしていたなんてな。',
+        text: '・・・・・・これでいい。こいつはアッシュなんかじゃない、最初からただの機械だったんだ。',
       },
       {
         speaker: 'GUY',
-        text: '・・・・・・もう十分だろ。ゆっくり眠れよ、アッシュ。',
+        text: 'こいつさえ消えれば、タタル渓谷へ帰ってきたルークは、これからもずっと『本物のルーク』のままだからな・・・・・・。',
       },
     ],
     summaryText:
-      '消去されるはずだった記憶として苦しみ続けたアッシュの願いを受け止め、ガイ自身の手で機体の機能を停止させた。彼はようやくすべての苦痛と矛盾から解き放たれた。',
-  },
-
-  END_PHASE2_COLD_DESTROY: {
-    id: 'END_PHASE2_COLD_DESTROY',
-    title: 'END 10 // 冷たい鉄屑',
-    subtitle: 'PHASE 2 END // COLD DESTRUCTION',
-    dialogues: [
-      {
-        speaker: 'GUY',
-        text: '・・・・・・アッシュは3年前のエルドラントで死んだよ。',
-      },
-      {
-        speaker: 'GUY',
-        text: 'おまえはディストが造った、ただの質の悪い機械だ。',
-      },
-    ],
-    summaryText:
-      '互いに苛立ちをぶつけ合う激しい衝突の末、目の前の機体を死者の尊厳を冒涜する紛い物と断じて物理的に破壊した。冷え切った部屋には、動かなくなった鉄塊だけが残された。',
+      '切り分けられた記憶を持つ彼が存在し続けることで、帰還したルークの存在までが揺らぐ恐怖に耐えきれず、目の前の機体を「ただの機械」と言い聞かせて破壊した。すべてを無かったことにし、歪んだ安堵と共に部屋を後にした。',
   },
 };

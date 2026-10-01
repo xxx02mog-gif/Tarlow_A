@@ -110,7 +110,7 @@ const GLITCH_CHARS = ['▒', '░', '▓', '■', '□', '◆', '◇', '※', '�
 const PROLOGUE_LINES: string[] = [
   '「ルーク」がタタル渓谷へ帰ってきてから、1年が経った。',
   'ディストの私設研究所を訪れた俺は、研究室の隅にいた『10歳当時のアッシュ』と瓜二つの機体を見つけた。',
-  '動揺しながらも、とてもこの場に置いてはおけないと咄嗟に連れ出そうとした際、ディストから「これを持っていきなさい」と一枚の管理端末を渡された。',
+  'とてもそのままにはしておけず連れ出そうとした俺に、ディストは「これを持っていきなさい」と一枚の管理端末をよこした。',
   'そして俺の部屋へ連れ込んだものの――そいつは俺の顔を見ても知らないふりをして、『俺は自律機械タルロウAだ』と言い張り続けている。',
 ];
 
@@ -301,19 +301,38 @@ const createInitialStats = (): ObservationStats => ({
 });
 
 export default function App() {
-  // === 16:9 (800x450) 固定キャンバスの拡大・縮小スケール計算 ===
+  // === 16:9 (800x450) 固定キャンバスの拡大・縮小スケール計算 ＆ スマホ縦持ち時の横画面自動回転 ===
   const [stageScale, setStageScale] = useState<number>(1);
+  const [isPortraitRotated, setIsPortraitRotated] = useState<boolean>(false);
+  const [isCompactViewport, setIsCompactViewport] = useState<boolean>(false);
 
   useEffect(() => {
     const updateScale = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const scale = Math.min(w / STAGE_WIDTH, h / STAGE_HEIGHT);
+      const portrait = h > w;
+      setIsPortraitRotated(portrait);
+
+      const effectiveW = portrait ? h : w;
+      const effectiveH = portrait ? w : h;
+      const scale = Math.min(effectiveW / STAGE_WIDTH, effectiveH / STAGE_HEIGHT);
       setStageScale(Math.max(0.2, scale));
+
+      const shortSide = Math.min(w, h);
+      const longSide = Math.max(w, h);
+      const isCoarsePointer =
+        window.matchMedia?.('(pointer: coarse)').matches ?? false;
+      setIsCompactViewport(
+        shortSide <= 540 || (isCoarsePointer && longSide <= 1024)
+      );
     };
     updateScale();
     window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
+    window.addEventListener('orientationchange', updateScale);
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      window.removeEventListener('orientationchange', updateScale);
+    };
   }, []);
 
   const [availableRootFiles, setAvailableRootFiles] = useState<Set<string>>(
@@ -587,6 +606,10 @@ export default function App() {
   const lastAwayReactionAtRef = useRef<number>(0);
   const awayReactionCountRef = useRef<number>(0);
   const lastHoveredChoiceIdRef = useRef<string | null>(null);
+  const cycledPagesInTurnRef = useRef<number>(0);
+  const touchChoiceStateRef = useRef<{ id: string; movedOff: boolean } | null>(
+    null
+  );
   const lastContextCategoryRef = useRef<TopicContextCategory>('daily');
   const lastMilestoneQuestionTurnRef = useRef<number>(0);
   const idleStageRef = useRef<number>(0);
@@ -647,7 +670,8 @@ export default function App() {
     (delta: number) => {
       if (delta === 0) return;
       setMood((prev) => {
-        const next = Math.max(-5, Math.min(5, prev + delta));
+        const base = delta < 0 && prev > 0 ? 0 : prev;
+        const next = Math.max(-5, Math.min(5, base + delta));
         if (prev >= 0 && next < 0) {
           angryCooldownTargetSecRef.current = Math.floor(
             25 + Math.random() * 26
@@ -984,7 +1008,7 @@ export default function App() {
             });
             appendLog(
               'INFO',
-              '視線離脱からの復帰：対象は静かに目を伏せただけで、言葉を発しなかった。'
+              'VISUAL CONTACT RESTORED // NO VOCAL OUTPUT'
             );
           }
         }
@@ -1053,7 +1077,7 @@ export default function App() {
         }));
         appendLog(
           'INFO',
-          '終幕の問いかけに対する沈黙を検知：対象が質問を取り下げました。'
+          'RESPONSE TIMEOUT // QUERY WITHDRAWN'
         );
         setActiveTopicReply({
           topicId: 'p3_final_silent_followup',
@@ -1106,7 +1130,7 @@ export default function App() {
         }));
         appendLog(
           'INFO',
-          '逆質問に対する長期沈黙を検知：対象が質問を取り下げ、以降の自発的質問を停止しました。'
+          'RESPONSE TIMEOUT // AUTONOMOUS QUERY PROTOCOL SUSPENDED'
         );
         playAschReactionLines(
           '・・・・・・\nいや、いい。なんでもない。忘れてくれ',
@@ -1305,7 +1329,7 @@ export default function App() {
         ...prev,
         terminalOpenCount: prev.terminalOpenCount + 1,
       }));
-      appendLog('INFO', 'データ端末を展開。');
+      appendLog('INFO', 'DATA TERMINAL OPENED');
     } else {
       soundEngine.playTerminalClose();
       setIsTerminalOpen(false);
@@ -1447,7 +1471,7 @@ export default function App() {
           });
           appendLog(
             'INFO',
-            '【PHASE 3 終幕】対象が自身の存在定義に関する最終質問を発しました。'
+            'PHASE 3 TRANSITION // FINAL IDENTITY QUERY DETECTED'
           );
         }
         if (idx === qLines.length - 1) {
@@ -1589,7 +1613,7 @@ export default function App() {
           if (idx === 0) {
             setOverrideExpression(decisionData.expression);
             setOverrideFaceParts(decisionData.faceParts);
-            appendLog('INFO', `対話終了を選択（結末区分：${resolvedKey}）。`);
+            appendLog('INFO', `SESSION TERMINATED // DISPOSITION: ${resolvedKey}`);
           }
           pushScreenBubble('ASCH', line, baseEff);
         },
@@ -1628,6 +1652,9 @@ export default function App() {
 
     const responseTimeMs = Math.max(0, Date.now() - choiceShownAtRef.current);
     const isQuick = responseTimeMs <= 2000;
+    const isLongThink = responseTimeMs >= 8000;
+    const pageLoopHesitation = cycledPagesInTurnRef.current;
+    cycledPagesInTurnRef.current = 0;
     const nextTotalTurns = stats.totalTurns + 1;
 
     setStats((prev) => ({
@@ -1635,6 +1662,10 @@ export default function App() {
       totalTurns: prev.totalTurns + 1,
       totalResponseTimeMs: prev.totalResponseTimeMs + responseTimeMs,
       quickReplyCount: prev.quickReplyCount + (isQuick ? 1 : 0),
+      choiceHoverSwitchCount:
+        prev.choiceHoverSwitchCount +
+        (isLongThink ? 1 : 0) +
+        pageLoopHesitation,
     }));
 
     const wasIdleBeforeClick = idleStageRef.current >= 1;
@@ -1650,7 +1681,7 @@ export default function App() {
       setLinkTags((prev) => prev.filter((t) => t !== 'cold_clash_escalated'));
       appendLog(
         'INFO',
-        '対象が視線を向けたタイミングで声をかけたため、態度が軟化し不機嫌状態が解消されました。'
+        'GAZE SYNC DETECTED // HOSTILITY LEVEL RESET'
       );
     }
     const prevContextCategory = lastContextCategoryRef.current;
@@ -1977,7 +2008,7 @@ export default function App() {
           setMood(-2);
           appendLog(
             'WARNING',
-            '応答直前に微小な視線・表情筋の揺らぎと情動スパイクを検知。'
+            'PRE-VOCAL MICRO-TREMOR AND WAVEFORM SPIKE DETECTED'
           );
         },
       });
@@ -2110,18 +2141,18 @@ export default function App() {
                 setMood(-2);
                 const slipCfg = PHASE1_TOPIC_SLIP_CONFIGS[topic.id];
                 const SLIP_TITLES: Record<string, string> = {
-                  p1_luke_model: '予備機体モデルに対する自己同一性反応',
-                  p1_dist_loyalty: '管理者に対する心理的拒絶',
-                  p1_touch_shoulder: '頭部接触に対する条件反射と呼称漏洩',
-                  p1_galdios_sword: '宝刀ガルディオス視認時の個人的安堵',
-                  p1_natalia_rumor: 'キムラスカ王女に関する情動波形乱れ',
-                  p1_peony_rabbits: '個体名『アッシュ』に対する自己防衛反応',
-                  p1_octopus_meal: '特定食材（タコ）に対する嫌悪反応の残存',
-                  p1_asch_rumor: '六神将当時の身体的特徴に関する憤慨反応',
+                  p1_luke_model: '予備機体モデルへの反応ログ',
+                  p1_dist_loyalty: '管理者に関する応答ログ',
+                  p1_touch_shoulder: '頭部接触時の反射行動と呼称出力',
+                  p1_galdios_sword: '宝刀ガルディオス視認時の反応ログ',
+                  p1_natalia_rumor: 'キムラスカ王女に関する応答ログ',
+                  p1_peony_rabbits: '個体名『アッシュ』への反応ログ',
+                  p1_octopus_meal: '特定食材（タコ）への拒絶反応ログ',
+                  p1_asch_rumor: '六神将当時の身体的特徴への反応ログ',
                 };
                 const chartTitle =
                   SLIP_TITLES[topic.id] ??
-                  `言動矛盾・情動スパイク記録（${slipCfg?.shortLabel ?? topic.id}）`;
+                  `応答波形ログ（${slipCfg?.shortLabel ?? topic.id}）`;
                 const quoteBlock =
                   chosenPhase1SlipVariant.type === 'REWRITE' &&
                   chosenPhase1SlipVariant.slipPrefixText &&
@@ -2133,12 +2164,12 @@ export default function App() {
                   id: `oral-p1-slip-${topic.id}`,
                   category: '情動反応',
                   title: chartTitle,
-                  content: `${quoteBlock}\n\n【分析】 ${chosenPhase1SlipVariant.terminalRecordSummary}`,
+                  content: `${quoteBlock}\n${chosenPhase1SlipVariant.terminalRecordSummary}`,
                 });
                 setHasUnreadSector(true);
                 appendLog(
                   'WARNING',
-                  `[情動反応] 「${chartTitle}」の分析カルテをINFOへ自動記録しました。`
+                  `[EM-LOG] ANOMALY RECORDED TO INFO // ${topic.id.toUpperCase()}`
                 );
               } else {
                 setMood(0);
@@ -2150,7 +2181,7 @@ export default function App() {
                   category: '機体ログ',
                   title: '経口摂取および代謝機能',
                   content:
-                    '本機体に有機物の経口摂取（食事）機能は未実装。内部の音素のみで稼働可能。\n「食事」に対する言及・反応は、元体の記憶に残る習慣的行動の残滓と推測される。',
+                    '本機体に有機物の経口摂取および消化機能は未実装。内部の音素循環のみで稼働する。\n擬似味覚および嗅覚センサーは生体時（20歳時点）の嗜好データを引き継いでいる。',
                 });
               }
             } else {
@@ -2211,7 +2242,7 @@ export default function App() {
                   );
                   appendLog(
                     'WARNING',
-                    'ガイの態度が【嫌悪・決裂】へ固定されました。親密な対話オプションが遮断されます。'
+                    'INTERACTION MODE LOCKED // HOSTILE THRESHOLD EXCEEDED'
                   );
                 }
                 return nextH;
@@ -2362,6 +2393,16 @@ export default function App() {
       });
     }
 
+    const effectiveTopicMoodDelta = !linkTags.includes('phase2_started')
+      ? 0
+      : isRefusedByBadMood
+        ? 0
+        : useCustomBadMood
+          ? (currentStage.badMoodResponse!.moodDelta ?? -1)
+          : useCustomGoodMood
+            ? (currentStage.goodMoodResponse!.moodDelta ?? 2)
+            : (currentStage.moodDelta ?? 0);
+
     steps.push({
       delayMs: currentStage.triggersEndingKey ? 1400 : 500,
       action: () => {
@@ -2374,6 +2415,38 @@ export default function App() {
           setEndingStep(0);
           setGamePhase('ENDING');
           return;
+        }
+        if (
+          linkTags.includes('phase2_started') &&
+          topic.id !== 'p2_deep_truth_dilemma' &&
+          !hasReplyOptionsForCurrentStage &&
+          effectiveTopicMoodDelta < 0 &&
+          moodRef.current < 0
+        ) {
+          if (topic.id === 'p2_irritated_clash') {
+            moodWarningGivenRef.current = true;
+          } else if (!moodWarningGivenRef.current) {
+            moodWarningGivenRef.current = true;
+            appendLog(
+              'WARNING',
+              'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
+            );
+            playAschReactionLines(
+              '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
+              'glare',
+              {
+                brow: 'angry',
+                eyes: 'glare',
+                mouth: 'grit',
+                effects: ['sweat'],
+              },
+              ['shout'],
+              320
+            );
+          } else {
+            triggerMoodLimitDeparture();
+            return;
+          }
         }
         if (moodRef.current < 0 && linkTags.includes('phase2_started')) {
           resetAngryGlanceSchedule();
@@ -2420,14 +2493,10 @@ export default function App() {
     setIsDecisionMenuOpen(false);
     setPhase1AccuseStep('NONE');
 
-    const slipMention =
-      phase1OccurredSlips.length > 0
-        ? `さっき『${phase1OccurredSlips[0].shortLabel}』に動揺した波形も、内部メモリの記録も全部ここに映ってるぞ。`
-        : 'おまえが『タルロウA』じゃなくて、ガイを知っているアッシュ本人だって記録も全部ここに映ってるぞ。';
-
-    const guySpoken = `おまえ、俺がただの板を見ていると思って油断してただろ。これ、おまえを連れ出すときにディストから渡された内部モニターなんだよ。\n${slipMention}`;
+    const guySpoken =
+      'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。\nおまえが動揺した波形も、内部メモリの記録も全部ここに映ってるぞ。';
     const aschReply =
-      'なっ・・・・・・！？　ディストの奴、管理端末までおまえに渡しやがったのか・・・・・・！？\nええい、うるさい！！　人の頭の中まで勝手に覗き見やがって、いい加減にしろ、ガイ！！';
+      '・・・・・・チッ、その忌々しい板を俺に向けるな！\nディストの奴、俺の内部記録を見る管理端末までおまえに渡しやがったのか・・・・・・！';
 
     const guyLines = guySpoken.split('\n').filter(Boolean);
     const aschLines = aschReply.split('\n').filter(Boolean);
@@ -2477,7 +2546,7 @@ export default function App() {
                   spokenText:
                     '今、俺のことを「ガイ」って呼んだな。俺の名前を知らないはずの機械が、どうして呼べるんだ？　・・・・・・やっぱりアッシュなんだろ。',
                   aschText:
-                    '・・・・・・っ！！　・・・・・・チッ、端末まで持ち出しやがって・・・・・・。\n・・・・・・分かったよ、俺の負けだ。その通りだ、俺はアッシュだ。',
+                    '・・・・・・っ！！　・・・・・・チッ、端末まで持ち出しやがって・・・・・・。\n・・・・・・分かったよ、『タルロウA』ってのは嘘だ。だが、その名前で俺を呼ぶな。',
                   expression: 'look_away',
                   faceParts: {
                     brow: 'sad',
@@ -2489,15 +2558,8 @@ export default function App() {
                   trustDelta: 2,
                   grantsLinkTags: ['phase2_started', 'terminal_revealed'],
                   naturalUnlockSectorId: 'SEC-01',
-                  oralInfo: {
-                    id: 'oral-p1-cleared',
-                    category: '情動反応',
-                    title: '『タルロウA』の偽装解除とアッシュ本人の確認',
-                    content:
-                      '端末の内部記録を突きつけられたことで動揺し、思わずガイの名前を呼んでアッシュ本人であることを認めた。また、ガイの手元の板が自分の内部モニターであることを認識した。',
-                  },
                   systemLog:
-                    '【PHASE 2 移行】対象が『タルロウA』の偽装を放棄し、アッシュ本人であることを認めました。',
+                    'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED',
                 },
               ],
             });
@@ -2612,7 +2674,7 @@ export default function App() {
         .filter(Boolean);
       const aschLines = [
         '・・・・・・っ！！　・・・・・・チッ、どこまでしつこく観察してやがる・・・・・・！',
-        '・・・・・・分かったよ、俺の負けだ。その通りだ、俺は『タルロウA』なんかじゃない・・・・・・アッシュだ。',
+        '・・・・・・分かったよ、俺の負けだ。『タルロウA』ってのは出まかせだ。\n・・・・・・だが、その名前で俺を呼ぶな。',
       ];
 
       const steps: QueuedStep[] = [];
@@ -2671,16 +2733,9 @@ export default function App() {
               setReadSectorIds((prev) =>
                 Array.from(new Set([...prev, 'SEC-01', 'SEC-02']))
               );
-              addOralInfo({
-                id: 'oral-p1-cleared',
-                category: '情動反応',
-                title: '『タルロウA』の偽装解除とアッシュ本人の確認',
-                content:
-                  'カマかけ質問に対するわずかな言動の矛盾・動揺を見抜かれて追及され、観念してアッシュ本人であることを認めた。',
-              });
               appendLog(
                 'INFO',
-                '【PHASE 2 移行】対象が『タルロウA』の偽装を放棄し、アッシュ本人であることを認めました。'
+                'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED'
               );
               pushScreenBubble('ASCH', line, 'normal');
             }
@@ -2696,20 +2751,18 @@ export default function App() {
       enqueueSequence(steps);
     } else {
       // 【不正解】：ボロが出ていなかった話題、または的外れな理由を指摘した場合 → あしらわれてタルロウA確定EDへ
-      const cfg = PHASE1_TOPIC_SLIP_CONFIGS[topicId];
-      const topicLabel = cfg ? cfg.shortLabel : 'さっきの質問のとき';
       const guySpoken =
         selectedChoice.id === 'REWRITE'
-          ? `おまえ、${topicLabel}に途中で言葉を言い直したよな？　本当は『タルロウA』なんかじゃないんだろ。`
+          ? 'おまえ、さっき途中で言葉を言い直したよな？　本当は『タルロウA』なんかじゃないんだろ。'
           : selectedChoice.id === 'PRE_FACE'
-            ? `おまえ、${topicLabel}に答える際、違和感のある表情をしたよな？　本当は『タルロウA』なんかじゃないんだろ。`
+            ? 'おまえ、さっき一瞬顔色が変わったよな？　本当は『タルロウA』なんかじゃないんだろ。'
             : selectedChoice.id === 'CALL_NAME'
-              ? `おまえ、${topicLabel}に思わず『ガイ』って俺の名前を呼んだよな？　本当は『タルロウA』なんかじゃないんだろ。`
+              ? 'おまえ、さっき『ガイ』って俺の名前を呼んだよな？　本当は『タルロウA』なんかじゃないんだろ。'
               : selectedChoice.id === 'BLUFF_TONE'
-                ? `おまえ、${topicLabel}に声のトーンが明らかに上ずっていたぞ。本当は『タルロウA』なんかじゃないんだろ。`
+                ? 'おまえ、さっき声が上ずってたぞ。本当は『タルロウA』なんかじゃないんだろ。'
                 : selectedChoice.id === 'BLUFF_DELAY'
-                  ? `おまえ、${topicLabel}に返答までの時間が不自然に長かったぞ。本当は『タルロウA』なんかじゃないんだろ。`
-                  : `おまえ、${topicLabel}の反応、タルロウにしては受け答えや口調が違いすぎるぞ。本当は『タルロウA』なんかじゃないんだろ。`;
+                  ? 'おまえ、さっき妙に言葉に詰まってたぞ。本当は『タルロウA』なんかじゃないんだろ。'
+                  : 'おまえ、タルロウにしては口調が違いすぎるぞ。本当は『タルロウA』なんかじゃないんだろ。';
 
       const aschRefute =
         '言いがかりだな。俺は最初から事実しか言っていないし、動揺などもしていない。\n疑う根拠がないなら、さっさと研究所へ戻せ。';
@@ -2733,7 +2786,7 @@ export default function App() {
             });
             appendLog(
               'INFO',
-              '【指摘失敗】根拠の不十分な追及を行なったため、対象に冷静に論破されました。'
+              'VERIFICATION FAILED // INSUFFICIENT EVIDENCE'
             );
             pushScreenBubble(
               'ASCH',
@@ -2787,12 +2840,19 @@ export default function App() {
 
     const responseTimeMs = Math.max(0, Date.now() - choiceShownAtRef.current);
     const isQuick = responseTimeMs <= 2000;
+    const isLongThink = responseTimeMs >= 8000;
+    const pageLoopHesitation = cycledPagesInTurnRef.current;
+    cycledPagesInTurnRef.current = 0;
 
     setStats((prev) => ({
       ...prev,
       totalTurns: prev.totalTurns + 1,
       totalResponseTimeMs: prev.totalResponseTimeMs + responseTimeMs,
       quickReplyCount: prev.quickReplyCount + (isQuick ? 1 : 0),
+      choiceHoverSwitchCount:
+        prev.choiceHoverSwitchCount +
+        (isLongThink ? 1 : 0) +
+        pageLoopHesitation,
     }));
 
     idleStageRef.current = 0;
@@ -2871,7 +2931,7 @@ export default function App() {
                   );
                   appendLog(
                     'WARNING',
-                    'ガイの態度が【嫌悪・決裂】へ固定されました。親密な対話オプションが遮断されます。'
+                    'INTERACTION MODE LOCKED // HOSTILE THRESHOLD EXCEEDED'
                   );
                 }
                 return nextH;
@@ -2968,13 +3028,13 @@ export default function App() {
         if (
           linkTags.includes('phase2_started') &&
           (option.moodDelta ?? 0) < 0 &&
-          moodRef.current <= -3
+          moodRef.current < 0
         ) {
           if (!moodWarningGivenRef.current) {
             moodWarningGivenRef.current = true;
             appendLog(
               'WARNING',
-              '【WARNING】対象の感情波形が危険域に到達。これ以上の精神的負荷は対話打ち切り（帰還）を招きます。'
+              'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
             );
             playAschReactionLines(
               '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
@@ -3014,7 +3074,7 @@ export default function App() {
     ) {
       appendLog(
         'WARNING',
-        '【PHASE 3 強制移行】対象の感情波形が限界を超過。対話を打ち切り、最終質問へ移行します。'
+        'WARNING: WAVEFORM LIMIT EXCEEDED // FORCING PHASE 3 TRANSITION'
       );
       const leaveSteps: QueuedStep[] = [
         {
@@ -3065,7 +3125,7 @@ export default function App() {
     } else {
       appendLog(
         'WARNING',
-        '【対話打ち切り】対象の感情波形が限界を超過。対象が研究所へ帰還しました。'
+        'SESSION ABORTED // TARGET UNIT RETURNED TO LAB'
       );
       const leaveSteps: QueuedStep[] = [
         {
@@ -3136,12 +3196,19 @@ export default function App() {
 
     const responseTimeMs = Math.max(0, Date.now() - choiceShownAtRef.current);
     const isQuick = responseTimeMs <= 2000;
+    const isLongThink = responseTimeMs >= 8000;
+    const pageLoopHesitation = cycledPagesInTurnRef.current;
+    cycledPagesInTurnRef.current = 0;
 
     setStats((prev) => ({
       ...prev,
       totalTurns: prev.totalTurns + 1,
       totalResponseTimeMs: prev.totalResponseTimeMs + responseTimeMs,
       quickReplyCount: prev.quickReplyCount + (isQuick ? 1 : 0),
+      choiceHoverSwitchCount:
+        prev.choiceHoverSwitchCount +
+        (isLongThink ? 1 : 0) +
+        pageLoopHesitation,
     }));
 
     idleStageRef.current = 0;
@@ -3216,7 +3283,7 @@ export default function App() {
                   );
                   appendLog(
                     'WARNING',
-                    'ガイの態度が【嫌悪・決裂】へ固定されました。親密な対話オプションが遮断されます。'
+                    'INTERACTION MODE LOCKED // HOSTILE THRESHOLD EXCEEDED'
                   );
                 }
                 return nextH;
@@ -3360,14 +3427,15 @@ export default function App() {
           linkTags.includes('phase2_started') &&
           currentReplyTopicId !== 'p2_deep_truth_dilemma' &&
           !currentReplyTopicId.startsWith('p3_') &&
+          !(option.followUpOptions && option.followUpOptions.length > 0) &&
           (option.moodDelta ?? 0) < 0 &&
-          moodRef.current <= -3
+          moodRef.current < 0
         ) {
           if (!moodWarningGivenRef.current) {
             moodWarningGivenRef.current = true;
             appendLog(
               'WARNING',
-              '【WARNING】対象の感情波形が危険域に到達。これ以上の精神的負荷は対話打ち切り（帰還）を招きます。'
+              'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
             );
             playAschReactionLines(
               '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
@@ -3434,7 +3502,7 @@ export default function App() {
 
     appendLog(
       'INFO',
-      `[${target.code}] プロテクトを解除。内部記録をINFOへ展開しました（対象機体への通知：なし）。`
+      `[${target.code}] PROTECT OVERRIDE // SILENT UNLOCK EXECUTED`
     );
 
     if (target.paradoxWarning) {
@@ -3450,7 +3518,7 @@ export default function App() {
         addOralInfo({
           id: `oral-p1-slip-${slip.topicId}`,
           category: '情動反応',
-          title: `言動矛盾・情動スパイク記録（${slip.shortLabel}）`,
+          title: `応答波形ログ（${slip.shortLabel}）`,
           content: slip.variant.terminalRecordSummary,
         });
       });
@@ -3531,7 +3599,7 @@ export default function App() {
     if (sectorId === 'SEC-18' && !alreadyRead) {
       appendLog(
         'INFO',
-        '[DP-001] エルドラント崩落時の最終記憶を閲覧しました（対象機体への通知：なし）。'
+        '[DP-001] ARCHIVE ACCESSED // SILENT READ'
       );
     } else if (sectorId === 'SEC-19') {
       const otherUnlocked =
@@ -3554,7 +3622,7 @@ export default function App() {
       if (!alreadyRead) {
         appendLog(
           'INFO',
-          '[DP-002] 空白の2年間と記憶分離の記録を閲覧しました（対象機体への通知：なし）。'
+          '[DP-002] ADMIN ARCHIVE ACCESSED // SILENT READ'
         );
       }
     } else if (sectorId === 'SEC-20') {
@@ -3572,7 +3640,7 @@ export default function App() {
       if (!alreadyRead) {
         appendLog(
           'INFO',
-          '[DP-003] 小型機体『タルロウA』損傷の真相（自壊の試み）を閲覧しました（対象機体への通知：なし）。'
+          '[DP-003] ADMIN ARCHIVE ACCESSED // SILENT READ'
         );
       }
     }
@@ -3695,6 +3763,8 @@ export default function App() {
     badMoodHintShownRef.current = false;
     awayReactionCountRef.current = 0;
     lastHoveredChoiceIdRef.current = null;
+    cycledPagesInTurnRef.current = 0;
+    touchChoiceStateRef.current = null;
     lastContextCategoryRef.current = 'daily';
     lastMilestoneQuestionTurnRef.current = 0;
     choiceShownAtRef.current = Date.now();
@@ -3879,6 +3949,61 @@ export default function App() {
   const isInteractionBlocked =
     isTerminalOpen || isDialogueLogOpen || isManualOpen || isSequencing;
 
+  // PCのホバー切り替え ＆ スマホで選択肢に指を触れたあと指をずらして押すのをやめたときの「迷い」検出ハンドラ
+  const getChoiceHesitationHandlers = (choiceId: string) => ({
+    onMouseEnter: () => {
+      if (isCompactViewport) return;
+      if (
+        lastHoveredChoiceIdRef.current !== null &&
+        lastHoveredChoiceIdRef.current !== choiceId
+      ) {
+        setStats((prev) => ({
+          ...prev,
+          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
+        }));
+      }
+      lastHoveredChoiceIdRef.current = choiceId;
+    },
+    onTouchStart: () => {
+      touchChoiceStateRef.current = { id: choiceId, movedOff: false };
+    },
+    onTouchMove: (e: React.TouchEvent<HTMLButtonElement>) => {
+      const state = touchChoiceStateRef.current;
+      if (!state || state.id !== choiceId || state.movedOff) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pad = 8;
+      if (
+        touch.clientX < rect.left - pad ||
+        touch.clientX > rect.right + pad ||
+        touch.clientY < rect.top - pad ||
+        touch.clientY > rect.bottom + pad
+      ) {
+        state.movedOff = true;
+      }
+    },
+    onTouchEnd: () => {
+      const state = touchChoiceStateRef.current;
+      if (state && state.id === choiceId && state.movedOff) {
+        setStats((prev) => ({
+          ...prev,
+          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
+        }));
+      }
+      touchChoiceStateRef.current = null;
+    },
+    onTouchCancel: () => {
+      if (touchChoiceStateRef.current?.id === choiceId) {
+        setStats((prev) => ({
+          ...prev,
+          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
+        }));
+      }
+      touchChoiceStateRef.current = null;
+    },
+  });
+
   const bgBlurPx =
     isDialogueLogOpen || isManualOpen ? 6 : isTerminalOpen ? 2 : 0;
 
@@ -3893,7 +4018,9 @@ export default function App() {
         style={{
           width: `${STAGE_WIDTH}px`,
           height: `${STAGE_HEIGHT}px`,
-          transform: `scale(${stageScale})`,
+          transform: isPortraitRotated
+            ? `rotate(90deg) scale(${stageScale})`
+            : `scale(${stageScale})`,
           transformOrigin: 'center center',
         }}
         className="relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.95)] border border-zinc-800 shrink-0"
@@ -4238,10 +4365,7 @@ export default function App() {
                             .sort((a, b) => {
                               const getPrio = (t: ConversationTopic) => {
                                 if (t.id === 'p2_deep_truth_dilemma') return 100;
-                                if (
-                                  t.id === 'p2_cold_destroy_execution' ||
-                                  t.id === 'p2_irritated_clash'
-                                ) {
+                                if (t.id === 'p2_irritated_clash') {
                                   return 90;
                                 }
                                 if (
@@ -4363,6 +4487,12 @@ export default function App() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
+                                  cycledPagesInTurnRef.current = 0;
+                                  setStats((prev) => ({
+                                    ...prev,
+                                    choiceHoverSwitchCount:
+                                      prev.choiceHoverSwitchCount + 1,
+                                  }));
                                   setPreviewPage(0);
                                   setPhase1AccuseStep('SELECT_TOPIC');
                                 }}
@@ -4379,6 +4509,12 @@ export default function App() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     soundEngine.playTerminalTab();
+                                    cycledPagesInTurnRef.current = 0;
+                                    setStats((prev) => ({
+                                      ...prev,
+                                      choiceHoverSwitchCount:
+                                        prev.choiceHoverSwitchCount + 1,
+                                    }));
                                     setPreviewPage(0);
                                     setPhase1AccuseStep('NONE');
                                   }}
@@ -4395,6 +4531,12 @@ export default function App() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
+                                  cycledPagesInTurnRef.current = 0;
+                                  setStats((prev) => ({
+                                    ...prev,
+                                    choiceHoverSwitchCount:
+                                      prev.choiceHoverSwitchCount + 1,
+                                  }));
                                   setPreviewPage(0);
                                   setIsDecisionMenuOpen(false);
                                 }}
@@ -4409,6 +4551,7 @@ export default function App() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
+                                  cycledPagesInTurnRef.current = 0;
                                   setPreviewPage(0);
                                   setIsDecisionMenuOpen(true);
                                 }}
@@ -4426,9 +4569,13 @@ export default function App() {
                                 e.stopPropagation();
                                 if (headerTotalPages <= 1) return;
                                 soundEngine.playTerminalTab();
-                                setPreviewPage((p) =>
-                                  p + 1 >= headerTotalPages ? 0 : p + 1
-                                );
+                                setPreviewPage((p) => {
+                                  if (p + 1 >= headerTotalPages) {
+                                    cycledPagesInTurnRef.current += 1;
+                                    return 0;
+                                  }
+                                  return p + 1;
+                                });
                               }}
                               className={`pb-1 text-[11px] whitespace-nowrap select-none transition-colors ${
                                 headerTotalPages > 1
@@ -4465,19 +4612,7 @@ export default function App() {
                                   <button
                                     key={opt.id}
                                     disabled={isInteractionBlocked}
-                                    onMouseEnter={() => {
-                                      if (
-                                        lastHoveredChoiceIdRef.current !== null &&
-                                        lastHoveredChoiceIdRef.current !== opt.id
-                                      ) {
-                                        setStats((prev) => ({
-                                          ...prev,
-                                          choiceHoverSwitchCount:
-                                            prev.choiceHoverSwitchCount + 1,
-                                        }));
-                                      }
-                                      lastHoveredChoiceIdRef.current = opt.id;
-                                    }}
+                                    {...getChoiceHesitationHandlers(opt.id)}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setPreviewPage(0);
@@ -4513,19 +4648,7 @@ export default function App() {
                                   <button
                                     key={opt.id}
                                     disabled={isInteractionBlocked}
-                                    onMouseEnter={() => {
-                                      if (
-                                        lastHoveredChoiceIdRef.current !== null &&
-                                        lastHoveredChoiceIdRef.current !== opt.id
-                                      ) {
-                                        setStats((prev) => ({
-                                          ...prev,
-                                          choiceHoverSwitchCount:
-                                            prev.choiceHoverSwitchCount + 1,
-                                        }));
-                                      }
-                                      lastHoveredChoiceIdRef.current = opt.id;
-                                    }}
+                                    {...getChoiceHesitationHandlers(opt.id)}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setPreviewPage(0);
@@ -4572,6 +4695,7 @@ export default function App() {
                                         return (
                                           <button
                                             key={tid}
+                                            {...getChoiceHesitationHandlers(`accuse-${tid}`)}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               soundEngine.playTerminalTab();
@@ -4601,6 +4725,7 @@ export default function App() {
                                   {phase1ReasonChoices.map((choice) => (
                                     <button
                                       key={choice.id}
+                                      {...getChoiceHesitationHandlers(`reason-${choice.id}`)}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleExecutePhase1Accusation(
@@ -4634,6 +4759,7 @@ export default function App() {
                                       {currentSlice.map((item) => (
                                         <button
                                           key={item.id}
+                                          {...getChoiceHesitationHandlers(item.id)}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             item.onSelect();
@@ -4656,6 +4782,7 @@ export default function App() {
                               /* フェーズ2決断メニュー */
                               <>
                                 <button
+                                  {...getChoiceHesitationHandlers('p2_dec_return')}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleExecuteDecision('RETURN');
@@ -4671,6 +4798,7 @@ export default function App() {
                                 </button>
 
                                 <button
+                                  {...getChoiceHesitationHandlers('p2_dec_keep')}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleExecuteDecision('KEEP');
@@ -4714,6 +4842,9 @@ export default function App() {
                                         <button
                                           key={topic.id}
                                           disabled={isInteractionBlocked || isRead}
+                                          {...(!isRead
+                                            ? getChoiceHesitationHandlers(topic.id)
+                                            : {})}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             if (isRead) return;
@@ -4784,6 +4915,9 @@ export default function App() {
                                       <button
                                         key={topic.id}
                                         disabled={isInteractionBlocked || isCompleted}
+                                        {...(!isCompleted
+                                          ? getChoiceHesitationHandlers(topic.id)
+                                          : {})}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           if (isCompleted) return;
@@ -4858,6 +4992,7 @@ export default function App() {
               {/* 下からせり出す手持ちデータ端末（tanmatu.png） */}
               <DataTerminalModal
                 isOpen={isTerminalOpen}
+                isCompactViewport={isCompactViewport}
                 mood={mood}
                 sectors={sectors}
                 oralInfos={oralInfos}

@@ -10,6 +10,7 @@ import { soundEngine } from '../utils/chiptuneAudio';
 
 interface DataTerminalModalProps {
   isOpen: boolean;
+  isCompactViewport?: boolean;
   mood: number;
   sectors: MemorySector[];
   oralInfos: OralInfoEntry[];
@@ -34,6 +35,7 @@ const INFO_FILTERS: { id: 'ALL' | '機体ログ' | '情動反応' | '深層記�
 
 export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
   isOpen,
+  isCompactViewport = false,
   mood,
   sectors,
   oralInfos,
@@ -190,8 +192,8 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
   // 口頭・自動観測ログのカテゴリ別連番計算（古い順から各カテゴリのセクター数の続き番号を振る）
   const oralCodeMap = (() => {
     const baseCounts: Record<'MC' | 'EM' | 'DP', number> = {
-      MC: 6,
-      EM: 7,
+      MC: 8,
+      EM: 10,
       DP: 3,
     };
     const map: Record<string, string> = {};
@@ -298,8 +300,16 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className={`absolute left-0 -bottom-[98px] z-30 w-[640px] h-[360px] transition-transform duration-300 ease-out select-none pointer-events-auto font-terminal ${
-        isOpen ? 'translate-y-0' : 'translate-y-[380px] pointer-events-none'
+      style={{
+        transformOrigin: '200px 262px',
+        transform: isOpen
+          ? isCompactViewport
+            ? 'translateY(0px) scale(1.38)'
+            : 'translateY(0px) scale(1)'
+          : 'translateY(420px) scale(1)',
+      }}
+      className={`absolute left-0 -bottom-[98px] z-30 w-[640px] h-[360px] transition-transform duration-300 ease-out select-none font-terminal ${
+        isOpen ? 'pointer-events-auto' : 'pointer-events-none'
       }`}
     >
       {/* 1. 端末の液晶画面UI領域（新しいtanmatu.pngの黒ベゼル内側の透過窓にぴったり収まり、親指の右側を安全領域として表示） */}
@@ -309,19 +319,19 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={goPrev}
-              className="px-1.5 py-0.5 text-[8px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
+              className="px-1.5 py-0.5 text-[9px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
               title="前のページ"
             >
               ◀
             </button>
             <button
               onClick={goNext}
-              className="px-1.5 py-0.5 text-[8px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
+              className="px-1.5 py-0.5 text-[9px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
               title="次のページ"
             >
               ▶
             </button>
-            <span className="text-[8px] tracking-widest text-zinc-200 ml-1">
+            <span className="text-[9px] tracking-widest text-zinc-200 ml-1">
               {pageIndex + 1}/{PAGES.length} : {PAGES[pageIndex].label}
             </span>
           </div>
@@ -358,11 +368,11 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
             <div className="flex-1 min-h-0 flex flex-col justify-between gap-1">
               {/* 上段：感情のグラフ（情動波形）ステータス */}
               <div className="flex items-center justify-between border-b border-zinc-800/90 pb-0.5 shrink-0">
-                <span className="text-[7.5px] text-zinc-400 tracking-wider">
+                <span className="text-[8.5px] text-zinc-400 tracking-wider">
                   EMOTION_WAVE // 感情波形
                 </span>
                 <span
-                  className={`text-[7px] px-1 py-[0.5px] border ${
+                  className={`text-[8px] px-1 py-[0.5px] border ${
                     isAngry
                       ? 'border-red-800 text-red-300 bg-red-950/40'
                       : isHappy
@@ -379,7 +389,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               </div>
 
               {/* 中段：オシロスコープ波形（感情のグラフ） */}
-              <div className="h-[36px] w-full bg-black border border-zinc-800 relative overflow-hidden flex items-center shrink-0">
+              <div className="h-[34px] w-full bg-black border border-zinc-800 relative overflow-hidden flex items-center shrink-0">
                 <div
                   className="absolute inset-0 opacity-20 pointer-events-none"
                   style={{
@@ -407,10 +417,10 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               {/* 下段：システムログ表示（SYSTEM LOG・常時スクロールバー表示） */}
               <div className="flex-1 min-h-0 flex flex-col pt-0.5">
                 <div className="flex items-center justify-between mb-0.5 shrink-0">
-                  <span className="text-[7px] text-zinc-400 tracking-wider">
+                  <span className="text-[8px] text-zinc-400 tracking-wider">
                     SYSTEM_LOG // 稼働ログ
                   </span>
-                  <span className="text-[6.5px] text-zinc-500">
+                  <span className="text-[7.5px] text-zinc-500">
                     {logs.length} RECORDS
                   </span>
                 </div>
@@ -428,7 +438,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                     return (
                       <div
                         key={log.id}
-                        className="text-[7px] leading-snug flex items-baseline gap-1"
+                        className="text-[8px] leading-snug flex items-baseline gap-1"
                       >
                         <span className="text-zinc-500 shrink-0">
                           [{log.timestamp}]
@@ -458,7 +468,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                         soundEngine.playTerminalTab();
                         setSelectedInfoFilter(f.id);
                       }}
-                      className={`px-1.5 py-[1px] text-[7px] border transition-colors cursor-pointer shrink-0 ${
+                      className={`px-1.5 py-[1px] text-[8px] border transition-colors cursor-pointer shrink-0 ${
                         active
                           ? 'bg-zinc-200 text-zinc-950 border-zinc-100 font-semibold'
                           : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200'
@@ -477,7 +487,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               >
                 {filteredInfoItems.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-center">
-                    <span className="text-[8px] text-zinc-500">
+                    <span className="text-[9px] text-zinc-500">
                       該当する記録はまだありません
                     </span>
                   </div>
@@ -504,7 +514,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                         }`}
                       >
                         {item.isProtected ? (
-                          /* PROTECT付き項目：長押しで解除（高さh-[24px]固定） */
+                          /* PROTECT付き項目：長押しで解除（高さh-[26px]固定） */
                           <div
                             onPointerDown={() => {
                               if (item.sectorId) {
@@ -517,7 +527,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             onPointerLeave={cancelHold}
                             onPointerCancel={cancelHold}
                             onContextMenu={(e) => e.preventDefault()}
-                            className="relative w-full h-[24px] px-1.5 flex items-center justify-between gap-1 text-left cursor-pointer select-none overflow-hidden"
+                            className="relative w-full h-[26px] px-1.5 flex items-center justify-between gap-1 text-left cursor-pointer select-none overflow-hidden"
                             title="長押ししてプロテクトを解除"
                           >
                             {/* 長押ししている時は項目全体を覆うバーが出る */}
@@ -533,7 +543,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             {/* 左側：コード枠 ＋ 塗りつぶしバー */}
                             <div className="relative z-10 h-full flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
                               <span
-                                className={`text-[7px] font-mono px-1 py-[0.5px] border shrink-0 rounded-none leading-none flex items-center justify-center ${
+                                className={`text-[8px] font-mono px-1 py-[0.5px] border shrink-0 rounded-none leading-none flex items-center justify-center ${
                                   isMajor
                                     ? 'border-[#632f2f] text-[#c98383] bg-[#291414]'
                                     : 'border-[#4b5563] text-[#cbd5e1] bg-[#1a1c23]'
@@ -544,7 +554,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                               {/* 実際のタイトルの文字列そのものをソリッドな伏字マスクとしてレンダリング */}
                               {/* 一文字増減するごとに厳密に1文字分の幅が変わり、解除後のタイトル長と1pxも狂わず完全一致 */}
                               <span
-                                className={`inline-block text-[8px] leading-tight select-none rounded-none shrink-0 truncate max-w-[calc(100%-4px)] ${
+                                className={`inline-block text-[9px] leading-tight select-none rounded-none shrink-0 truncate max-w-[calc(100%-4px)] ${
                                   isMajor
                                     ? 'bg-[#7a3838] text-[#7a3838]'
                                     : 'bg-[#828894] text-[#828894]'
@@ -557,7 +567,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             {/* 右端：PROTECTED（上下完全中央寄せ・太字なし・重なり防止） */}
                             <div className="relative z-10 shrink-0 h-full flex items-center justify-end pl-1">
                               <span
-                                className={`text-[7px] font-mono font-normal tracking-wider leading-none select-none flex items-center ${
+                                className={`text-[8px] font-mono font-normal tracking-wider leading-none select-none flex items-center ${
                                   isMajor
                                     ? 'text-[#c98383]'
                                     : 'text-[#94a3b8]'
@@ -568,15 +578,15 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             </div>
                           </div>
                         ) : (
-                          /* 解除済み通常項目：アコーディオン開閉（高さh-[24px]固定、落ち着いた灰色・白系） */
+                          /* 解除済み通常項目：アコーディオン開閉（高さh-[26px]固定、落ち着いた灰色・白系） */
                           <>
                             <button
                               onClick={() => toggleInfoExpand(item.id, item.sectorId)}
-                              className="w-full h-[24px] px-1.5 flex items-center justify-between gap-1 text-left hover:bg-zinc-900/60 transition-colors cursor-pointer"
+                              className="w-full h-[26px] px-1.5 flex items-center justify-between gap-1 text-left hover:bg-zinc-900/60 transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5 min-w-0 flex-1">
                                 <span
-                                  className={`text-[7px] font-mono px-1 py-[0.5px] border shrink-0 bg-[#18181b] rounded-none leading-tight transition-colors ${
+                                  className={`text-[8px] font-mono px-1 py-[0.5px] border shrink-0 bg-[#18181b] rounded-none leading-tight transition-colors ${
                                     isUnread
                                       ? 'border-[#6b7280] text-[#e4e4e7]'
                                       : 'border-[#3f3f46] text-[#71717a]'
@@ -585,7 +595,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                   {item.code}
                                 </span>
                                 <span
-                                  className={`text-[8px] truncate transition-colors ${
+                                  className={`text-[9px] truncate transition-colors ${
                                     isUnread ? 'text-[#e4e4e7]' : 'text-[#8b8b95]'
                                   }`}
                                 >
@@ -593,7 +603,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                 </span>
                               </div>
                               <span
-                                className={`text-[8px] font-bold shrink-0 transition-colors ${
+                                className={`text-[9.5px] font-bold shrink-0 transition-colors ${
                                   isUnread ? 'text-[#d4d4d8]' : 'text-[#71717a]'
                                 }`}
                               >
@@ -603,11 +613,11 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
 
                             {isExpanded && (
                               <div className="px-2 py-1.5 border-t border-zinc-800/90 bg-[#070709] space-y-1">
-                                <p className="text-[7.5px] leading-relaxed text-zinc-300 whitespace-pre-wrap">
+                                <p className="text-[9px] leading-relaxed text-zinc-300 whitespace-pre-wrap">
                                   {item.content}
                                 </p>
                                 {item.subWarning && (
-                                  <p className="text-[7px] leading-snug text-red-400 border-t border-red-950/70 pt-1">
+                                  <p className="text-[8px] leading-snug text-red-400 border-t border-red-950/70 pt-1">
                                     [PARADOX] {item.subWarning}
                                   </p>
                                 )}

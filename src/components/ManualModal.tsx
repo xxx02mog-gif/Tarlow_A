@@ -10,7 +10,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 font-mono select-none"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/75 p-4 font-mono select-none"
       onClick={onClose}
     >
       <div
