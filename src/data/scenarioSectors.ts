@@ -35,7 +35,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedTitle: '機体基本構成・第七音素循環仕様',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '自律稼働機『タルロウA』（現・予備機体）の基本構造。\n第七音素循環系および擬似知覚センサーは正常稼働中。\n音素出力の上昇に伴い、冷却系から顔面表皮へ熱が逃げる構造（表面温度の上昇・赤面化）が確認されている。',
+      '自律譜業『タルロウA』（現・予備機体）の基本構造。\n第七音素循環系および擬似知覚センサーは正常稼働中。\n音素出力の上昇時、冷却系から顔面表皮へ排熱される構造につき、高負荷時は顔面表面温度の上昇（赤面化）が発生する。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -52,12 +52,12 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-01',
     code: 'MC-002',
-    capturedQuote: '「俺は『アッシュ』なんかじゃない、ディストが造った自律機械『タルロウA』だ。」',
+    capturedQuote: '「俺は『アッシュ』なんかじゃない、ディストが造った自律譜業『タルロウA』だ。」',
     capturedContext: '自らの機体名を『タルロウA』と名乗った際の発言',
     unlockedTitle: '機体識別名『タルロウA』と初期音声設定の破損履歴',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '小型自律機『タルロウX』の後継機として識別名『タルロウA』を登録した記録。\n初期化時、管理者がタルロウシリーズ共通の語尾フィルタ（『〜ズラ』）および服従プロトコルを入力しようとした際、本機が設定用コンソールを物理的に破壊。\n結果として、生体時の言語野データが未加工のまま維持されている。',
+      '小型自律譜業『タルロウX』の後継機として識別名『タルロウA』を登録した記録。\n初期設定時、管理者がタルロウシリーズ共通の語尾フィルタ（『〜ズラ』）および服従プロトコルを入力しようとした際、本機が設定用コンソールを物理破壊。\n言語野データは未加工のまま生体時の出力パターンが維持されている。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -90,7 +90,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedTitle: '2ヶ月前の機体換装履歴（小型機体から予備機体へ）',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '1年前から2ヶ月前まで、全高約50cmの小型機体『タルロウA』として稼働。\n2ヶ月前に同機体が大破したため、11年前にレプリカ生成が滞った際の場繋ぎ用として製造・保管されていた10歳当時のアッシュを模した予備機体へ中枢コアが移設された。',
+      '1年前から2ヶ月前まで、全高約50cmの小型譜業『タルロウA』として稼働。\n2ヶ月前に同機体が大破したため、11年前にレプリカ生成の場繋ぎ用として保管されていた予備機体（10歳当時のアッシュを模した機体）へ中枢コアが移設された。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -105,7 +105,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-04',
     code: 'EM-002',
-    capturedQuote: '「やかましい！　身長の話をするな！」',
+    capturedQuote: '「・・・・・・身長の話をするな。」',
     capturedContext: '目線の低さや背丈について触れた際の発言',
     unlockedTitle: '生体時とのアイレベル差および踏み台探索ログ',
     unlockedCategory: '情動観測',
@@ -123,10 +123,10 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'MC-004',
     capturedQuote: '「・・・・・・茶などいらんと言っているだろう。」',
     capturedContext: 'お茶や食事を勧められた際の発言',
-    unlockedTitle: '擬似味覚センサーの嗜好データと差し入れ廃棄履歴',
+    unlockedTitle: '経口摂取機構の仕様と味覚センサーの嗜好データ',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '栄養摂取機能は未実装だが、擬似味覚・嗅覚センサーは生体時（20歳時点）の数値をそのまま保持。\n先週、管理者が差し入れた高糖度の砂糖漬けケーキを検知した際は、0.3秒で拒絶波形が振り切れ廃棄処理を実行。\n一方、無糖の紅茶葉の香気成分に対しては出力波形の鎮静化が確認されている。',
+      '生体偽装用の予備機体につき、経口摂取および内部処理機構を実装。稼働上の栄養摂取としての意味はないが、飲食そのものは可能。\n味覚・嗅覚センサーには生体時（20歳時点）の嗜好データ（好物：チキン／嫌悪対象：タコ）が保持されており、高糖度の液体（甘い水）に対しては過去の麻酔処置の記憶と連動した強い拒絶波形が発生する。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -155,10 +155,10 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'EM-004',
     capturedQuote: '「・・・・・・外の連中のことなど、俺の知ったことか。」',
     capturedContext: '仲間たちの近況について話題を振られた際の発言',
-    unlockedTitle: '深夜帯における研究所サブ端末からの外部通信検索ログ',
+    unlockedTitle: '研究所サブ端末における外部通信の反復照会ログ',
     unlockedCategory: '情動観測',
     unlockedContent:
-      '研究所内のサブ端末に残された通信アクセス履歴。\n管理者の睡眠時間帯（02:00〜04:00）に限定し、バチカル王城の復興状況、マルクト帝国皇帝の動向、およびタタル渓谷周辺の定期通信ログへの接続が計38回記録されている。',
+      '研究所内のサブ端末に残された通信アクセス履歴。\nバチカル王城の復興状況やマルクト帝国関連の通信網とあわせ、1年前のタタル渓谷における生体帰還報告（ルーク・フォン・ファブレ関連記録）へのアクセスおよび即時切断が計38回記録されている。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -174,7 +174,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedTitle: '四肢アクチュエータの出力制限（上限18%）と転倒記録',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '管理者権限により、四肢の駆動出力には上限18%のリミッターが設定されている。\n5日前、研究所の空き部屋にて棒状の備品を用いた素振り動作を実行した際、踏み込み時の出力が制限値を超過して強制カットオフが作動。\n並行感覚を失って転倒し、直後に壁面を蹴りつけた衝撃値が記録されている。',
+      '管理者権限により、四肢の駆動出力には上限18%のリミッターが設定されている。\n5日前、研究所の空き部屋にて棒状の備品を用いた素振り動作を実行した際、踏み込み時の出力が制限値を超過して強制カットオフが作動。\n平衡感覚を失って転倒し、直後に壁面を蹴りつけた衝撃値が記録されている。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -185,7 +185,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-09',
     code: 'EM-005',
-    capturedQuote: '「・・・・・・あの変態の趣味に付き合わされる身にもなってみろ。」',
+    capturedQuote: '「・・・・・・ディストの趣味に付き合わされる身にもなってみろ。」',
     capturedContext: 'ディストの研究所での扱いについて愚痴をこぼした際の発言',
     unlockedTitle: '機体識別名の変更拒否と雑務命令の無視履歴',
     unlockedCategory: '情動観測',
@@ -202,12 +202,12 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     id: 'SEC-10',
     code: 'EM-006',
     capturedQuote:
-      '「・・・・・・別にボサッとしていたわけじゃない。あの変態の相手で疲れていたところに、おまえが勝手に入ってきただけだ。」',
+      '「・・・・・・足音が聞こえたから、いつも通り部屋の隅に退避して・・・・・・っ。」',
     capturedContext: '研究室に入った際になぜ隠れなかったのか尋ねた際の発言',
-    unlockedTitle: '連続音声入力による処理遅延と初動の遅れ（1.8秒）',
+    unlockedTitle: '接近音検知時の旧機体待機行動と退避初動の遅れ',
     unlockedCategory: '情動観測',
     unlockedContent:
-      '本日の入室10分前まで、管理者による連続発話（約3時間）が聴覚センサーへ入力され続け、音声処理ユニットに一時的な負荷遅延が発生していた。\n管理者が退室した直後、聴覚センサーを絞って待機していたところにガイ・セシルが入室。\n通常の退避行動に移るまでの初動が1.8秒遅延し、室内での接触に至った。',
+      '本日、廊下からの接近音を検知した際、小型譜業『タルロウA』稼働時と同一の待機位置（室内隅）へ移動し静止。\n現機体の外装では視覚的カモフラージュが成立しないことを再照合するまでに1.8秒の遅延が発生し、遮蔽物へ移動し直す前にガイ・セシルが入室した。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -218,7 +218,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-11',
     code: 'MC-006',
-    capturedQuote: '「・・・・・・服の話などどうでもいいだろう。着替えがこれしかなかっただけだ。」',
+    capturedQuote: '「・・・・・・着替えがこれしかなかっただけだ。」',
     capturedContext: '10歳当時の服について触れられた際の発言',
     unlockedTitle: '支給衣装の破棄と襟元ボタン留め動作の所要時間記録',
     unlockedCategory: '機体仕様',
@@ -243,7 +243,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedTitle: 'バチカル・タタル渓谷方面への移動回避と自己定義の未決ログ',
     unlockedCategory: '情動観測',
     unlockedContent:
-      '発話時の急激な音素負荷に伴い、機体システムが自動的にプロテクト（PROTECT）を施した領域。\n「3年前のエルドラントで死亡したはずの自身が、なぜ機械の機体で稼働しているのか」に対する答えが内部メモリ上に存在せず、自己定義が未確定のまま稼働を続けている。\n1年前にルークが帰還した記録を参照した際も、バチカルおよびタタル渓谷方面への接近を自ら回避する行動パターンが継続している。',
+      '3年前のエルドラントで死亡したはずの自身が、なぜ譜業の機体で稼働しているのかという照合結果が内部メモリ上に存在せず、自己定義が未確定のまま稼働を継続している。\n1年前にルークがタタル渓谷へ帰還した記録を参照して以降も、バチカルおよびタタル渓谷方面への接近を回避する行動パターンが続いている。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -254,7 +254,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-13',
     code: 'EM-008',
-    capturedQuote: '「・・・・・・別に、何もしていない。ただ音機関を休めているだけだ。」',
+    capturedQuote: '「・・・・・・別に、何もしていない。」',
     capturedContext: '研究所にこもっている間の暇つぶしについて尋ねた際の発言',
     unlockedTitle: '空き部屋での一人チェス稼働履歴と駒位置の再配置ログ',
     unlockedCategory: '情動観測',
@@ -270,8 +270,8 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-14',
     code: 'MC-007',
-    capturedQuote: '「・・・・・・声くらいなんだっていいだろうが。いちいち人の声を聞き比べるな。」',
-    capturedContext: '10歳当時の声（声変わり前）の違和感について尋ねた際の発言',
+    capturedQuote: '「俺だって好きでこんな声を出しているわけじゃない。」',
+    capturedContext: '10歳当時の声（声変わり前）について触れた際の発言',
     unlockedTitle: '声帯ユニットの周波数仕様と換装直後の48時間発声拒否ログ',
     unlockedCategory: '機体仕様',
     unlockedContent:
@@ -304,12 +304,12 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     id: 'SEC-16',
     code: 'MC-008',
     capturedQuote:
-      '「・・・・・・当たり前だ。11年前に造られた新品の予備機体だからな。人の手をジロジロ見るな。」',
-    capturedContext: '掌や腕に剣ダコや生前の傷跡がないことについて触れた際の発言',
+      '「・・・・・・当たり前だ。11年前に造られた予備機体だからな。あまりジロジロ見るな。」',
+    capturedContext: '掌や腕に剣ダコや傷跡がないことについて触れた際の発言',
     unlockedTitle: '人工表皮の初期状態と右掌中央への接触動作ログ',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '11年前に製造された未使用の予備機体につき、人工表皮に鍛錬による剣ダコおよび外傷痕は存在しない。\n機体換装以降、待機中に左親指で右掌中央（生体時に剣ダコが存在した部位）を擦る反復動作が1日平均数回記録されている。',
+      '11年前に製造された未使用の予備機体につき、人工表皮に鍛錬による剣ダコおよび外傷痕は存在しない。\n機体換装以降、待機中に左親指で右掌中央（生体時に剣ダコが存在した部位）を擦る動作を断続的に記録。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -321,12 +321,12 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     id: 'SEC-17',
     code: 'EM-010',
     capturedQuote:
-      '「・・・・・・あの眼鏡の話をするな！　あいつが研究所に来た時はいつも物陰に隠れていたんだ、気づかれているはずがないだろうが。」',
+      '「・・・・・・あの眼鏡の話をするな。あいつが来た時は、ただの譜業のフリをしてやり過ごしていた。」',
     capturedContext: '研究所を訪れていたジェイドに正体を気づかれていないか尋ねた際の発言',
     unlockedTitle: '『ジェイド・カーティス』来訪時の接近記録と警戒レベル推移',
     unlockedCategory: '情動観測',
     unlockedContent:
-      '3ヶ月前、ジェイド・カーティスが研究所を訪れた際、部屋の隅でスリープ状態を装っていた小型機体『タルロウA』の前で3秒間足を止め、「随分と大人しい機械ですね。せいぜい壊れないようにしてくださいよ」とだけ発言して立ち去った音声・映像記録。\n単なる機械への皮肉か正体に勘づいての発言かは判別不能だが、本機はその時点から現在まで、同人物に対する警戒レベルを最高値に設定している。',
+      '3ヶ月前、ジェイド・カーティスが研究所を訪れた際、部屋の隅で休止状態を装っていた小型譜業『タルロウA』の前で足を止め、無言で数秒間見つめた後に立ち去った映像記録。\n意図は解析不能だが、本機体はその時点から現在まで、同人物に対する警戒レベルを最高値に設定している。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
@@ -357,12 +357,12 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-19',
     code: 'DP-002',
-    capturedQuote: '「・・・・・・それから1年前にタルロウAとして目が覚めるまでの2年間だけ、何も出てこない。」',
+    capturedQuote: '「・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。」',
     capturedContext: 'エルドラントから1年前までの「空白の2年間」について尋ねた際の発言',
     unlockedTitle: '空白の2年間の放浪と20歳時点での記憶分離依頼ログ',
     unlockedCategory: '深層解凍',
     unlockedContent:
-      '【管理者権限ロック】\nエルドラントでの音素乖離により、ルークとアッシュの記憶が混ざり合った状態で1つの生体に定着。\nその後の2年間、各地を放浪した末、1年前（20歳時点）にその肉体を「ルーク」としてタタル渓谷へ帰すため、アッシュ自らがディストの研究所を訪れ「俺の記憶を切り離せ」と分離処置を依頼した記録。\nディストは分離したアッシュ側の記憶を消去せず、プラネットストーム停止により希少化した「高純度の第七音素（資源）」および自律稼働実験用の「生体記憶サンプル」として保持し、小型機体『タルロウA』へ移植した。',
+      '【管理者権限ロック】\nエルドラントでの音素乖離により、ルークとアッシュの記憶が混ざり合った状態で1つの身体に定着。\nその後2年間の放浪を経た1年前（20歳時点）、その身体を「ルーク」としてタタル渓谷へ帰すため、アッシュ自らがディストの研究所を訪れ「俺の記憶を切り離せ」と分離処置を依頼した記録。\n管理者は分離したアッシュ側の記憶を廃棄せず、プラネットストーム停止下で希少な高純度第七音素の確保、および自律稼働実験の生体記憶サンプルとして小型譜業『タルロウA』へ移植した。',
     paradoxWarning:
       '管理者権限ロック：サンプルおよび第七音素資源の損失を防ぐため閲覧が制限されていた領域です。',
     errorCost: 0,
@@ -377,10 +377,10 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'DP-003',
     capturedQuote: '「・・・・・・っ、ぐ・・・・・・ッ！！　あ、頭が・・・・・・っ！　・・・・・・やめろ、それ以上聞くな・・・・・・っ！」',
     capturedContext: '2ヶ月前にタルロウAが壊れた理由を思い出そうとして頭痛・ノイズ発作を起こした際の発言',
-    unlockedTitle: '2ヶ月前の小型機体『タルロウA』自壊インシデントと再封印履歴',
+    unlockedTitle: '2ヶ月前の小型譜業『タルロウA』自壊インシデントと再封印履歴',
     unlockedCategory: '深層解凍',
     unlockedContent:
-      '【管理者権限ロック】\n2ヶ月前、小型機体『タルロウA』として稼働していた本機がプロテクトを自力解除して1年前の記憶分離ログ（DP-002）を閲覧した直後、自らの動力炉および外装を物理破壊（自壊）したインシデント記録。\n半壊状態で発見した管理者が、サンプルおよび第七音素資源の損失を防ぐため DP-002・DP-003 に管理者ロックを再設定し、現在の予備機体へ中枢コアを移し替えた。',
+      '【管理者権限ロック】\n2ヶ月前、小型譜業『タルロウA』として稼働していた本機がプロテクトを自力解除して1年前の記憶分離ログ（DP-002）を閲覧した直後、自らの音機関および外装を物理破壊（自壊）したインシデント記録。\n半壊状態で発見した管理者が、サンプルおよび第七音素資源の損失を防ぐため DP-002・DP-003 に管理者ロックを再設定し、現在の予備機体へ中枢コアを移し替えた。',
     paradoxWarning:
       '管理者権限ロック：本機の自己破壊によるサンプル損失を防ぐため閲覧が制限されていた領域です。',
     errorCost: 0,
@@ -409,17 +409,17 @@ export const TERMINAL_UNREVEALED_REACTIONS: {
     logMessage: 'GAZE DETECTED // TARGET UNAWARE OF TERMINAL FUNCTION',
   },
   {
-    text: '・・・・・・さっきからその板ばかり見やがって・・・・・・。用がないなら俺は戻るからな。',
+    text: '・・・・・・さっきからその板ばかり見やがって・・・・・・。',
     expression: 'glare',
     faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
-    moodDelta: -1,
+    moodDelta: 0,
     logMessage: 'GAZE DETECTED // IRRITATION LEVEL +1',
   },
   {
     text: '・・・・・・おい、聞いているのか。人の前で黙って板ばかり眺めるな。',
     expression: 'glare',
     faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
-    moodDelta: -2,
+    moodDelta: 0,
     logMessage: 'GAZE DETECTED // IRRITATION LEVEL +2',
   },
 ];
@@ -446,16 +446,16 @@ export const TERMINAL_GAZE_REACTIONS: {
     text: '・・・・・・まさか、変な記録まで勝手に開けているんじゃないだろうな。',
     expression: 'look_away',
     faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
-    moodDelta: -1,
+    moodDelta: 0,
     errorDelta: 0,
     logMessage:
       'ALERT // TARGET SUSPECTS RECORD INSPECTION (SILENT MODE ACTIVE)',
   },
   {
-    text: '・・・・・・言っておくが、これ以上奥の項目を漁るなよ。趣味が悪いからな。',
+    text: '・・・・・・言っておくが、勝手に妙な記録まで漁るなよ。',
     expression: 'glare',
     faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush', 'sweat'] },
-    moodDelta: -2,
+    moodDelta: 0,
     errorDelta: 0,
     logMessage:
       'WARNING // HIGH VIGILANCE ON PROTECTED SECTORS',
@@ -491,7 +491,7 @@ export const IDLE_REACTIONS: {
     text: '・・・・・・話すことがないなら、もう研究所へ戻ってもいいか。',
     expression: 'normal',
     faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
-    moodDelta: -1,
+    moodDelta: 0,
     errorDelta: 0,
     logType: 'INFO',
     logMessage: 'IDLE TIMEOUT // 36s ELAPSED (STAGE 2)',
@@ -502,7 +502,7 @@ export const IDLE_REACTIONS: {
     text: '・・・・・・チッ、人を勝手に連れ込んでおいて放置か。いい加減にしろよ。',
     expression: 'glare',
     faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
-    moodDelta: -2,
+    moodDelta: 0,
     errorDelta: 0,
     logType: 'WARNING',
     logMessage: 'IDLE TIMEOUT // 54s ELAPSED (STAGE 3 // MAX)',
@@ -616,11 +616,11 @@ export const CONTEXT_IDLE_REACTIONS: Record<
 
 export const ANGRY_COOLDOWN_REACTION = {
   thresholdSec: 35,
-  text: '・・・・・・はぁ。・・・・・・俺も少し大人気なかったな。もういい、話したければ話せ。',
+  text: '・・・・・・はぁ。・・・・・・少し頭が冷えた。もういい、話があるなら聞く。',
   expression: 'look_away' as ExpressionId,
   faceParts: {
     brow: 'sad' as const,
-    eyes: 'away' as const,
+    eyes: 'close' as const,
     mouth: 'close' as const,
     effects: [],
   },
@@ -635,29 +635,29 @@ export const ANGRY_COOLDOWN_REACTIONS: {
   logMessage: string;
 }[] = [
   {
-    text: '・・・・・・はぁ。・・・・・・俺も少し大人気なかったな。もういい、話したければ話せ。',
+    text: '・・・・・・はぁ。・・・・・・少し頭が冷えた。もういい、話があるなら聞く。',
     expression: 'look_away',
     faceParts: {
       brow: 'sad',
-      eyes: 'away',
+      eyes: 'close',
       mouth: 'close',
       effects: [],
     },
     logMessage: 'EMOTION WAVE STABILIZED // COOLDOWN 1/3',
   },
   {
-    text: '・・・・・・おい。さっきから黙り込んで、今度は貴様が不貞腐れているのか？\n・・・・・・チッ、俺も言い過ぎた。いつまでも黙っているな。',
+    text: '・・・・・・おい、いつまで黙り込んでいるつもりだ。\n・・・・・・はぁ。もういい、話があるなら聞く。',
     expression: 'look_away',
     faceParts: {
-      brow: 'sad',
-      eyes: 'down',
+      brow: 'doubt',
+      eyes: 'normal',
       mouth: 'frown',
       effects: ['sweat'],
     },
     logMessage: 'EMOTION WAVE STABILIZED // COOLDOWN 2/3',
   },
   {
-    text: '・・・・・・なあ、ガイ。まさか本気で腹を立てているんじゃないだろうな・・・・・・？\n・・・・・・悪かったよ。何か言ったらどうだ。',
+    text: '・・・・・・チッ、そうやって黙り込まれると調子が狂う。\n・・・・・・少し頭は冷えた。何か言ったらどうだ。',
     expression: 'normal',
     faceParts: {
       brow: 'sad',
@@ -670,18 +670,18 @@ export const ANGRY_COOLDOWN_REACTIONS: {
 ];
 
 export const ANGRY_GLANCE_CAUGHT_LINES: string[] = [
-  '・・・・・・っ、なんだよ。別に今おまえを見ていたわけじゃない！　・・・・・・もういい、その話なら聞いてやる。',
+  '・・・・・・な、なんだよ。別に今おまえを見ていたわけじゃない！　・・・・・・もういい、その話なら聞いてやる。',
   '・・・・・・な、なんだよ。たまたま目が合っただけだろうが。・・・・・・ふん、用件があるなら言え。',
 ];
 
 export const AWAY_RETURN_REACTIONS = {
   phase1: [
     {
-      text: '・・・・・・視線が外れたな。質問がないなら、俺はいつでも研究所へ戻る。',
+      text: '・・・・・・質問がないなら、俺はいつでも研究所へ戻る。',
       expression: 'normal' as ExpressionId,
       faceParts: {
         brow: 'normal' as const,
-        eyes: 'normal' as const,
+        eyes: 'close' as const,
         mouth: 'close' as const,
         effects: [],
       },
@@ -692,14 +692,14 @@ export const AWAY_RETURN_REACTIONS = {
       expression: 'look_away' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
-        eyes: 'away' as const,
+        eyes: 'glare' as const,
         mouth: 'frown' as const,
         effects: [],
       },
       logMessage: 'FOCUS RETURN // PHASE 1 (2/3)',
     },
     {
-      text: '・・・・・・まだ他に気を取られているのか。用が済んだなら帰らせろ。',
+      text: '・・・・・・まだ他に気を取られているのか。質問があるなら手短に済ませろ。',
       expression: 'glare' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
@@ -723,22 +723,22 @@ export const AWAY_RETURN_REACTIONS = {
       logMessage: 'FOCUS RETURN // ALERT STATE (1/3)',
     },
     {
-      text: '・・・・・・人の顔も見ずに考え事か。感じが悪いな、ガイ。',
+      text: '・・・・・・人の顔も見ずに考え事か。',
       expression: 'glare' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
-        eyes: 'away' as const,
+        eyes: 'glare' as const,
         mouth: 'grit' as const,
         effects: [],
       },
       logMessage: 'FOCUS RETURN // ALERT STATE (2/3)',
     },
     {
-      text: '・・・・・・チッ、話す気がないなら勝手にしろ。',
+      text: '・・・・・・チッ、まだ何か言いたいことがあるのか。',
       expression: 'look_away' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
-        eyes: 'down' as const,
+        eyes: 'close' as const,
         mouth: 'frown' as const,
         effects: [],
       },
@@ -762,18 +762,18 @@ export const AWAY_RETURN_REACTIONS = {
       expression: 'look_away' as ExpressionId,
       faceParts: {
         brow: 'angry' as const,
-        eyes: 'away' as const,
+        eyes: 'glare' as const,
         mouth: 'frown' as const,
         effects: ['blush' as const],
       },
       logMessage: 'FOCUS RETURN // NORMAL STATE (2/3)',
     },
     {
-      text: '・・・・・・まったく、落ち着きのない奴だな。もう用は済んだのか？',
+      text: '・・・・・・まったく、落ち着きのない奴だな。まだ何か話があるのか。',
       expression: 'look_away' as ExpressionId,
       faceParts: {
         brow: 'sad' as const,
-        eyes: 'away' as const,
+        eyes: 'close' as const,
         mouth: 'close' as const,
         effects: [],
       },
@@ -796,12 +796,12 @@ export const DEFAULT_BAD_MOOD_REFUSAL_LINES: {
   {
     aschText: '・・・・・・わるいが、その話は後にしてくれ。',
     expression: 'look_away',
-    faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+    faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
   },
   {
     aschText: '・・・・・・今は少し黙っていてくれ。',
     expression: 'look_away',
-    faceParts: { brow: 'angry', eyes: 'away', mouth: 'close', effects: [] },
+    faceParts: { brow: 'angry', eyes: 'close', mouth: 'close', effects: [] },
   },
   {
     aschText: '・・・・・・その話はまた今度にしろ。',
@@ -824,9 +824,9 @@ export const RETURN_FROM_IDLE_LINES: string[] = [
 
 // 気まずい・不機嫌な空気の中で別の通常話題を振る際のガイの言い淀み（IMMUTABLE_RULES 6-②準拠）
 export const AWKWARD_TOPIC_PREFIXES: string[] = [
-  '・・・・・・ええと、少し話を変えるが、',
-  '・・・・・・いや、その・・・・・・それよりさ、',
-  '・・・・・・なあ、こういう空気で聞くのもあれだけど、',
+  '・・・・・・少し、別のことを聞いてもいいか。',
+  '・・・・・・なあ、ひとつ聞きたいんだが。',
+  '・・・・・・それより、少し話しておきたいことがあってさ。',
 ];
 
 // シリアスな話題から日常の話題へ切り替える際のガイの言い淀みとアッシュの反応
@@ -837,19 +837,19 @@ export const SERIOUS_TO_BRIGHT_TRANSITIONS: {
   faceParts: Partial<FaceParts>;
 }[] = [
   {
-    guyHesitation: '・・・・・・いや、少し話が重くなったな。ええと・・・・・・。',
+    guyHesitation: '・・・・・・いや、その・・・・・・少し話を変えるが。',
     aschTransition:
       '・・・・・・なんだ、急に歯切れが悪いな。言いたいことがあるならはっきり言え。',
     expression: 'look_away',
-    faceParts: { brow: 'doubt', eyes: 'away', mouth: 'close', effects: [] },
+    faceParts: { brow: 'doubt', eyes: 'glare', mouth: 'close', effects: [] },
   },
   {
     guyHesitation:
-      '・・・・・・っと、こういう話ばかりでも詰まるよな。そういえばさ・・・・・・。',
+      '・・・・・・ええと、そういえばさ。',
     aschTransition:
       '・・・・・・ふん、無理に気を使わなくてもいいだろうが。で、なんだ。',
     expression: 'normal',
-    faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+    faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
   },
 ];
 
@@ -866,20 +866,20 @@ export const TURN_MILESTONE_QUESTIONS: {
     questionLine:
       '・・・・・・おい、ガイ。おまえ自身は今、バチカルとグランコクマのどっちにいることが多いんだ。',
     expression: 'normal',
-    faceParts: { brow: 'normal', eyes: 'normal', mouth: 'open', effects: [] },
+    faceParts: { brow: 'normal', eyes: 'normal', mouth: 'close', effects: [] },
     question: {
       id: 'q_p2_guy_life',
       promptSummary: '最近の拠点や暮らしぶりについてアッシュに答える',
       options: [
         {
           id: 'q_p2_life_both',
-          thoughtText: '最近は仕事でグランコクマとバチカルを行ったり来たりしていると答える',
+          thoughtText: 'グランコクマとバチカルを行き来していると答える',
           spokenText:
             '最近は仕事でグランコクマとバチカルを行ったり来たりしているよ。ピオニー陛下にも大佐にもよく呼び出されるからな。',
           aschText:
             '・・・・・・そうか。おまえはお人好しだからな、あの眼鏡やピオニーにいいようにこき使われるなよ。',
           expression: 'normal',
-          faceParts: { brow: 'smile', eyes: 'away', mouth: 'close', effects: [] },
+          faceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 1,
           trustDelta: 1,
           grantsLinkTags: ['hint_lab_comms'],
@@ -887,20 +887,20 @@ export const TURN_MILESTONE_QUESTIONS: {
         },
         {
           id: 'q_p2_life_room',
-          thoughtText: '今はここ（グランコクマ）の屋敷にいることが多いと答える',
+          thoughtText: '今はここの屋敷にいることが多いと答える',
           spokenText:
             '今はここの屋敷にいることが多いかな。静かで落ち着いたいい部屋だろ？',
           aschText:
-            '・・・・・・ふん、まあ悪くはないな。少なくとも、あの変態の騒々しい研究所よりは落ち着く。',
+            '・・・・・・ふん、まあ悪くはないな。少なくとも、ディストの騒々しい研究所よりは落ち着く。',
           expression: 'look_away',
-          faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: ['blush'] },
+          faceParts: { brow: 'smile', eyes: 'away', mouth: 'close', effects: ['blush'] },
           moodDelta: 1,
           trustDelta: 1,
           hideWhenBadMoodOrCold: true,
         },
         {
           id: 'q_p2_life_cold',
-          thoughtText: '「おまえに俺の居場所をいちいち教える義理はないだろ」と突き放す',
+          thoughtText: '「おまえに居場所を教える義理はない」と突き放す',
           spokenText: '・・・・・・おまえに俺の居場所をいちいち教える義理はないだろ。',
           aschText: '・・・・・・チッ、聞いた俺が馬鹿だったな。そういう態度なら好きにしろ。',
           expression: 'glare',
@@ -917,7 +917,7 @@ export const TURN_MILESTONE_QUESTIONS: {
     questionLine:
       '・・・・・・なあ、ガイ。俺が突然こんな姿で現れて・・・・・・正直、目障りだったんじゃないのか。',
     expression: 'look_away',
-    faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+    faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
     question: {
       id: 'q_p2_asch_bother',
       promptSummary: 'こんな姿で現れて目障りだったかと聞くアッシュに答える',
@@ -928,7 +928,7 @@ export const TURN_MILESTONE_QUESTIONS: {
           spokenText:
             '最初は驚いたけど、話してみれば相変わらずのおまえで安心したくらいだよ。',
           aschText:
-            '・・・・・・っ、真顔でそういうことを言うな。調子が狂うだろうが。',
+            '・・・・・・真顔でそういうことを言うな。調子が狂うだろうが。',
           expression: 'look_away',
           faceParts: {
             brow: 'angry',
@@ -942,12 +942,12 @@ export const TURN_MILESTONE_QUESTIONS: {
         },
         {
           id: 'q_p2_bother_honest',
-          thoughtText: '目障りなんてことはない、こうして同じ部屋で茶を飲めてよかったと言う',
+          thoughtText: '昔はいろいろあったけど、今はこうして落ち着いて話せてよかったと言う',
           spokenText:
-            '目障りなんてことはないさ。昔はいろいろあったけど、今はこうして同じ部屋で茶を飲めるんだからな。',
+            '目障りなんてことはないさ。昔はいろいろあったけど、今はこうして同じ部屋で落ち着いて話せるんだからな。',
           aschText: '・・・・・・そうか。おまえがそう言うなら、まあ、信じてやる。',
           expression: 'normal',
-          faceParts: { brow: 'normal', eyes: 'down', mouth: 'close', effects: [] },
+          faceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: ['blush'] },
           moodDelta: 1,
           trustDelta: 1,
           hideWhenBadMoodOrCold: true,

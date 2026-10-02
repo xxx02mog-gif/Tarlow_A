@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { DialogueLogEntry } from '../types/game';
+import { formatParagraphText } from '../utils/japaneseLineWrap';
 
 interface DialogueLogModalProps {
   isOpen: boolean;
@@ -64,8 +65,8 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
                   <span className="w-[5.2em] shrink-0 text-zinc-400">
                     {speakerName}
                   </span>
-                  <span className="text-zinc-100 break-words">
-                    {line}
+                  <span className="text-zinc-100 whitespace-pre-line break-words">
+                    {formatParagraphText(line, 44.0)}
                   </span>
                 </div>
               ));

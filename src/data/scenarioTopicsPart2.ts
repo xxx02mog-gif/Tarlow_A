@@ -17,35 +17,38 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'しかし、なんでまた『タルロウA』なんて名前で機械のフリをしていたんだ？　とっさに思いついた嘘にしては妙に具体的だったけど。',
+          'しかし、なんでまた『タルロウA』なんて名前で譜業のフリをしていたんだ？　とっさに思いついた嘘にしては妙に具体的だったけど。',
         aschText:
-          '・・・・・・でまかせじゃない。2ヶ月前まで、俺は本当に『タルロウA』という50センチくらいの小型機体に入っていた。\nおまえやあの眼鏡、ピオニーが研究所に来た時にも、何度か顔を合わせている。',
+          '・・・・・・でまかせじゃない。2ヶ月前にその機体が壊れてこれに移されるまで、俺は本当に『タルロウA』という50センチくらいの小型譜業に入っていた。\nおまえやあの眼鏡、皇帝が研究所に来た時にも、何度か顔を合わせている。',
         expression: 'normal',
-        faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
+        secondFaceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
         trustDelta: 1,
         replyOptions: [
           {
             id: 'p2_tarlow_past_reply_why_silent',
             thoughtText: '研究所で会っていたなら、なぜ声をかけなかったか聞く',
             spokenText:
-              'えっ・・・・・・あの研究所にいた赤い小型機体、おまえだったのか！？　なんでその時に声をかけてくれなかったんだ！',
+              'あの研究所にいた赤い小型譜業、おまえだったのか！？　目の前にいたなら、なんでその時に声をかけてくれなかったんだ！',
             aschText:
-              '・・・・・・俺がこんな機械になって生き永らえているなどと、気付かないならそれに越したことはないだろう。\n2ヶ月前にそのタルロウAが壊れて、この予備機体に入れ替えられた。',
+              '・・・・・・俺がこんな譜業になって生き永らえているなどと、気付かないならそれに越したことはないだろう。\n今はもうこの姿で見つかってしまったから、隠しても仕方がないがな。',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: ['shadow'] },
+            secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: [] },
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-03',
             grantsLinkTags: ['talked_tarlow_history'],
           },
           {
             id: 'p2_tarlow_past_reply_surprised',
-            thoughtText: 'あの赤い小型機体がアッシュだったと知って驚く',
+            thoughtText: '大佐やピオニー陛下にまで会っていて、よくバレなかったなと言う',
             spokenText:
-              'あの研究所の隅にいた赤い小型機体か・・・・・・！　まさかあの中に、おまえが入っていたとはな。',
+              'まさかあの小型譜業の中に入っていたとはな・・・・・・。俺はともかく、あの目ざとい大佐やピオニー陛下にまで会っていて、よく正体がバレなかったな。',
             aschText:
-              '・・・・・・笑いたければ笑え。2ヶ月前にそのタルロウAが壊れて、この予備機体に入れ替えられた。',
+              '・・・・・・ただの自律譜業のフリをして、部屋の隅で休止したふりをしていたからな。\nあの皇帝には面白半分に頭を叩かれたが、まさか中身が俺だとは思わなかったんだろう。',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
+            secondFaceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-03',
             grantsLinkTags: ['talked_tarlow_history'],
@@ -55,7 +58,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
-  // 2. 背が小さい・視線が低い話と頭を撫でるイベント（この1箇所のみ：IMMUTABLE_RULES 3準拠）
+  // 2. 背が小さい・視線が低い話
   {
     id: 'p2_height_headpat',
     thoughtText: '昔を思い出す背丈',
@@ -69,7 +72,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '11年前の予備機体ってことは、俺が屋敷にいた頃の背丈そのままなんだよな。やっぱり目線が低くて動きづらいか？',
         aschText:
-          'やかましい！　身長の話をするな！\n・・・・・・まあ、以前の50センチしかない鉄塊に比べれば、人間の形になったから以前よりマシだがな。',
+          '・・・・・・身長の話をするな。\n50センチの鉄塊だった頃に比べれば、人間の形になっただけマシだがな。',
         expression: 'glare',
         faceParts: {
           brow: 'angry',
@@ -77,40 +80,27 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           mouth: 'frown',
           effects: ['blush'],
         },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'frown',
+          effects: [],
+        },
         trustDelta: 1,
         grantsLinkTags: ['hint_human_limbs', 'talked_old_appearance'],
         replyOptions: [
           {
-            id: 'p2_height_reply_headpat',
-            thoughtText: '昔の屋敷時代を思い出して、つい頭を撫でてしまう',
-            spokenText:
-              'はは、人間の形になって安心したっていうのは正直でいいな。・・・・・・こうして見ると、本当にあの頃のままだ。',
-            aschText:
-              'なっ・・・・・・おい、勝手に頭を撫でるな！　子ども扱いするなと言っているだろうが！\n・・・・・・チッ、調子の狂う奴だ。',
-            expression: 'look_away',
-            faceParts: {
-              brow: 'angry',
-              eyes: 'away',
-              mouth: 'frown',
-              effects: ['blush', 'sweat'],
-            },
-            moodDelta: 1,
-            trustDelta: 1,
-            hideWhenBadMoodOrCold: true,
-            naturalUnlockSectorId: 'SEC-04',
-            grantsLinkTags: ['hint_human_limbs'],
-          },
-          {
             id: 'p2_height_reply_nod',
-            thoughtText: '「人間の形になってよかったな」と素直に頷く',
+            thoughtText: '「こうして向かい合っていると、本当にあの頃に戻ったみたいだよ」と言う',
             spokenText:
-              'そうだな。50センチの鉄の塊よりは、今の姿の方がずっといいよ。',
+              'そうだな。・・・・・・こうして向かい合っていると、本当にあの頃に戻ったみたいだよ。',
             aschText:
-              '・・・・・・ふん、当たり前だ。こんなガキの背丈でも、自分の手足があるだけマシだからな。',
+              '・・・・・・そうだな・・・・・・。',
             expression: 'look_away',
             faceParts: {
-              brow: 'normal',
-              eyes: 'away',
+              brow: 'sad',
+              eyes: 'down',
               mouth: 'close',
               effects: [],
             },
@@ -122,11 +112,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_height_reply_provoke',
-            thoughtText: '「その小さな体じゃ剣もまともに振れないだろうな」と口にする',
+            thoughtText: '「その小さな身体じゃ、もう昔みたいに剣もまともに振れないだろうな」と口にする',
             spokenText:
-              '・・・・・・だが、その小さな体じゃ、もう昔みたいに剣もまともに振れないだろうな。',
+              '・・・・・・だが、その小さな身体じゃ、もう昔みたいに剣もまともに振れないだろうな。',
             aschText:
-              '・・・・・・っ、やかましい！！　俺の剣の腕まで見下す気か、貴様・・・・・・ッ！\nそれ以上ガキ扱いするなら、口を利かんからな！',
+              'いちいち言うな。そんなことは俺が一番分かっている！',
             expression: 'glare',
             faceParts: {
               brow: 'angry',
@@ -146,7 +136,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // 3. お茶と味覚・好き嫌いの話（ほのぼの日常）
   {
     id: 'p2_tea_and_taste',
-    thoughtText: '紅茶の好み',
+    thoughtText: 'お茶でも淹れようか',
     phase2Tab: '雑談',
     contextCategory: 'daily',
     calmsAnger: true,
@@ -156,18 +146,19 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'そうだ、せっかく俺の部屋に来たんだし、紅茶でも淹れようか。飲めなくても、香りくらいなら分かるんだろ？',
+          'そうだ、せっかく俺の部屋に来たんだし、紅茶でも淹れようか。',
         aschText:
-          '・・・・・・茶などいらんと言っているだろう。機械の身体に飲食など不要だ。\n・・・・・・だが、まあ、おまえが勝手に淹れて香りだけ置いておくというなら、止めはしない。',
+          '・・・・・・茶などいらんと言っているだろう。飲めるには飲めるが、この身体には何の意味もない。\n・・・・・・まあ、おまえが勝手に淹れて置くというなら、止めはしない。',
         expression: 'look_away',
-        faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: ['blush'] },
+        faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
+        secondFaceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['blush'] },
         moodDelta: 2,
         guyMoodDelta: 2,
         trustDelta: 1,
         badMoodResponse: {
-          aschText: '・・・・・・淹れてくれるなら、香りだけ貰っておく。',
+          aschText: '・・・・・・淹れてくれるなら、貰っておく。',
           expression: 'look_away',
-          faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+          faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 2,
           trustDelta: 1,
         },
@@ -177,11 +168,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_tea_reply_preferences',
             thoughtText: '砂糖は入れずにそのまま出し、昔の好き嫌いの話をする',
             spokenText:
-              'ほら、砂糖は入れないでおいたよ。おまえ、昔から甘いお菓子とピーマンだけは絶対に手をつけなかったからな。',
+              'ほら、砂糖は入れないでおいたよ。おまえ、甘い水とタコだけは昔から絶対に口にしなかったからな。',
             aschText:
-              '・・・・・・余計なことまで覚えているな、おまえは。\n・・・・・・悪くない香りだ。あの変態の研究所は薬品臭くてかなわんからな。',
+              '・・・・・・余計なことまで覚えているな、おまえは。',
             expression: 'normal',
-            faceParts: { brow: 'smile', eyes: 'down', mouth: 'close', effects: [] },
+            faceParts: { brow: 'smile', eyes: 'smile', mouth: 'smile', effects: [] },
             moodDelta: 1,
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-05',
@@ -194,7 +185,8 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・ふん。\n・・・・・・悪くない茶葉だな。研究所の薬品臭い空気よりはずっとマシだ。',
             expression: 'normal',
-            faceParts: { brow: 'normal', eyes: 'down', mouth: 'close', effects: [] },
+            faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
+            secondFaceParts: { brow: 'smile', eyes: 'down', mouth: 'close', effects: [] },
             moodDelta: 1,
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-05',
@@ -207,7 +199,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // 4. 宝刀ガルディオスの話（IMMUTABLE_RULES 5-⑤準拠：Phase1で未質問の場合／質問済みの場合で自然な導入に）
   {
     id: 'p2_galdios_sword',
-    thoughtText: '壁際の『宝刀ガルディオス』',
+    thoughtText: '『宝刀ガルディオス』のこと',
     phase2Tab: '追求',
     contextCategory: 'past',
     sensitiveToBadMood: true,
@@ -217,11 +209,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'ん？　ああ、壁際の刀か。それは実家の『宝刀ガルディオス』だよ。いろいろあったけど、無事に俺の手元に戻ってきたんだ。',
+          'そこの『宝刀ガルディオス』、やっぱり気になるか？　少し前に、公爵様から返してもらったんだ。',
         aschText:
-          '・・・・・・そうか。その刀、おまえの手に戻ったんだな。\n・・・・・・ホドのものが、少しでもおまえのところへ帰ってきたのなら、よかった。',
+          '・・・・・・そうか。その刀、おまえの手に戻ったんだな。\n・・・・・・元々おまえの家のものだ。あの屋敷に飾っておくより、よほどいい。',
         expression: 'normal',
-        faceParts: { brow: 'sad', eyes: 'normal', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'normal', mouth: 'open', effects: [] },
+        secondFaceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: [] },
         moodDelta: 1,
         trustDelta: 2,
         grantsLinkTags: ['done_p2_galdios'],
@@ -231,7 +224,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_galdios_sword_after_p1',
-    thoughtText: '壁際の『宝刀ガルディオス』',
+    thoughtText: '『宝刀ガルディオス』のこと',
     phase2Tab: '追求',
     contextCategory: 'past',
     sensitiveToBadMood: true,
@@ -240,11 +233,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'さっきは機械のフリをしてはぐらかしたけど、壁際の『宝刀ガルディオス』を見て驚いていたよな。これが俺の手元に戻ったこと、知らなかったのか？',
+          'この『宝刀ガルディオス』が俺の手元に戻ったこと、今まで知らなかったのか？',
         aschText:
-          '・・・・・・ああ、今ここで実物を見て初めて知った。その刀、おまえの手に戻ったんだな。\n・・・・・・ホドのものが、少しでもおまえのところへ帰ってきたのなら、よかった。',
+          '・・・・・・ああ、知らなかった。父上が手放したんだな。\n・・・・・・元々おまえの家のものだ。あるべき場所に戻ったのなら、それでいい。',
         expression: 'normal',
-        faceParts: { brow: 'sad', eyes: 'normal', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+        secondFaceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: [] },
         moodDelta: 1,
         trustDelta: 2,
         grantsLinkTags: ['done_p2_galdios'],
@@ -266,13 +260,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: 'その身体での剣のこと（もう一度聞く）',
         spokenText:
-          'その身体、普段通り歩いたり喋ったりはできているみたいだけど、剣を振ったりもできるのか？',
+          '普段通り歩いたり喋ったりはできているみたいだけど、その身体で剣を振ったりもできるのか？',
         retrySpokenText:
           'さっきの剣の話だけど・・・・・・やっぱりその身体、動かす時に制限がかかっているのが気になるのか？',
         aschText:
-          '・・・・・・できない。ディストが四肢に出力制限をかけてやがる。\n・・・・・・おまえに心配される筋合いはない。',
+          '・・・・・・できない。ディストが四肢に出力制限をかけてやがる。',
         retryAschText:
-          '・・・・・・チッ、ディストが四肢に出力制限をかけてやがると言っただろう。まだ何か言いたいことがあるのか。',
+          '・・・・・・ディストが四肢に出力制限をかけてやがると言っただろう。',
         expression: 'glare',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
         capturedProtect: {
@@ -283,13 +277,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_sword_reply_correct_swing',
-            thoughtText: '「人間の手足に戻ったんだ、隠れて素振りくらい試したんじゃないか？」',
+            thoughtText: '「前の小型機体よりはずっとマシなんだろうけど、剣を振れないのはもどかしいよな」',
             spokenText:
-              'せっかく人間の手足に戻ったんだ、おまえのことだから誰もいない時に隠れて素振りくらい試したんじゃないか？',
+              '前の小型機体よりはずっとマシなんだろうけど、剣を振れないのはもどかしいよな。',
             aschText:
-              '・・・・・・っ！　き、貴様、見ていたわけじゃないだろうな・・・・・・！\nチッ、少し強く踏み込んだだけでリミッターが作動して、足元が狂っただけだ。',
+              '・・・・・・せっかく手足があるのに、強く踏み込むことすらできんからな。',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['blush', 'sweat'] },
+            faceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_human_limbs',
@@ -299,11 +293,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_sword_reply_wrong_giveup',
-            thoughtText: '「その小さな体じゃ危ないし、もう剣は諦めて大人しくしていた方がいい」',
+            thoughtText: '「その小さな身体じゃ危ないし、制限がかかっているくらいでちょうどいいんじゃないか？」',
             spokenText:
-              'その小さな体じゃ危ないし、もう剣は諦めて大人しくしていた方がいいんじゃないか？',
+              'その小さな身体じゃ危ないし、制限がかかっているくらいでちょうどいいんじゃないか？',
             aschText:
-              '・・・・・・っ、やかましい！　貴様に俺の剣まで否定される覚えはない！',
+              '・・・・・・おまえまで俺をガキ扱いする気か！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
             voiceEffects: ['shout'],
@@ -312,11 +306,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_sword_reply_wrong_beg_dist',
-            thoughtText: '「ディストに頼み込んで、出力制限を外してもらえばいいじゃないか」',
+            thoughtText: '「ディストに頼んで、その制限を外してもらえばいいんじゃないか？」',
             spokenText:
-              'そんなに不便なら、ディストに頼み込んで出力制限を外してもらえばいいじゃないか。',
+              'ディストに頼んで、その制限を外してもらえばいいんじゃないか？',
             aschText:
-              '・・・・・・あの変態に頭を下げろと言うのか？　冗談じゃない、いずれ自力で外してやる。',
+              '・・・・・・あいつに頭を下げろと言うのか。冗談じゃない。',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
             moodDelta: -1,
@@ -324,13 +318,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_sword_reply_back_off',
-            thoughtText: '「・・・・・・そうか、無理には聞かないでおくよ」と一旦引く',
+            thoughtText: '「・・・・・・そうか。あまり触れられたくない話だったな、悪かったよ」と一旦引く',
             spokenText:
-              '・・・・・・そうか。無理には聞かないでおくよ。',
+              '・・・・・・そうか。あまり触れられたくない話だったな、悪かったよ。',
             aschText:
-              '・・・・・・ふん、余計なお世話だ。',
+              '・・・・・・別に。',
             expression: 'look_away',
-            faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
+            faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
           },
         ],
@@ -351,16 +345,17 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           'ディストの研究所にいる間、あいつに妙な実験や雑用を押し付けられたりしていないか？',
         aschText:
-          '・・・・・・あの変態の趣味に付き合わされる身にもなってみろ。\n機体名にとんでもない名前をつけようとするわ、毎日何時間も自慢話を聞かされるわで、うるさくて仕方がない。',
+          '・・・・・・ディストの趣味に付き合わされる身にもなってみろ。\n機体名にとんでもない名前をつけようとするわ、毎日何時間も自慢話を聞かされるわで、うるさくて仕方がない。',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
+        faceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: ['sweat'] },
+        secondFaceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
         moodDelta: 1,
         trustDelta: 1,
         grantsLinkTags: ['talked_dist_hideout'],
         badMoodResponse: {
-          aschText: '・・・・・・あの変態が何時間も自慢話で騒ぐのを適当にあしらっているだけだ。',
+          aschText: '・・・・・・あいつが何時間も自慢話で騒ぐのを適当にあしらっているだけだ。',
           expression: 'look_away',
-          faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+          faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 0,
         },
         replyOptions: [
@@ -368,11 +363,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_dist_reply_hideout',
             thoughtText: 'それでもディストの研究所に居続けるのは意外だと言う',
             spokenText:
-              'はは、ディスト相手に毎日ツッコミを入れてるおまえの姿が目に浮かぶよ。でも、そんなに騒がしいならあんな研究所に居続けなくてもいいのにな。',
+              'はは、ディスト相手に毎日怒鳴り散らしてるおまえの姿が目に浮かぶよ。でも、そんなに騒がしいならあんな研究所に居続けなくてもいいのにな。',
             aschText:
-              '・・・・・・あそこは人目につかない。あの変態も口だけは堅いからな、身を隠すには都合がいいだけだ。',
+              '・・・・・・あそこは人目につかない。あいつも口だけは堅いからな、身を隠すには都合がいいだけだ。',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-09',
             grantsLinkTags: ['talked_dist_hideout'],
@@ -385,7 +380,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '笑い事じゃない！　本気で銘板に刻もうとしやがったから、その場でへし折ってやった。\n・・・・・・まったく、あいつは騒がしいにも程がある。',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
+            secondExpression: 'look_away',
+            secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: [] },
             moodDelta: 1,
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-09',
@@ -409,13 +406,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '研究室で隠れなかった理由（もう一度聞く）',
         spokenText:
-          'そういえば、今日俺がディストの研究室に入ったとき、なんで物陰に隠れもしないで部屋の隅に突っ立っていたんだ？　前みたいにやり過ごすこともできただろ？',
+          '今日俺が研究室に入ったとき、なんで物陰に隠れもせずに部屋の隅に立っていたんだ？',
         retrySpokenText:
           'さっきの話だけど・・・・・・今日俺が研究室に入ったとき、やっぱり何か隠れ損ねる理由があったんじゃないのか？',
         aschText:
-          '・・・・・・別にボサッとしていたわけじゃない！　おまえがノックもなしに勝手に入ってきただけだろうが。',
+          '・・・・・・足音が聞こえたから、いつも通り部屋の隅に退避して・・・・・・っ。',
         retryAschText:
-          '・・・・・・まだその話をする気か。しつこい奴だな。',
+          '・・・・・・まだその話をする気か。',
         expression: 'look_away',
         faceParts: {
           brow: 'angry',
@@ -426,32 +423,31 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         capturedProtect: {
           sectorId: 'SEC-10',
           capturedQuote:
-            '「・・・・・・別にボサッとしていたわけじゃない！　おまえがノックもなしに勝手に入ってきただけだろうが。」',
+            '「・・・・・・足音が聞こえたから、いつも通り部屋の隅に退避して・・・・・・っ。」',
           capturedContext: '研究室に入った際になぜ隠れなかったのか尋ねた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_why_outside_reply_correct_tired',
-            thoughtText: '「俺が入る直前まで、ディストの長話に付き合わされて疲れていたんだろ？」',
+            thoughtText: '「・・・・・・まだ自分が50センチの『タルロウA』のつもりだったのか？」',
             spokenText:
-              '・・・・・・もしかして、俺が入る直前までディストの長い自慢話に付き合わされて、疲れ果てていたんじゃないのか？',
+              '・・・・・・まだ自分が50センチの『タルロウA』のつもりだったのか？',
             aschText:
-              '・・・・・・っ、なぜそれを知っている！？\n・・・・・・チッ、誰だって3時間も自慢話を聞かされりゃ、反応くらい鈍るだろうが。おかげでこうして貴様に捕まる羽目になった。',
+              '・・・・・・咄嗟に前の癖が出ただけだ。',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+            faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: ['blush'] },
             moodDelta: 1,
             trustDelta: 2,
-            requireLinkTag: 'talked_dist_hideout',
             naturalUnlockSectorId: 'SEC-10',
             completesTopic: true,
           },
           {
             id: 'p2_why_outside_reply_wrong_wanted',
-            thoughtText: '「本当は俺に見つけてほしくて、わざと残っていたんじゃないのか？」',
+            thoughtText: '「俺に見つけてほしくて、わざと残っていたんじゃないのか？」',
             spokenText:
-              '本当は俺に見つけてほしくて、わざと部屋の隅に残っていたんじゃないのか？',
+              '俺に見つけてほしくて、わざと残っていたんじゃないのか？',
             aschText:
-              '・・・・・・っ、ふざけるな！　誰が貴様なんかに見つけてほしがるか、自惚れるのも大概にしろ！',
+              'そんな訳があるか！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
             voiceEffects: ['shout'],
@@ -460,23 +456,23 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_why_outside_reply_wrong_broken_sensor',
-            thoughtText: '「機械の聴覚センサーが故障して、俺の足音に気づかなかったのか？」',
+            thoughtText: '「部屋の隅に突っ立っていれば、置物のフリで誤魔化せると思ったのか？」',
             spokenText:
-              '機械の聴覚センサーでも故障して、俺が入ってきた足音に気づかなかったのか？',
+              '部屋の隅に突っ立っていれば、置物のフリで誤魔化せると思ったのか？',
             aschText:
-              '・・・・・・俺を出来損ないのガラクタ扱いするな！　センサーは正常に動いている！',
+              '・・・・・・悪かったな、どうせ間抜けな見た目だっただろうよ！',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush'] },
             moodDelta: -2,
             completesTopic: true,
           },
           {
             id: 'p2_why_outside_reply_back_off',
-            thoughtText: '「・・・・・・いや、なんでもない。また後で聞くよ」と一旦引く',
+            thoughtText: '「・・・・・・いや、なんでもない。追及して悪かったな」と一旦引く',
             spokenText:
-              '・・・・・・いや、なんでもない。また後で聞くよ。',
+              '・・・・・・いや、なんでもない。追及して悪かったな。',
             aschText:
-              '・・・・・・ふん、最初からくだらないことを聞くな。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -497,31 +493,37 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'その着ている服も、昔バチカルの屋敷にいた頃の服によく似ているよな。ディストが用意してくれたのか？',
+          'その着ている服も、昔屋敷にいた頃の服によく似ているよな。ディストが用意してくれたのか？',
         aschText:
-          '・・・・・・服の話などどうでもいいだろう。着替えがこれしかなかっただけだ。\nあいつが最初に持ってきた悪趣味な服よりは、まだこれの方がマシだったからな。',
+          '・・・・・・着替えがこれしかなかっただけだ。\nあいつが最初に持ってきた悪趣味な服よりは、まだこれの方がマシだったからな。',
         expression: 'look_away',
         faceParts: {
-          brow: 'sad',
+          brow: 'normal',
           eyes: 'away',
           mouth: 'frown',
-          effects: ['blush'],
+          effects: [],
+        },
+        secondFaceParts: {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'frown',
+          effects: ['sweat'],
         },
         trustDelta: 1,
         badMoodResponse: {
           aschText: '・・・・・・着替えがこれしかなかっただけだ。',
           expression: 'look_away',
-          faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+          faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 0,
         },
         replyOptions: [
           {
             id: 'p2_clothes_reply_suits_you',
-            thoughtText: '「よく似合っているよ。昔を思い出すな」と微笑む',
+            thoughtText: '「今のその服、よく似合っているよ。昔を思い出すな」と微笑む',
             spokenText:
-              'ディストが持ってきた悪趣味な服っていうのも気になるけど・・・・・・今のその服、よく似合っているよ。昔を思い出すな。',
+              '今のその服、よく似合っているよ。昔を思い出すな。',
             aschText:
-              '・・・・・・うるさい、しみじみ見るな！　小さい身体で着慣れないから、襟元が窮屈でかなわん。',
+              '・・・・・・まじまじ見るな。',
             expression: 'look_away',
             faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
             moodDelta: 1,
@@ -547,19 +549,19 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '仲間たちの近況（もう一度聞く）',
         spokenText:
-          '外の連中といえば、ナタリアもバチカルの復興で毎日忙しく飛び回っているし、ピオニー陛下や大佐も相変わらずだ。少しは気になっていたんじゃないか？',
+          'ナタリアもバチカルの復興で忙しく飛び回っているし、ピオニー陛下や大佐も相変わらずだ。少しは気になっていたんじゃないか？',
         retrySpokenText:
           'さっきは興味がないって言っていたけど・・・・・・外の連中のこと、本当は少しくらい気にかけているんじゃないのか？',
         aschText:
           '・・・・・・外の連中のことなど、俺の知ったことか。',
         retryAschText:
-          '・・・・・・しつこい奴だな。外の連中のことなど、俺には関係ないと言っているだろうが。',
+          '・・・・・・外の連中のことなど、俺には関係ないと言っているだろうが。',
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
-          eyes: 'away',
+          eyes: 'down',
           mouth: 'frown',
-          effects: ['blush'],
+          effects: [],
         },
         capturedProtect: {
           sectorId: 'SEC-07',
@@ -569,13 +571,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_friends_reply_correct_comms',
-            thoughtText: '「知ったことかって言う割に、研究所の通信機で動向を調べていたんじゃないか？」',
+            thoughtText: '「そう言いつつ、研究所にある通信機でみんなの動向くらいは見ていたんじゃないか？」',
             spokenText:
-              '『俺の知ったことか』って言う割に、研究所にある通信機でバチカルやマルクトの動向は調べていたんじゃないのか？',
+              'そう言いつつ、研究所にある通信機でみんなの動向くらいは見ていたんじゃないか？',
             aschText:
-              '・・・・・・っ、なぜそれを・・・・・・！\n・・・・・・暇つぶしに通信網を覗いていただけだ。あいつらが勝手に元気でやっているなら、それで十分だろう。',
+              '・・・・・・暇つぶしに通信網を覗いていただけだ。元気にやっているなら、それでいい。',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+            faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['blush'] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_lab_comms',
@@ -585,11 +587,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_friends_reply_tease_angry',
-            thoughtText: '「本当はひとりで研究所にいて寂しくてたまらないくせに、意地を張るなよ」',
+            thoughtText: '「本当はひとりで研究所にいて寂しいくせに、意地を張るなよ」',
             spokenText:
-              '本当はひとりで研究所にいて寂しくてたまらないくせに、いつまでそんな意地を張ってるんだ？',
+              '本当はひとりで研究所にいて寂しいくせに、意地を張るなよ。',
             aschText:
-              '・・・・・・っ、ふざけるな！！　誰が寂しいなどと言った、勝手な決めつけをするな！！',
+              '・・・・・・勝手な決めつけをするな！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
             voiceEffects: ['shout'],
@@ -598,11 +600,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_friends_reply_wrong_go_baticul',
-            thoughtText: '「今すぐ俺と一緒にバチカルへ行って、みんなにその姿を見せよう」',
+            thoughtText: '「せっかく生きているんだから、今からでもバチカルへ顔を出せばいいじゃないか」',
             spokenText:
-              'そんなに気になるなら、今すぐ俺と一緒にバチカルへ行って、みんなにその姿を見せようじゃないか。',
+              'せっかく生きているんだから、今からでもバチカルへ顔を出せばいいじゃないか。',
             aschText:
-              '・・・・・・断る！　こんな姿でバチカルへノコノコ戻れるわけがないだろうが！',
+              '・・・・・・断る。こんな姿で戻れるわけがないだろう。',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
             moodDelta: -2,
@@ -610,13 +612,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_friends_reply_back_off',
-            thoughtText: '「・・・・・・そうか、この話はまた後でしよう」と一旦引く',
+            thoughtText: '「・・・・・・そうか、気が向かないなら今はやめておくよ」と一旦引く',
             spokenText:
-              '・・・・・・そうか。この話はまた後でしよう。',
+              '・・・・・・そうか。気が向かないなら、今はやめておくよ。',
             aschText:
-              '・・・・・・ふん、いちいち報告しなくて結構だ。',
+              '・・・・・・ああ。',
             expression: 'look_away',
-            faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
+            faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
           },
         ],
@@ -636,35 +638,37 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'なあ、おまえを研究室から連れ出すときにディストが『これを持っていきなさい』って渡してきたこの板なんだが・・・・・・見覚えはあるか？',
+          'なあ、研究室を出るときにディストからこれを渡されたんだが・・・・・・この画面、おまえの記録か？',
         aschText:
-          'チッ、その忌々しい板を俺に向けるな！\n・・・・・・ディストの奴、俺の内部記録を見る管理端末までおまえに渡しやがったのか。',
-        expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['sweat'] },
+          'なっ・・・・・・おい、それは俺の内部モニターじゃないか！\n・・・・・・ディストの奴、俺の管理端末までおまえに渡しやがったのか。',
+        expression: 'shock',
+        faceParts: { brow: 'angry', eyes: 'wide', mouth: 'gasp', effects: ['sweat'] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'angry', eyes: 'close', mouth: 'frown', effects: ['sweat'] },
         grantsLinkTags: ['terminal_revealed'],
         systemLog: 'TERMINAL REVEALED // TARGET AWARE OF MONITOR DEVICE',
         replyOptions: [
           {
             id: 'p2_show_terminal_reply_lower',
-            thoughtText: '「むやみに弄ったりしないよ」と端末を下げる',
+            thoughtText: '「悪かったよ。むやみに弄ったりしないでおく」と端末を下げる',
             spokenText:
-              '悪かったよ。むやみに弄ったりしないでおくから、そう睨むな。',
+              '悪かったよ。むやみに弄ったりしないでおく。',
             aschText:
-              '・・・・・・ふん。勝手に俺の内部モニターを覗き見るなよ。',
+              '・・・・・・当たり前だ。',
             expression: 'look_away',
-            faceParts: { brow: 'normal', eyes: 'away', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
             trustDelta: 1,
             hideWhenBadMoodOrCold: true,
           },
           {
             id: 'p2_show_terminal_reply_care',
-            thoughtText: '「その身体に無理が出ていないか気になってさ」と言う',
+            thoughtText: '「その身体に無理が出ていないか気になってな」と言う',
             spokenText:
-              'すまん。ただ、その身体に無理が出ていないか気になってさ。',
+              'すまん。ただ、その身体に無理が出ていないか気になってな。',
             aschText:
-              '・・・・・・余計なお世話だ。俺の身体くらい自分で分かる。変な記録まで勝手に開けるなよ。',
+              '・・・・・・余計なお世話だ。自分の身体くらい自分で分かる。',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: [] },
             moodDelta: 1,
             trustDelta: 1,
             hideWhenBadMoodOrCold: true,
@@ -675,7 +679,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'へえ、これが管理端末なのか。つまりおまえが隠してることも、これを見れば全部丸見えってわけだな。',
             aschText:
-              '・・・・・・っ、趣味の悪い真似をするな！！　人の頭の中を勝手に覗き見て楽しいか、貴様・・・・・・ッ！',
+              '趣味の悪い真似をするな！！　人の頭の中を勝手に覗き見て楽しいのか、おまえは・・・・・・ッ！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush', 'sweat'] },
             voiceEffects: ['shout'],
@@ -698,10 +702,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'その身体、感情が上がると顔に熱がこもって赤くなる仕様なんだな。生前とまるで同じじゃないか。',
+          '顔が赤いぞ？　どういう仕組みなんだ？',
         aschText:
-          'うるさい！　冷却系の放熱処理がそうなっているだけだ！\n・・・・・・いちいち人の顔を覗き込むな、鬱陶しい！',
-        expression: 'glare',
+          '・・・・・・ただの放熱だ。',
+        expression: 'look_away',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
         moodDelta: 1,
         trustDelta: 1,
@@ -719,11 +723,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'ディストの奴、最初におまえの語尾を『〜ズラ』に設定しようとして、おまえに設定端末ごと叩き割られたんだってな。',
+          'ディストの奴、最初におまえの語尾を『〜ズラ』に設定しようとして、設定端末ごと叩き割られたんだってな。',
         aschText:
-          '・・・・・・思い出すだけで腹が立つ！　誰があんなふざけた語尾で喋るか！\nあの変態、次に同じ真似をしたら研究所ごとスクラップにしてやる・・・・・・！',
+          '・・・・・・思い出すだけで腹が立つ。\n次に同じ真似をしたら、端末だけでは済まさんからな・・・・・・！',
         expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush'] },
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
+        secondFaceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['shadow'] },
         moodDelta: 1,
         trustDelta: 1,
         grantsLinkTags: ['hint_voice_crack'],
@@ -743,9 +748,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '研究所の高い棚に手が届かなくて、誰もいない時に踏み台を探し回ったっていうのは本当か？',
         aschText:
-          'なっ・・・・・・！？　だ、誰にも見られていなかったはずだろうが、なぜ貴様がそれを知っている！？\n・・・・・・ち、違う、あれはたまたま上の棚の部品を確認していただけだ！　笑うな！',
+          'なっ・・・・・・！？\n・・・・・・ち、違う、あれは上の棚の資料を確認していただけだ！',
         expression: 'shock',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'sad', eyes: 'wide', mouth: 'gasp', effects: ['blush', 'sweat'] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -753,7 +760,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec05_pepper',
-    thoughtText: '【MC-004】突き返したディストの菓子',
+    thoughtText: '【MC-004】飲食できる身体の仕様',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -762,11 +769,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'ディストが差し入れた特製の砂糖漬けケーキを、一口検知した瞬間に突き返したんだってな。',
+          'その身体、栄養にはならなくても食事はできる仕様なんだな。今度、好物のチキンでも用意しようか？',
         aschText:
-          '・・・・・・っ、あんな砂糖の塊、味覚センサーが壊れるに決まっているだろうが！\nあの変態、人の好みを知っていてわざと持ってきやがったんだ！',
+          '・・・・・・余計な気を使うな。腹も減らない身体で食ったところで、虚しくなるだけだろうが。',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -774,7 +781,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec07_night_search',
-    thoughtText: '【EM-004】真夜中の通信履歴',
+    thoughtText: '【EM-004】タタル渓谷の帰還記録',
     phase2Tab: '端末',
     contextCategory: 'friends',
     sensitiveToBadMood: true,
@@ -783,13 +790,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '研究所のサブ端末でバチカルやピオニー陛下の動向を調べていた時間、全部ディストが寝静まった『真夜中』だったんだってな。',
+          '研究所の通信機で、1年前にルークがタタル渓谷へ戻った時の記録を何度も開いていたんだな。',
         aschText:
-          '・・・・・・っ！　き、貴様、時刻の記録まで見やがったのか！？\n・・・・・・昼間に開いたら、あの変態が横から覗き込んでうるさいから夜中に繋いだだけだ！　変な勘繰りをするな！',
+          '・・・・・・あいつが本当に戻ったのか、確かめただけだ。\n・・・・・・あいつが戻っているなら、俺が顔を出す必要はない。',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+        secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: ['shadow'] },
         moodDelta: 1,
         trustDelta: 1,
+        grantsLinkTags: ['talked_friends_news', 'hint_sleep_dreams'],
       },
     ],
   },
@@ -804,11 +813,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '空き部屋で隠れて剣の素振りをしようとして、出力制限で転んで壁を蹴飛ばしたそうじゃないか。',
+          '空き部屋で剣の素振りをしようとして、出力制限で転んで壁を蹴飛ばしたそうじゃないか。',
         aschText:
-          'チッ・・・・・・うるさい！　急にリミッターが作動したせいで、足元が狂っただけだ！\n体がどれくらい動くか試していただけだ、二度とその話をするな！',
-        expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['blush'] },
+          '・・・・・・この身体がどれくらい動くか、試していただけだ。',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: ['blush'] },
         trustDelta: 1,
       },
     ],
@@ -826,9 +835,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           'ディストが提案した機体名の候補、おまえが片っ端から却下したっていう記録が残っているぞ。',
         aschText:
-          '当たり前だろうが！　どれもこれも正気を疑うような名前ばかり並べやがって・・・・・・！\n・・・・・・おい、そこでニヤニヤするな！',
+          '当たり前だろうが！　どれもこれも正気を疑うような名前ばかり並べやがって・・・・・・！\n・・・・・・思い出すだけでも頭痛がしてくる。',
         expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'pain', eyes: 'close', mouth: 'frown', effects: ['sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -836,7 +847,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec10_alley_lost',
-    thoughtText: '【EM-006】ディストの3時間の長話',
+    thoughtText: '【EM-006】部屋の隅で固まっていた記録',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -845,11 +856,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '今日俺が入ってきたとき、ディストの3時間の長話でぐったりして、反応が1.8秒遅れたんだってな。',
+          '部屋の隅に立ったあと、今の身体じゃ丸見えだって気づいて、慌てて隠れ場所を探しかけた記録が残ってるぞ。',
         aschText:
-          '・・・・・・っ、1.8秒だと！？　そこまで記録してやがるのか！？\n・・・・・・うるさい、3時間もあいつの自慢話を聞かされてみろ、誰だって頭が痺れる！',
+          'う、うるさい！',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'shout', effects: ['blush', 'sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -868,7 +879,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '今の身体に替わった時、一番上の襟ボタンを留めるのに3分も格闘していたんだってな。',
         aschText:
-          '・・・・・・っ、やかましい！　指先が小さくなって、生前と勝手が違っただけだろうが！\nくだらないことをいちいち口に出すな！',
+          '・・・・・・指先が小さくなって、勝手が違っただけだ。',
         expression: 'look_away',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
         moodDelta: 1,
@@ -889,9 +900,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '研究所の空き部屋で1人チェスをしていた時、自分側の黒番が負けそうになってこっそり駒を1つ戻したそうじゃないか。',
         aschText:
-          '・・・・・・っ！？　な、なぜそれを知っている！？　誰もいなかったはずだろうが・・・・・・！\nち、違う！　あれは一手前の盤面を検証し直していただけだ！',
+          'ち、違う！　あれは一手前の盤面を検証し直していただけだ！',
         expression: 'shock',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'open', effects: ['blush', 'sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -910,9 +921,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '今の身体に替わった直後、怒鳴ろうとして声が裏返ったのが悔しくて、2日間ずっと筆談で通したんだってな。',
         aschText:
-          '・・・・・・っ、やかましい！！　なぜそんな記録まで残っているんだ！？\n・・・・・・声帯の調整が終わるまで声を出したくなかっただけだ、二度とその話を蒸し返すな！',
+          '声に慣れるまで喋りたくなかっただけだ！',
         expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['sweat'] },
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['blush', 'sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -931,9 +942,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '公爵様や奥様の話をした時の波形、怒りや反発は少しも出ていなかったぞ。本当は奥様たちのこと、今でも心配なんだろ。',
         aschText:
-          '・・・・・・っ、人の感情波形までいちいち読み上げるな！\n・・・・・・母上は昔から涙脆いからな。死んだはずの息子がこんな姿で現れたら、また余計な心労をかけるだけだ。',
+          '・・・・・・人の感情波形までいちいち読み上げるな。\n・・・・・・母上は昔から、涙脆いからな。',
         expression: 'look_away',
-        faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
+        secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -952,9 +964,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           'おまえ、無意識のうちに右の掌を親指で擦る癖がついているんだな。やっぱり剣ダコがないのが気になるのか？',
         aschText:
-          '・・・・・・チッ、人の手元までいちいち見ているな。\n・・・・・・長年の感触が抜けないだけだ。',
+          '・・・・・・チッ。\n・・・・・・長年の感触が、抜けないだけだ。',
         expression: 'look_away',
-        faceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: [] },
+        secondFaceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -971,9 +984,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '3ヶ月前に大佐が研究所へ来た時、タルロウAのおまえの前で立ち止まって『せいぜい壊れないようにしてくださいよ』って声をかけたんだってな。あれ、気づいていたのか？',
+          '3ヶ月前に大佐が研究所へ来た時、おまえを無言でじっと見ていったんだってな。あれ、気づかれていたのか？',
         aschText:
-          '・・・・・・知るか！　ただの機械に向けた皮肉かもしれんし、あの眼鏡のことだから何か感づいていたのかもしれん。\n・・・・・・どっちにしろ気味が悪い。次に研究所へ来ても絶対に関わらん！',
+          '・・・・・・知るか。だから余計に気味が悪いんだろうが・・・・・・。',
         expression: 'glare',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['sweat'] },
         moodDelta: 1,
@@ -1007,7 +1020,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
-          eyes: 'down',
+          eyes: 'close',
           mouth: 'frown',
           effects: ['sweat'],
         },
@@ -1024,12 +1037,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_why_hide_reply_step_in',
             thoughtText: '「今の姿を見られるのが嫌なんじゃなくて・・・・・・死んだはずの自分がなぜ動いているか分からないからか？」',
             spokenText:
-              '・・・・・・今の姿を見られるのが嫌なんじゃなくて、死んだはずの自分がなぜ機械の身体で動いているのか、おまえ自身にも分からないからか？',
+              '・・・・・・今の姿を見られるのが嫌なんじゃなくて、死んだはずの自分がなぜ譜業の身体で動いているのか、おまえ自身にも分からないからか？',
             aschText:
               '・・・・・・あいつが戻っているなら、それでいいだろう。\n今の俺が何なのか、俺自身にも分からん。・・・・・・そんなまま、今さら誰の前に出られる。',
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
+              eyes: 'close',
+              mouth: 'close',
+              effects: [],
+            },
+            secondFaceParts: {
+              brow: 'pain',
               eyes: 'down',
               mouth: 'frown',
               effects: [],
@@ -1048,10 +1067,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 spokenText:
                   '・・・・・・そういうことか。\n分かったよ。おまえがそういう気持ちでいるなら、俺からナタリアやルークに話すことはしない。',
                 aschText:
-                  '・・・・・・ふん、最初からそうしろ。\n・・・・・・それと、これ以上俺の頭の中を勝手に詮索するなよ。',
+                  '・・・・・・ああ。',
                 expression: 'look_away',
                 faceParts: {
-                  brow: 'sad',
+                  brow: 'normal',
                   eyes: 'away',
                   mouth: 'close',
                   effects: [],
@@ -1085,11 +1104,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'まさかディストに何か弱みを握られて、研究所から出られないようにされているのか？',
             aschText:
-              '・・・・・・あの変態に縛られる俺じゃない。見当違いな詮索をするな。',
+              '・・・・・・ディストに縛られる俺じゃない。見当違いな詮索をするな。',
             expression: 'glare',
             faceParts: {
-              brow: 'angry',
-              eyes: 'away',
+              brow: 'doubt',
+              eyes: 'glare',
               mouth: 'frown',
               effects: [],
             },
@@ -1102,7 +1121,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・そうか。おまえがそこまで言いたくないなら、無理には聞かないでおくよ。',
             aschText:
-              '・・・・・・ああ。余計な詮索はするな。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
@@ -1137,9 +1156,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           '・・・・・・俺が選んだわけじゃない。\n昔、万が一レプリカの生成が滞った時の『場繋ぎ』として造られていた予備の機体だ。ディストの研究所に転がっていたのが、これしかなかっただけだ。',
         expression: 'look_away',
         faceParts: {
-          brow: 'sad',
+          brow: 'angry',
           eyes: 'away',
           mouth: 'frown',
+          effects: [],
+        },
+        secondFaceParts: {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
           effects: [],
         },
         trustDelta: 1,
@@ -1157,7 +1182,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
-              eyes: 'down',
+              eyes: 'close',
               mouth: 'frown',
               effects: [],
             },
@@ -1167,15 +1192,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_why_10yo_reply_better_than_tarlow',
-            thoughtText: '「小型のタルロウAよりはマシだったのか？」と聞く',
+            thoughtText: '「11年前の予備機体・・・・・・ね。」と呟く',
             spokenText:
-              '小型のタルロウAよりは、今の姿のほうがマシだったのか？',
+              '11年前の予備機体・・・・・・ね。',
             aschText:
-              '・・・・・・視線が低いのは気に食わないが、手足があって剣を握れるだけ、あの鉄くずよりはマシだ。',
+              '・・・・・・手足があって剣を握れるだけ、あの鉄くずよりはマシだ。',
             expression: 'normal',
             faceParts: {
               brow: 'normal',
-              eyes: 'away',
+              eyes: 'down',
               mouth: 'close',
               effects: [],
             },
@@ -1211,6 +1236,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           mouth: 'close',
           effects: [],
         },
+        secondFaceParts: {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
+          effects: [],
+        },
         trustDelta: 1,
         grantsLinkTags: ['hint_sleep_dreams'],
         oralInfo: {
@@ -1232,6 +1263,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               '・・・・・・ああ。意識が戻るたびに、心臓の拍動じゃなく、胸の中で音機関が回る微かな振動だけが響く。\n・・・・・・いつまで経っても、慣れる気はしないがな。',
             expression: 'look_away',
             faceParts: {
+              brow: 'sad',
+              eyes: 'close',
+              mouth: 'close',
+              effects: [],
+            },
+            secondFaceParts: {
               brow: 'sad',
               eyes: 'down',
               mouth: 'frown',
@@ -1275,9 +1312,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'じゃあ、どこか他に身を寄せる当てでもあるのか？',
             aschText:
-              '・・・・・・ない。\nバチカルにも戻れん。騎士団にも俺の席はない。・・・・・・かといって、こんな身体でどこへ行けと言うんだ。',
+              '・・・・・・ない。\nバチカルにも戻れん。・・・・・・こんな身体で、どこへ行けと言うんだ。',
             expression: 'look_away',
             faceParts: {
+              brow: 'sad',
+              eyes: 'close',
+              mouth: 'close',
+              effects: [],
+            },
+            secondFaceParts: {
               brow: 'sad',
               eyes: 'down',
               mouth: 'frown',
@@ -1311,7 +1354,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         expression: 'normal',
         faceParts: {
           brow: 'normal',
-          eyes: 'normal',
+          eyes: 'down',
           mouth: 'close',
           effects: [],
         },
@@ -1324,19 +1367,33 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'ああ。あの頃の俺は、おまえたちファブレ一族を恨んで、隙あらば復讐しようとずっと機会を窺っていた。\n・・・・・・まさか何年も経って、あの時と同じ姿のおまえとこうして向き合うことになるとはな。',
             aschText:
-              '・・・・・・おまえがそういう目で俺を見ていたことくらい、ずっと前から知っていた。\n・・・・・・ふん、妙な同情を向けられるより、気が楽だ。',
-            expression: 'look_away',
+              'おまえは・・・・・・\n・・・・・・いや、いい。',
+            expression: 'normal',
             faceParts: {
               brow: 'sad',
-              eyes: 'away',
+              eyes: 'down',
+              mouth: 'open',
+              effects: [],
+            },
+            secondExpression: 'look_away',
+            secondFaceParts: {
+              brow: 'sad',
+              eyes: 'close',
               mouth: 'close',
               effects: [],
             },
             moodDelta: 1,
             trustDelta: 2,
             grantsLinkTags: ['hint_manor_parents'],
+            oralInfo: {
+              id: 'oral-manor-unsaid-words',
+              category: '情動反応',
+              title: '屋敷時代の話題における発声中断と未出力テキスト',
+              content:
+                '屋敷時代の因縁に関する対話中、「おまえは・・・・・・」の後続として言語野で『今でも俺が憎いんだろう』という音声バッファが形成されたが、声帯ユニットへの出力直前に破棄され、「・・・・・・いや、いい」へ差し替えられた履歴。',
+            },
             systemLog:
-              'RESPONSE LOGGED // TOPIC: MANOR_MEMORIES',
+              'SPEECH BUFFER ABORTED // CODE: [EM-UNSAID_QUERY]',
             completesTopic: true,
           },
         ],
@@ -1360,30 +1417,30 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '研究所での過ごし方（もう一度聞く）',
         spokenText:
-          'ディストの研究所にこもっている間、外出もしないで毎日何をして時間を潰しているんだ？',
+          '研究所にこもっている間、外出もしないで毎日何をして時間を潰しているんだ？',
         retrySpokenText:
           'さっきは『何もしていない』って言っていたけど・・・・・・本当は研究所で何か暇つぶしをしているんじゃないのか？',
         aschText:
-          '・・・・・・別に、何もしていない。ただ音機関を休めているだけだ。余計なことを聞くな。',
+          '・・・・・・別に、何もしていない。',
         retryAschText:
-          '・・・・・・しつこい奴だな。研究所で何をしていようが俺の勝手だろうが。',
+          '・・・・・・研究所で何をしていようが俺の勝手だろうが。',
         expression: 'look_away',
         faceParts: { brow: 'normal', eyes: 'away', mouth: 'frown', effects: [] },
         capturedProtect: {
           sectorId: 'SEC-13',
-          capturedQuote: '「・・・・・・別に、何もしていない。ただ音機関を休めているだけだ。」',
+          capturedQuote: '「・・・・・・別に、何もしていない。」',
           capturedContext: '研究所にこもっている間の暇つぶしについて尋ねた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_pastime_reply_correct_chess',
-            thoughtText: '「『何もしていない』って・・・・・・暇つぶしに1人でチェスでも差していたんじゃないか？」',
+            thoughtText: '「昔みたいに、チェスでも差して時間を潰したりはしないのか？」',
             spokenText:
-              '『何もしていない』って・・・・・・本当は暇つぶしに、1人でチェスでも差していたんじゃないのか？',
+              '昔みたいに、チェスでも差して時間を潰したりはしないのか？',
             aschText:
-              '・・・・・・っ、なぜそれを知っている！？\n・・・・・・あの変態と差すと途中でルールを捻じ曲げやがるから、空き部屋で1人で詰み筋を考えていただけだ！',
+              '・・・・・・たまに盤面を並べるくらいだ。相手になる奴がいないからな。',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
+            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_chess_board',
@@ -1392,11 +1449,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_pastime_reply_wrong_help_dist',
-            thoughtText: '「毎日ディストの実験の手伝いでもして時間を潰していたのか？」',
+            thoughtText: '「毎日ディストの実験の手伝いでもさせられていたのか？」',
             spokenText:
-              'もしかして、毎日ディストの実験の手伝いでもして時間を潰していたのか？',
+              '毎日ディストの実験の手伝いでもさせられていたのか？',
             aschText:
-              '・・・・・・冗談じゃない。誰があの変態の実験など手伝ってやるものか！',
+              '・・・・・・冗談じゃない。誰があいつの手伝いなどするか。',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
             moodDelta: -1,
@@ -1404,24 +1461,23 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_pastime_reply_wrong_stare_wall',
-            thoughtText: '「暗い部屋でずっと壁でも眺めてボサッとしていたのか？」',
+            thoughtText: '「暗い部屋でずっと壁でも眺めてる、とか？」',
             spokenText:
-              'まさか、暗い部屋でずっと壁でも眺めてボサッとしていたのか？',
+              '暗い部屋でずっと壁でも眺めてる、とか？',
             aschText:
-              '・・・・・・俺をボケた年寄りか何かだと思っているのか！　失礼にも程があるだろうが！',
+              '俺を何だと思っているんだ・・・・・・！',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
-            voiceEffects: ['shout'],
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
             moodDelta: -2,
             completesTopic: true,
           },
           {
             id: 'p2_pastime_reply_back_off',
-            thoughtText: '「・・・・・・そうか、別に深く聞くつもりはないよ」と一旦引く',
+            thoughtText: '「・・・・・・そうか。深く聞くつもりはなかったんだ」と一旦引く',
             spokenText:
-              '・・・・・・そうか。別に深く聞くつもりはないよ。',
+              '・・・・・・そうか。深く聞くつもりはなかったんだ。',
             aschText:
-              '・・・・・・ふん、どうでもいいことを詮索するな。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -1431,7 +1487,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
-  // ロック会話⑧（SEC-14）：10歳の声（声変わり前）への違和感（声が裏返った雑談がヒント）
+  // ロック会話⑧（SEC-14）：10歳の声（声変わり前）への違和感（予備機体の話がヒント）
   {
     id: 'p2_voice_discomfort',
     thoughtText: '昔の声で喋りづらくないか',
@@ -1443,30 +1499,30 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '今の声のこと（もう一度聞く）',
         spokenText:
-          'その身体になってから、昔の10歳の頃の声で喋るのはやっぱり違和感があるんじゃないか？',
+          '・・・・・・しかし、声まであの頃のままだと、怒鳴られてもなんだか調子が狂うな。',
         retrySpokenText:
-          'さっきははぐらかしたけど・・・・・・今のその声、やっぱり生前と勝手が違ってやりづらいんじゃないのか？',
+          'さっきは悪かったけど・・・・・・やっぱりその声、聞いているとあの頃を思い出すな。',
         aschText:
-          '・・・・・・声くらいなんだっていいだろうが。いちいち人の声を聞き比べるな、気色が悪い。',
+          '俺だって好きでこんな声を出しているわけじゃない。',
         retryAschText:
-          '・・・・・・まだ声の話をする気か。鬱陶しい奴だな。',
-        expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
+          '・・・・・・まだ声の話をする気か。',
+        expression: 'look_away',
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
         capturedProtect: {
           sectorId: 'SEC-14',
-          capturedQuote: '「・・・・・・声くらいなんだっていいだろうが。いちいち人の声を聞き比べるな。」',
-          capturedContext: '10歳当時の声（声変わり前）の違和感について尋ねた際の発言',
+          capturedQuote: '「俺だって好きでこんな声を出しているわけじゃない。」',
+          capturedContext: '10歳当時の声（声変わり前）について触れた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_voice_reply_correct_crack',
-            thoughtText: '「最初は生前の低い声で怒鳴ろうとして、上手くいかなかったんじゃないか？」',
+            thoughtText: '「11年前の予備機体なんだから仕方ないよな。昔を思い出して懐かしかっただけなんだ」',
             spokenText:
-              'もしかして、今の身体になったばかりの頃、生前の低い声で怒鳴ろうとして声が裏返ったりしたんじゃないのか？',
+              '11年前の予備機体なんだから仕方ないよな。昔を思い出して懐かしかっただけなんだ。',
             aschText:
-              '・・・・・・っ！　・・・・・・生前のつもりで怒鳴ったら、高い声が出て調子が狂っただけだ。それ以上言ったら承知しないからな！',
+              '・・・・・・懐かしい、か。',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'down', mouth: 'grit', effects: ['sweat'] },
+            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_voice_crack',
@@ -1475,36 +1531,35 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_voice_reply_wrong_cute',
-            thoughtText: '「昔のおまえの声そのままで、なんだか可愛らしい声だよな」',
+            thoughtText: '「その高い声で必死に凄まれてもなあ」',
             spokenText:
-              'いや、昔のおまえの声そのままで、なんだか可愛らしい声だなと思ってさ。',
+              'その高い声で必死に凄まれてもなあ。',
             aschText:
-              '・・・・・・っ、ふざけるな！！　気色の悪いことを言うな、今すぐその口を閉じろ！！',
+              'ぐっ・・・・・・！',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['sweat'] },
-            voiceEffects: ['shout'],
-            moodDelta: -3,
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush', 'sweat'] },
+            moodDelta: -2,
             completesTopic: true,
           },
           {
             id: 'p2_voice_reply_wrong_modify',
-            thoughtText: '「ディストに頼んで、生前の低い声に改造してもらえばいいのに」',
+            thoughtText: '「ディストに言えば、声くらい元の低い声に直してもらえるんじゃないか？」',
             spokenText:
-              'そんなに気になるなら、ディストに頼んで生前の低い声に改造してもらえばいいんじゃないか？',
+              'ディストに言えば、声くらい元の低い声に直してもらえるんじゃないか？',
             aschText:
-              '・・・・・・あの変態にこれ以上身体を弄らせてたまるか。余計な知恵をつけるな。',
+              '・・・・・・あいつにこれ以上身体を弄らせてたまるか。余計な知恵をつけるな。',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'angry', eyes: 'pain', mouth: 'frown', effects: ['pale'] },
             moodDelta: -1,
             completesTopic: true,
           },
           {
             id: 'p2_voice_reply_back_off',
-            thoughtText: '「・・・・・・悪かった、変なことを聞いてすまん」と一旦引く',
+            thoughtText: '「・・・・・・悪かったよ。からかうつもりはなかったんだ」と一旦引く',
             spokenText:
-              '・・・・・・悪かったよ。変なことを聞いてすまん。',
+              '・・・・・・悪かったよ。からかうつもりはなかったんだ。',
             aschText:
-              '・・・・・・ふん、最初から黙っていろ。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -1548,9 +1603,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・おまえが顔を出したら、また奥様を泣かせてしまうと思っているのか？',
             aschText:
-              '・・・・・・一度死んだ人間が、こんな機械の姿で母上の前に出てみろ。混乱させるだけだ。\n・・・・・・あの屋敷は、今のままでいいんだよ。',
+              '・・・・・・一度死んだ人間が、こんな譜業の姿で母上の前に出てみろ。混乱させるだけだ。',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+            faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_manor_parents',
@@ -1560,11 +1615,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_parents_reply_wrong_grudge',
-            thoughtText: '「自分の居場所をルークに奪われたと思って、まだ屋敷を恨んでいるのか？」',
+            thoughtText: '「自分の居場所をルークに奪われたと思って、まだ恨んでいるのか？」',
             spokenText:
-              '自分の居場所をルークに奪われたと思って、まだ屋敷のことを恨んでいるのか？',
+              '自分の居場所をルークに奪われたと思って、まだ恨んでいるのか？',
             aschText:
-              '・・・・・・っ、馬鹿なことを言うな！　俺が今さらそんなことで屋敷を恨んでいるなどと思うな！',
+              '・・・・・・見くびるな！　今さらそんなことを思うわけがないだろう！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
             moodDelta: -2,
@@ -1572,13 +1627,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_parents_reply_wrong_spoil',
-            thoughtText: '「本当は今すぐ屋敷に帰って、昔みたいに奥様に甘えたいんじゃないのか？」',
+            thoughtText: '「本当は屋敷に帰って、昔みたいに奥様に甘えたいんじゃないのか？」',
             spokenText:
-              '本当は今すぐ屋敷に帰って、昔みたいに奥様に甘えたいんじゃないのか？',
+              '本当は屋敷に帰って、昔みたいに奥様に甘えたいんじゃないのか？',
             aschText:
-              '・・・・・・っ、誰が今さら甘えるなどと言った！！　俺を誰だと思っているんだ、いい加減にしろ！！',
+              '・・・・・・ふっ、ふざけるな！',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['sweat'] },
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush', 'sweat'] },
             voiceEffects: ['shout'],
             moodDelta: -3,
             completesTopic: true,
@@ -1589,7 +1644,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・そうだな。無理に聞くことじゃなかったよ。',
             aschText:
-              '・・・・・・ああ。あの屋敷の話はもうするな。',
+              '・・・・・・ああ。',
             expression: 'look_away',
             faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -1611,11 +1666,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '自分の掌のこと（もう一度聞く）',
         spokenText:
-          'ふと気づいたんだけど・・・・・・その身体の掌や腕には、おまえが長年剣を振ってできた剣ダコも、昔の傷跡もひとつもないんだな。',
+          '・・・・・・その身体の掌や腕には、剣ダコも昔の傷跡もひとつもないんだな。',
         retrySpokenText:
           'さっきの掌の話だけど・・・・・・やっぱり、剣ダコや傷跡がなくなっているのは気になるのか？',
         aschText:
-          '・・・・・・当たり前だ。11年前に造られた新品の予備機体だからな。人の手をジロジロ見るな。',
+          '・・・・・・当たり前だ。11年前に造られた予備機体だからな。あまりジロジロ見るな。',
         retryAschText:
           '・・・・・・まだ俺の手を見ているのか。趣味が悪い奴だな。',
         expression: 'look_away',
@@ -1623,17 +1678,17 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         capturedProtect: {
           sectorId: 'SEC-16',
           capturedQuote:
-            '「・・・・・・当たり前だ。11年前に造られた新品の予備機体だからな。人の手をジロジロ見るな。」',
-          capturedContext: '掌や腕に剣ダコや生前の傷跡がないことについて触れた際の発言',
+            '「・・・・・・当たり前だ。11年前に造られた予備機体だからな。あまりジロジロ見るな。」',
+          capturedContext: '掌や腕に剣ダコや傷跡がないことについて触れた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_hands_reply_correct_doll',
-            thoughtText: '「目が覚めるたびにその真っ白な掌を見ると、自分の身体じゃないみたいで落ち着かないか？」',
+            thoughtText: '「・・・・・・ふと自分の手を見た時、前の身体と違いすぎて落ち着かないんじゃないか？」',
             spokenText:
-              '・・・・・・目が覚めるたびにその真っ白な掌が目に入ると、自分の身体じゃないみたいで落ち着かないんじゃないか？',
+              '・・・・・・ふと自分の手を見た時、前の身体と違いすぎて落ち着かないんじゃないか？',
             aschText:
-              '・・・・・・ああ。長年剣を握ってきたタコひとつ残っていない。\n・・・・・・まるで作り物の人形の手だ。',
+              '・・・・・・ああ。まるで作り物の人形の手だ。',
             expression: 'look_away',
             faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
             moodDelta: 1,
@@ -1644,36 +1699,35 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_hands_reply_wrong_clean',
-            thoughtText: '「傷跡だらけだった生前の身体より、綺麗になって良かったじゃないか」',
+            thoughtText: '「傷だらけだった前の身体より、綺麗になって良かったじゃないか」',
             spokenText:
-              '傷跡だらけだった生前の身体より、綺麗になって良かったじゃないか。',
+              '傷だらけだった前の身体より、綺麗になって良かったじゃないか。',
             aschText:
-              '・・・・・・っ、ふざけるな！　俺が積み重ねてきた鍛錬の証まで、綺麗になって良かったで片付ける気か！',
-            expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: [] },
+              '・・・・・・ふっ、そうかもしれないな。',
+            expression: 'look_away',
+            faceParts: { brow: 'sad', eyes: 'close', mouth: 'smile', effects: [] },
             moodDelta: -2,
             completesTopic: true,
           },
           {
             id: 'p2_hands_reply_wrong_no_pain',
-            thoughtText: '「機械の身体なら、もう怪我をしても血も出ないし便利だよな」',
+            thoughtText: '「譜業の身体なら、もう怪我もしないし便利だよな」',
             spokenText:
-              '機械の身体なら、もう怪我をしても血も出ないし便利だよな。',
+              '譜業の身体なら、もう怪我もしないし便利だよな。',
             aschText:
-              '・・・・・・便利なものか！　斬られても血も出ない身体のどこがいいと言うんだ！',
+              '・・・・・・斬られても血も出ない身体の、どこがいいと言うんだ。',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
-            voiceEffects: ['shout'],
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
             moodDelta: -2,
             completesTopic: true,
           },
           {
             id: 'p2_hands_reply_back_off',
-            thoughtText: '「・・・・・・そうだな、変なところを見て悪かった」と一旦引く',
+            thoughtText: '「・・・・・・そうだな。悪かったよ」と一旦引く',
             spokenText:
-              '・・・・・・そうだな。変なところをじろじろ見て悪かったよ。',
+              '・・・・・・そうだな。悪かったよ。',
             aschText:
-              '・・・・・・ふん、くだらないことを気にするな。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -1696,29 +1750,29 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '大佐のこと（もう一度聞く）',
         spokenText:
-          'ディストの研究所には大佐もよく出入りしていたよな。あの大佐の目を盗んで、本当に今まで気づかれずにいられたのか？',
+          '研究所には大佐もよく出入りしていたよな。よく今まで気づかれずにいられたな。',
         retrySpokenText:
           'さっきの大佐の話だけど・・・・・・やっぱりおまえ、大佐に正体を勘づかれるのを一番警戒していたんじゃないのか？',
         aschText:
-          '・・・・・・あの眼鏡の話をするな！　あいつが研究所に来た時はいつも物陰に隠れていたんだ、気づかれているはずがないだろうが。',
+          '・・・・・・あの眼鏡の話をするな。あいつが来た時は、ただの譜業のフリをしてやり過ごしていた。',
         retryAschText:
-          '・・・・・・だから、あの死霊使いには気づかれていないと言っているだろうが。',
+          '・・・・・・あの死霊使いには気づかれていないと言っているだろうが。',
         expression: 'glare',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
         capturedProtect: {
           sectorId: 'SEC-17',
           capturedQuote:
-            '「・・・・・・あの眼鏡の話をするな！　あいつが研究所に来た時はいつも物陰に隠れていたんだ、気づかれているはずがないだろうが。」',
+            '「・・・・・・あの眼鏡の話をするな。あいつが来た時は、ただの譜業のフリをしてやり過ごしていた。」',
           capturedContext: '研究所を訪れていたジェイドに正体を気づかれていないか尋ねた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_jade_reply_correct_tarlow',
-            thoughtText: '「タルロウAの時に一度も声をかけなかったの、一番は大佐に知られるのが嫌だったからだろ？」',
+            thoughtText: '「研究所で俺たちに声をかけなかったのも、あの大佐に勘づかれるのが一番厄介だったからか？」',
             spokenText:
-              'おまえが小型機体の『タルロウA』だった頃に俺たちに一度も声をかけなかったの、一番はあの大佐に勘づかれるのが嫌だったからじゃないのか？',
+              '研究所で俺たちに声をかけなかったのも、あの大佐に勘づかれるのが一番厄介だったからか？',
             aschText:
-              '・・・・・・っ、あの死霊使いに知られてみろ！　どんな悪趣味な実験材料にされるか分かったものじゃない。\n・・・・・・いいか、おまえもあの眼鏡にだけは絶対に口を割るなよ！',
+              '・・・・・・あの死霊使いに知られてみろ、どんな実験材料にされるか分かったものじゃない。',
             expression: 'look_away',
             faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['sweat'] },
             moodDelta: 1,
@@ -1729,11 +1783,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_jade_reply_wrong_seen_through',
-            thoughtText: '「大佐のことだから、とっくに全部お見通しで泳がされているんじゃないか？」',
+            thoughtText: '「大佐のことだから、とっくに全部お見通しだったりしてな」',
             spokenText:
-              'いや、大佐のことだから、とっくに全部お見通しで面白がって泳がされているだけじゃないか？',
+              '大佐のことだから、とっくに全部お見通しだったりしてな。',
             aschText:
-              '・・・・・・っ、縁起でもないことを言うな！　あいつに泳がされているくらいなら、今すぐ研究所ごと吹き飛ばしてやる！',
+              '・・・・・・縁起でもないことを言うな！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['sweat'] },
             voiceEffects: ['shout'],
@@ -1742,11 +1796,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_jade_reply_wrong_call_jade',
-            thoughtText: '「今から大佐をこの部屋に呼んで、その身体を診てもらおうか？」',
+            thoughtText: '「いっそ大佐を呼んで、その身体を診てもらおうか？」',
             spokenText:
-              'いっそ今から大佐をこの部屋に呼んで、その身体を詳しく診てもらおうか？',
+              'いっそ大佐を呼んで、その身体を診てもらおうか？',
             aschText:
-              '・・・・・・っ、やめろ！　あの眼鏡をここに呼んでみろ、俺は即座に窓から出て行ってやるからな！',
+              'やめろ！　あいつを呼ぶなら、俺は今すぐここから出て行く！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['sweat'] },
             voiceEffects: ['shout'],
@@ -1755,11 +1809,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_jade_reply_back_off',
-            thoughtText: '「・・・・・・分かった、大佐には黙っておくよ」と一旦引く',
+            thoughtText: '「・・・・・・なんか寒気がしてきたぞ。大佐の話はやめておこうか」と一旦引く',
             spokenText:
-              '・・・・・・分かったよ。大佐の話はこれくらいにしておく。',
+              '・・・・・・なんか寒気がしてきたぞ。大佐の話はやめておこうか。',
             aschText:
-              '・・・・・・ふん、あいつの名前を出すだけでも気分が悪くなる。',
+              '・・・・・・名前を聞くだけでも具合が悪くなる。',
             expression: 'look_away',
             faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
             resetsTopicProgress: true,
@@ -1787,14 +1841,20 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         retrySpokenText:
           '・・・・・・さっき言っていた、エルドラントから1年前までの『空白の2年間』のことだけど、どうしても引っかかるんだ。',
         aschText:
-          '・・・・・・崩れるエルドラントで、ルークが俺を抱えていたところまでは覚えている。\n・・・・・・だが、それから1年前にタルロウAとして目が覚めるまでの2年間だけ、何も出てこない。',
+          '・・・・・・崩れるエルドラントで、ルークが俺を抱えていたところまでは覚えている。\n・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。',
         retryAschText:
-          '・・・・・・蒸し返すなと言っただろう。その2年間だけ、何も出てこないんだ。',
+          '・・・・・・蒸し返すなと言っただろう。1年前に目覚める前までのことは、何も出てこないんだ。',
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
-          eyes: 'down',
+          eyes: 'close',
           mouth: 'close',
+          effects: [],
+        },
+        secondFaceParts: {
+          brow: 'doubt',
+          eyes: 'down',
+          mouth: 'frown',
           effects: [],
         },
         naturalUnlockSectorId: 'SEC-18',
@@ -1803,15 +1863,22 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_eldrant_reply_step_in',
-            thoughtText: '「1年前にルークが帰ってきた時期と重なる・・・・・・その2年間だけディストにロックされているんじゃないか？」',
+            thoughtText: '「1年前といえばルークが戻ってきた時期だ。その2年間だけディストにロックをかけられているんじゃないか？」',
             spokenText:
-              '1年前といえばルークが戻ってきた時期だ。普段のことは覚えているのに、その2年間の記憶だけ抜けているのは・・・・・・ディストの手でロックがかけられているんじゃないのか？',
+              '1年前といえばルークが戻ってきた時期だ。その2年間だけ抜けているのは、ディストにロックをかけられているんじゃないか？',
             aschText:
-              '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の頭の中をどう弄ったかなど知るか・・・・・・っ。',
+              '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の記憶をどう弄ったかなど知るか・・・・・・っ。',
             expression: 'pain',
             faceParts: {
               brow: 'pain',
-              eyes: 'down',
+              eyes: 'close',
+              mouth: 'grit',
+              effects: ['pale', 'sweat'],
+            },
+            secondExpression: 'glare',
+            secondFaceParts: {
+              brow: 'pain',
+              eyes: 'glare',
               mouth: 'frown',
               effects: ['sweat'],
             },
@@ -1820,7 +1887,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             capturedProtect: {
               sectorId: 'SEC-19',
               capturedQuote:
-                '「・・・・・・それから1年前にタルロウAとして目が覚めるまでの2年間だけ、何も出てこない。」',
+                '「・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。」',
               capturedContext:
                 'エルドラントから1年前までの「空白の2年間」について尋ねた際の発言',
             },
@@ -1848,11 +1915,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_eldrant_reply_wrong_hiding',
-            thoughtText: '「本当は覚えているのに、俺に言いたくないだけなんじゃないのか？」',
+            thoughtText: '「本当は覚えているのに、俺に言いたくなくて隠しているだけじゃないのか？」',
             spokenText:
-              '本当はその2年間のことも覚えているのに、俺に言いたくなくて隠しているだけなんじゃないのか？',
+              '本当は覚えているのに、俺に言いたくなくて隠しているだけじゃないのか？',
             aschText:
-              '・・・・・・言いがかりをつけるな！　思い出せないものは思い出せないと言っているだろうが！',
+              '・・・・・・言いがかりをつけるな！',
             expression: 'glare',
             faceParts: {
               brow: 'angry',
@@ -1870,7 +1937,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・そうか。無理に掘り返すようなことを聞いて悪かったよ。',
             aschText:
-              '・・・・・・ふん。過ぎたことをいつまでも蒸し返すな。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
@@ -1899,33 +1966,40 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '前の機体が壊れた理由（もう一度聞く）',
         spokenText:
-          '・・・・・・なあ、2ヶ月前にタルロウAが壊れた時のことだけど、本当に何があったのか少しも心当たりはないのか？',
+          '・・・・・・なあ、2ヶ月前にタルロウAは何で壊れたんだ？　ずっと研究所の中にいたんだろ？',
         retrySpokenText:
-          '・・・・・・2ヶ月前にタルロウAの機体が壊れた理由、本当にただの初期不良なんかじゃないんじゃないか？',
+          '・・・・・・やっぱり引っかかるんだ。2ヶ月前にタルロウAが壊れた時、本当は何があったんだ？',
         aschText:
-          '・・・・・・しつこい奴だな。あの時の損傷は、ディストの実験でも外敵のせいでもない。理由は思い出せんが、ただの初期不良か何かだ。',
+          '・・・・・・知らん。なぜ壊れたのかは覚えていない。気づいた時には、もうこの身体に移されていた。',
         retryAschText:
-          '・・・・・・しつこい奴だな。理由は思い出せんと言っているだろうが。',
+          '・・・・・・しつこい奴だな。なぜ壊れたかは覚えていないと言っているだろうが。',
         expression: 'look_away',
         faceParts: {
-          brow: 'sad',
-          eyes: 'away',
-          mouth: 'frown',
+          brow: 'doubt',
+          eyes: 'down',
+          mouth: 'close',
           effects: [],
         },
         replyOptions: [
           {
             id: 'p2_broken_reply_correct_self',
-            thoughtText: '「初期不良なんかじゃない・・・・・・おまえ自身が何かを知って無茶をしたせいじゃないのか？」',
+            thoughtText: '「ただの故障じゃない・・・・・・おまえ自身が何かを知って無茶をしたせいじゃないのか？」',
             spokenText:
-              '・・・・・・初期不良なんかじゃないだろ。おまえ自身が何かを知って、自分で無茶をしたせいじゃないのか？',
+              '・・・・・・ただの故障なんかじゃないだろ。おまえ自身が何かを知って、自分で無茶をしたせいじゃないのか？',
             aschText:
               '・・・・・・っ、ぐ・・・・・・ッ！！　あ、頭が・・・・・・っ！\n・・・・・・やめろ、それ以上聞くな・・・・・・っ！',
             expression: 'pain',
             faceParts: {
               brow: 'pain',
-              eyes: 'pain',
+              eyes: 'close',
               mouth: 'grit',
+              effects: ['pale', 'sweat', 'noise'],
+            },
+            secondExpression: 'pain',
+            secondFaceParts: {
+              brow: 'pain',
+              eyes: 'wide',
+              mouth: 'open',
               effects: ['pale', 'sweat', 'noise'],
             },
             voiceEffects: ['tremble_glitch', 'shout_glitch'],
@@ -1944,14 +2018,14 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_broken_reply_wrong_dist_exp',
-            thoughtText: '「ディストの過酷な実験に巻き込まれて壊されたんじゃないのか？」',
+            thoughtText: '「ディストの実験に巻き込まれて、壊されたんじゃないのか？」',
             spokenText:
-              '本当はディストの過酷な実験に巻き込まれて、無理やり壊されたんじゃないのか？',
+              'ディストの実験に巻き込まれて、壊されたんじゃないのか？',
             aschText:
-              '・・・・・・あいつのせいじゃないと言っているだろうが。人の話を聞け！',
+              '・・・・・・あいつが自分の研究材料をわざわざ壊すわけがないだろう。',
             expression: 'glare',
             faceParts: {
-              brow: 'angry',
+              brow: 'doubt',
               eyes: 'glare',
               mouth: 'frown',
               effects: [],
@@ -1961,11 +2035,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_broken_reply_wrong_sword',
-            thoughtText: '「50センチの小型機体で無理に剣を振ろうとして壊したのか？」',
+            thoughtText: '「あの50センチの小型機体で、無理に剣でも振ろうとしたのか？」',
             spokenText:
-              'あの50センチの小型機体で、無理に剣でも振ろうとして自滅したのか？',
+              'あの50センチの小型機体で、無理に剣でも振ろうとしたのか？',
             aschText:
-              '・・・・・・っ、俺を馬鹿にするのも大概にしろ！　あんな箱みたいな機体で剣など握れるわけがないだろうが！',
+              '・・・・・・あんな樽みたいな機体で、剣など握れるわけがないだろうが！',
             expression: 'glare',
             faceParts: {
               brow: 'angry',
@@ -1979,11 +2053,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_broken_reply_back_off',
-            thoughtText: '「・・・・・・思い出せないなら、今は無理に聞かないでおくよ」と一旦引く',
+            thoughtText: '「・・・・・・そうか。思い出せないなら、無理には聞かないよ」と一旦引く',
             spokenText:
-              '・・・・・・そうか。思い出せないなら、今は無理に聞かないでおくよ。',
+              '・・・・・・そうか。思い出せないなら、無理には聞かないよ。',
             aschText:
-              '・・・・・・ふん、最初からそうしろ。',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: {
               brow: 'normal',
@@ -2021,6 +2095,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           mouth: 'close',
           effects: [],
         },
+        secondExpression: 'glare',
+        secondFaceParts: {
+          brow: 'angry',
+          eyes: 'glare',
+          mouth: 'close',
+          effects: [],
+        },
         replyOptions: [
           // --------------------------------------------------
           // 【パターンA】真相は胸に秘め、ルークのために犠牲になったアッシュの献身を労う（3往復＋分岐）
@@ -2029,14 +2110,21 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_dilemma_pattern_a',
             thoughtText: '記録は伏せ「ルークが戻れたのはおまえのおかげだ」と労う',
             spokenText:
-              '・・・・・・いや、おまえが覚えていないならそれでいいんだ。ただ・・・・・・1年前にルークがタタル渓谷へ戻ってこられたのは、おまえのおかげだったんだなと思ってさ。',
+              '・・・・・・いや、おまえが覚えていないならそれでいいんだ。ただ・・・・・・1年前にルークが戻ってこられたのは、おまえのおかげだったんだなと思ってさ。',
             aschText:
-              '・・・・・・は？　何の話だ、気色の悪い。\n俺があいつのために何かした覚えなどない。勝手に妙な感謝をするな。',
+              '・・・・・・何の話だ。\n俺があいつのために何かしてやったことなど・・・・・・。',
             expression: 'look_away',
             faceParts: {
               brow: 'doubt',
-              eyes: 'away',
-              mouth: 'frown',
+              eyes: 'normal',
+              mouth: 'close',
+              effects: [],
+            },
+            secondExpression: 'look_away',
+            secondFaceParts: {
+              brow: 'sad',
+              eyes: 'down',
+              mouth: 'close',
               effects: [],
             },
             moodDelta: 1,
@@ -2044,29 +2132,29 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             followUpOptions: [
               {
                 id: 'p2_dilemma_a_step2_warm',
-                thoughtText: '「おまえが消えずに生きていることも良かったと思う」',
+                thoughtText: '「おまえが消えずに残っていることも良かったと思う」',
                 spokenText:
-                  '感謝くらいさせろよ。おまえがあいつの居場所を残してくれたおかげで、今があるんだからな。\n・・・・・・それに、おまえが今こうして消えずに残っていることも、俺は良かったと思ってるよ。',
+                  'おまえが覚えていなくても、俺はそう思ってるよ。\n・・・・・・それに、おまえが今こうして消えずに残っていることも、俺は良かったと思ってる。',
                 aschText:
-                  '・・・・・・っ、馬鹿か貴様は・・・・・・！　こんな身体で生き恥を晒しているどこが良かっただ。\n・・・・・・おまえが勝手にそう思いたいなら、好きにしろ。',
+                  '・・・・・・そうか。',
                 expression: 'look_away',
                 faceParts: {
                   brow: 'sad',
-                  eyes: 'away',
-                  mouth: 'frown',
-                  effects: ['blush', 'sweat'],
+                  eyes: 'close',
+                  mouth: 'close',
+                  effects: ['blush'],
                 },
                 moodDelta: 1,
                 trustDelta: 2,
                 followUpOptions: [
                   {
                     id: 'p2_dilemma_a_step3_never_break',
-                    thoughtText: '「二度と自分の身体を壊すような真似はするなよ」',
+                    thoughtText: '「いつでもここへ茶を飲みに来いよ」',
                     spokenText:
-                      '・・・・・・ああ、そうだな。とにかく、理由がどうであれ、もう二度と自分の身体を壊すような真似だけはするなよ。\nディストの研究所が息苦しくなったら、いつでもここへ茶を飲みにくればいい。',
+                      '・・・・・・ああ。いつでもここへ茶を飲みに来いよ。',
                     aschText:
-                      '・・・・・・ふん、誰が来るか。馬鹿にするな。\n・・・・・・だが、おまえの淹れる茶がもう少しマシになったら、暇つぶしに寄ってやらなくもない。',
-                    expression: 'normal',
+                      '・・・・・・気が向いたらな。',
+                    expression: 'look_away',
                     faceParts: {
                       brow: 'smile',
                       eyes: 'away',
@@ -2080,15 +2168,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                   },
                   {
                     id: 'p2_dilemma_a_step3_keep_quiet',
-                    thoughtText: '「思い出したくないことは俺の胸にしまっておくよ」',
+                    thoughtText: '「おまえが言いたくないことは、全部俺の胸にしまっておくよ」',
                     spokenText:
-                      '・・・・・・ああ。おまえが思い出したくないことも、言いたくないことも、全部俺の胸の内にしまっておくよ。誰にも話すつもりはない。',
+                      '・・・・・・ああ。おまえが言いたくないことは、全部俺の胸にしまっておくよ。',
                     aschText:
-                      '・・・・・・最初からそうしろ。おまえは昔から、余計なところにばかり首を突っ込みすぎるんだ。\n・・・・・・だが、まあ・・・・・・悪くはなかった。',
+                      '・・・・・・おまえは昔から、お人好しにも程がある。',
                     expression: 'look_away',
                     faceParts: {
-                      brow: 'normal',
-                      eyes: 'away',
+                      brow: 'smile',
+                      eyes: 'close',
                       mouth: 'close',
                       effects: ['blush'],
                     },
@@ -2103,14 +2191,20 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 id: 'p2_dilemma_a_step2_past_avenger',
                 thoughtText: '「復讐を狙っていた俺が言うのも虫がいいよな」と吐露する',
                 spokenText:
-                  '・・・・・・昔、おまえに復讐しようと機会を窺っていた俺が言うのも虫がいいよな。\nそれでも、今のおまえを知らん顔で放っておく気にはなれないんだよ。',
+                  '・・・・・・昔、おまえに復讐しようと機会を窺っていた俺が言うのも虫がいいよな。\nそれでも、今のおまえを知らん顔で放っておく気にはなれないんだ。',
                 aschText:
-                  '・・・・・・ふん。今さら昔の復讐の話など持ち出すな。\n俺に同情する暇があるなら、自分の心配でもしていろ。',
+                  '・・・・・・今さら昔の復讐の話など持ち出すな。\n俺に同情する暇があるなら、自分の心配でもしていろ。',
                 expression: 'look_away',
                 faceParts: {
                   brow: 'sad',
-                  eyes: 'down',
+                  eyes: 'close',
                   mouth: 'close',
+                  effects: [],
+                },
+                secondFaceParts: {
+                  brow: 'normal',
+                  eyes: 'away',
+                  mouth: 'frown',
                   effects: [],
                 },
                 moodDelta: 1,
@@ -2118,14 +2212,14 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 followUpOptions: [
                   {
                     id: 'p2_dilemma_a_step3_avenger_reply',
-                    thoughtText: '「同情じゃない。二度と自分を壊す無茶はするなよ」',
+                    thoughtText: '「同情なんかじゃないさ。ただ、あまりひとりで無茶だけはするなよ」',
                     spokenText:
-                      '同情なんかじゃないさ。・・・・・・ただ、もう二度と自分を壊すような無茶だけはするなよ。それだけは約束してくれ。',
+                      '同情なんかじゃないさ。・・・・・・ただ、あまりひとりで無茶だけはするなよ。',
                     aschText:
-                      '・・・・・・しつこい奴だな。余計な世話を焼くな。',
+                      '・・・・・・俺なんかを気にかける暇があるなら、もっと有意義なことに時間を・・・・・・。',
                     expression: 'look_away',
                     faceParts: {
-                      brow: 'normal',
+                      brow: 'sad',
                       eyes: 'away',
                       mouth: 'close',
                       effects: ['blush'],
@@ -2147,14 +2241,20 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_dilemma_pattern_b',
             thoughtText: '「2ヶ月前に壊れたのは無茶をしたせいでは」と探る',
             spokenText:
-              '・・・・・・2ヶ月前にタルロウAが壊れたの、やっぱり初期不良でもディストの実験でもなくて、おまえ自身が何か無茶をしたせいだったんじゃないのか？',
+              '・・・・・・2ヶ月前にタルロウAが壊れたの、ただの故障なんかじゃなくて、おまえ自身が何か無茶をしたせいだったんじゃないのか？',
             aschText:
-              '・・・・・・チッ、まだその話を蒸し返す気か。\nあの時の損傷はディストのせいじゃない。理由は思い出せんが、俺自身の問題だ。',
+              '・・・・・・チッ、まだその話を蒸し返す気か。\nなぜ壊れたかは思い出せんと言ったはずだ。余計な詮索をするな。',
             expression: 'look_away',
             faceParts: {
+              brow: 'angry',
+              eyes: 'glare',
+              mouth: 'frown',
+              effects: [],
+            },
+            secondFaceParts: {
               brow: 'sad',
               eyes: 'away',
-              mouth: 'frown',
+              mouth: 'close',
               effects: [],
             },
             followUpOptions: [
@@ -2162,30 +2262,44 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 id: 'p2_dilemma_b_step2_selfharm',
                 thoughtText: '「まさか自分で自分の機体を壊そうとしたのか」と迫る',
                 spokenText:
-                  '・・・・・・おまえ自身の問題って、まさかおまえ、自分で自分の機体を壊そうとしたんじゃないだろうな。',
+                  '・・・・・・まさかおまえ、自分で自分の機体を壊そうとしたんじゃないだろうな。',
                 aschText:
                   '・・・・・・っ！？　な、何を根拠にそんなことを言う・・・・・・！\n俺が自分で自分を壊すわけが・・・・・・っ、くそ、なぜだ・・・・・・。',
                 expression: 'shock',
                 faceParts: {
-                  brow: 'pain',
+                  brow: 'doubt',
                   eyes: 'wide',
-                  mouth: 'frown',
+                  mouth: 'gasp',
                   effects: ['sweat'],
+                },
+                secondExpression: 'pain',
+                secondFaceParts: {
+                  brow: 'pain',
+                  eyes: 'pain',
+                  mouth: 'grit',
+                  effects: ['pale', 'sweat'],
                 },
                 voiceEffects: ['tremble', 'normal'],
                 followUpOptions: [
                   {
                     id: 'p2_dilemma_b_step3_dont_throw_away',
-                    thoughtText: '「機械だからって粗末にするな。消えたら悲しむ奴がいる」',
+                    thoughtText: '「譜業の身体だからって自分を粗末にするなよ。おまえにいなくなられたら、俺が困るんだ」',
                     spokenText:
-                      '・・・・・・やっぱりそうだったのか。いいか、機械の身体だからって自分を粗末にするなよ。今ここにいるおまえが消えたら、後味の悪い思いをする人間がここにいるんだからな。',
+                      '・・・・・・やっぱりそうだったのか。譜業の身体だからって自分を粗末にするなよ。おまえにいなくなられたら、俺が困るんだ。',
                     aschText:
-                      '・・・・・・っ、大げさなことを言うな！　俺はもう3年前に死んだ身だ。\n・・・・・・ちっ、その話はもういい。',
-                    expression: 'look_away',
+                      '・・・・・・っ、勝手なことを言うな。俺はもう3年前に死んだ身だ。\n・・・・・・っ、くそ・・・・・・。',
+                    expression: 'glare',
                     faceParts: {
                       brow: 'angry',
-                      eyes: 'away',
-                      mouth: 'close',
+                      eyes: 'glare',
+                      mouth: 'open',
+                      effects: ['blush', 'sweat'],
+                    },
+                    secondExpression: 'look_away',
+                    secondFaceParts: {
+                      brow: 'pain',
+                      eyes: 'down',
+                      mouth: 'grit',
                       effects: ['blush'],
                     },
                     moodDelta: 1,
@@ -2199,11 +2313,17 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                     spokenText:
                       '・・・・・・あのディストが珍しくおまえの記憶に強固なロックをかけたのも、おまえがまた自分を傷つけるような無茶をしないためだったのかもしれないな。',
                     aschText:
-                      '・・・・・・ハッ、あの変態がそんな殊勝な理由で動くものか。どうせ貴重なサンプルを壊されたくなかっただけだろう。\n・・・・・・まあいい。思い出せないことは、今の俺には必要のないことだ。',
+                      '・・・・・・ハッ、あいつがそんな殊勝な理由で動くものか。どうせ貴重なサンプルを壊されたくなかっただけだろう。\n・・・・・・まあいい。思い出せないことは、今の俺には必要のないことだ。',
                     expression: 'look_away',
                     faceParts: {
+                      brow: 'doubt',
+                      eyes: 'glare',
+                      mouth: 'smile',
+                      effects: [],
+                    },
+                    secondFaceParts: {
                       brow: 'sad',
-                      eyes: 'away',
+                      eyes: 'close',
                       mouth: 'close',
                       effects: [],
                     },
@@ -2219,11 +2339,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 spokenText:
                   '思い出せないなら無理にとは言わないよ。ただ、タルロウAから今の身体に乗り換えて、少しは気持ちも落ち着けたのか？',
                 aschText:
-                  '・・・・・・背が縮んで視線が低いのは相変わらず腹が立つがな。\nあの箱みたいな鉄塊に入っていた頃よりは、こうして手足が動く人間の形になっただけマシだ。',
-                expression: 'normal',
+                  '・・・・・・背が縮んで目線が低いのは相変わらず腹が立つがな。\nあの樽みたいな鉄塊に入っていた頃よりは、いくらかマシだ。',
+                expression: 'look_away',
                 faceParts: {
-                  brow: 'normal',
+                  brow: 'angry',
                   eyes: 'away',
+                  mouth: 'frown',
+                  effects: [],
+                },
+                secondExpression: 'normal',
+                secondFaceParts: {
+                  brow: 'normal',
+                  eyes: 'down',
                   mouth: 'close',
                   effects: [],
                 },
@@ -2236,7 +2363,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                     spokenText:
                       '・・・・・・そうか。せっかく人間の形に戻れたんだ、もうその身体を壊すような無茶だけはするなよ。',
                     aschText:
-                      '・・・・・・ふん、誰が無茶などするか。余計な心配をするな。',
+                      '・・・・・・ああ。',
                     expression: 'look_away',
                     faceParts: {
                       brow: 'normal',
@@ -2263,11 +2390,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・この端末の奥にあった封印記録を見たぞ、アッシュ。\n1年前にディストがルークと混ざっていた記憶を2つに切り分けて・・・・・・おまえはその時消去されるはずだった記憶で、2ヶ月前にそれを知って自壊しようとしたのか！？',
             aschText:
-              '・・・・・・なっ！？　貴様、勝手にあの端末の奥をこじ開けたのか・・・・・・ッ！？\n・・・・・・やめろ、そんな記録は知らん！！　人の頭の中を勝手に暴くな！！',
+              '・・・・・・なっ！？　おまえ、勝手にあの端末の奥をこじ開けたのか・・・・・・ッ！？\n・・・・・・やめろ、そんな記録は知らん！！　人の頭の中を勝手に暴くな！！',
             expression: 'shock',
             faceParts: {
-              brow: 'angry',
+              brow: 'sad',
               eyes: 'wide',
+              mouth: 'gasp',
+              effects: ['pale', 'sweat'],
+            },
+            secondExpression: 'glare',
+            secondFaceParts: {
+              brow: 'angry',
+              eyes: 'glare',
               mouth: 'shout',
               effects: ['pale', 'sweat'],
             },
@@ -2286,8 +2420,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 expression: 'pain',
                 faceParts: {
                   brow: 'pain',
-                  eyes: 'pain',
+                  eyes: 'wide',
                   mouth: 'shout',
+                  effects: ['pale', 'sweat'],
+                },
+                secondExpression: 'pain',
+                secondFaceParts: {
+                  brow: 'pain',
+                  eyes: 'close',
+                  mouth: 'grit',
                   effects: ['pale', 'sweat', 'noise'],
                 },
                 voiceEffects: ['shout_glitch', 'tremble_glitch'],
@@ -2300,9 +2441,16 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                     spokenText:
                       'ふざけるなよ・・・・・・！　おまえがここで動いていたら、タタル渓谷へ帰ってきたルークまで偽物になるじゃないか！！\nあいつがやっと帰ってきたのに、なんでおまえなんかが残ってるんだよ・・・・・・っ！！',
                     aschText:
-                      '・・・・・・っ、うるさい、黙れ・・・・・・っ！！　俺だって頼んでこんな機械の身体に残ったわけじゃない・・・・・・！！\n俺が邪魔だと言うなら、またあの研究所へ戻すな！　今ここでおまえの剣で俺を壊せ、ガイ・・・・・・ッ！！',
+                      '・・・・・・っ、黙れ・・・・・・っ！！　俺だって、頼んでこんな譜業の身体に残ったわけじゃない・・・・・・！！\n俺が邪魔だと言うなら、今ここでおまえの剣で壊せ、ガイ・・・・・・ッ！！',
                     expression: 'pain',
                     faceParts: {
+                      brow: 'pain',
+                      eyes: 'close',
+                      mouth: 'grit',
+                      effects: ['pale', 'sweat', 'tears', 'noise'],
+                    },
+                    secondExpression: 'pain',
+                    secondFaceParts: {
                       brow: 'pain',
                       eyes: 'wide',
                       mouth: 'shout',
@@ -2317,14 +2465,21 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                         id: 'p2_dilemma_c_step4_mercy_destroy',
                         thoughtText: '「・・・・・・おまえさえ消えれば、ルークは本物のままだ」と剣を抜く',
                         spokenText:
-                          '・・・・・・ああ、そうだな。おまえはアッシュじゃない、ディストが造ったただの機械だ。\nおまえとこの記録さえ無かったことにすれば、帰ってきたルークは『本物のルーク』のままでいられる・・・・・・っ！！',
+                          '・・・・・・ああ、そうだな。おまえはアッシュじゃない、ディストが造ったただの譜業だ。\nおまえとこの記録さえ無かったことにすれば、帰ってきたルークは『本物のルーク』のままでいられる・・・・・・っ！！',
                         aschText:
                           '・・・・・・っ、ハッ・・・・・・それでいい。最初から、俺など残るべきじゃなかったんだ・・・・・・。\n・・・・・・それで全部、無かったことにしろ、ガイ・・・・・・っ。',
-                        expression: 'normal',
+                        expression: 'empty',
                         faceParts: {
+                          brow: 'sad',
+                          eyes: 'empty',
+                          mouth: 'close',
+                          effects: ['pale', 'tears'],
+                        },
+                        secondExpression: 'normal',
+                        secondFaceParts: {
                           brow: 'pain',
                           eyes: 'close',
-                          mouth: 'grit',
+                          mouth: 'close',
                           effects: ['pale', 'tears'],
                         },
                         voiceEffects: ['tremble_glitch'],
@@ -2341,11 +2496,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                         id: 'p2_dilemma_c_step4_total_collapse',
                         thoughtText: '「壊せるわけないだろ！ だが誰が本物なのかもう分からない」と立ち尽くす',
                         spokenText:
-                          '・・・・・・俺の手でおまえを壊せるわけないだろ・・・・・・！\nだけど、機械の身体に記憶だけがあるおまえを『アッシュじゃない』としたら、アッシュの身体にルークの記憶だけがあるタタル渓谷のルークも『ルークじゃない』ことになる・・・・・・っ。',
+                          '・・・・・・俺の手でおまえを壊せるわけないだろ・・・・・・！\nだけど、譜業の身体に記憶だけがあるおまえを『アッシュじゃない』としたら、アッシュの身体にルークの記憶だけがあるタタル渓谷のルークも『ルークじゃない』ことになる・・・・・・っ。',
                         aschText:
                           '・・・・・・そうか。\n・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・。',
-                        expression: 'empty',
+                        expression: 'look_away',
                         faceParts: {
+                          brow: 'sad',
+                          eyes: 'close',
+                          mouth: 'close',
+                          effects: ['pale', 'tears', 'noise'],
+                        },
+                        secondExpression: 'empty',
+                        secondFaceParts: {
                           brow: 'sad',
                           eyes: 'empty',
                           mouth: 'close',
@@ -2368,29 +2530,43 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                   },
                   {
                     id: 'p2_dilemma_c_step3_question_selfharm',
-                    thoughtText: '「おまえが記憶データなら、帰ってきたルークも本物じゃないのか！？」',
+                    thoughtText: '「・・・・・・答えろよ、アッシュ！」',
                     spokenText:
-                      '・・・・・・答えろよ、アッシュ！　おまえが切り離された記憶データなら、タタル渓谷に帰ってきたルークも本物じゃないっていうのかよ・・・・・・！？',
+                      '・・・・・・答えろよ、アッシュ！',
                     aschText:
-                      '・・・・・・っ、知らん！！　俺は何も覚えていないと言っているだろうが・・・・・・っ！！\nやめろ、それ以上その記録を読み上げるな・・・・・・っ！！',
+                      '・・・・・・っ、知らん！！　俺は何も覚えていないと言っているだろうが・・・・・・っ！！\nやめろ、それ以上は・・・・・・っ！！',
                     expression: 'pain',
                     faceParts: {
                       brow: 'pain',
-                      eyes: 'pain',
+                      eyes: 'wide',
                       mouth: 'shout',
+                      effects: ['pale', 'sweat', 'tears', 'noise'],
+                    },
+                    secondExpression: 'pain',
+                    secondFaceParts: {
+                      brow: 'pain',
+                      eyes: 'close',
+                      mouth: 'grit',
                       effects: ['pale', 'sweat', 'tears', 'noise'],
                     },
                     voiceEffects: ['shout_glitch', 'tremble_glitch'],
                     followUpOptions: [
                       {
                         id: 'p2_dilemma_c_step4_push_paradox',
-                        thoughtText: '「おまえもルークも、機械で切り分けた複製じゃないか！」',
+                        thoughtText: '「おまえもルークも、音機関で切り分けた複製じゃないか！」',
                         spokenText:
-                          'ごまかすなよ！！　機械の身体にアッシュの記憶だけがあるおまえがアッシュじゃないなら、アッシュの身体にルークの記憶だけがあるタタル渓谷のルークも、本物のルークじゃないことになるじゃないか！！',
+                          'ごまかすなよ！！　譜業の身体にアッシュの記憶だけがあるおまえがアッシュじゃないなら、アッシュの身体にルークの記憶だけがあるタタル渓谷のルークも、本物のルークじゃないことになるじゃないか！！',
                         aschText:
                           '・・・・・・そうか。\n・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・。',
-                        expression: 'empty',
+                        expression: 'look_away',
                         faceParts: {
+                          brow: 'sad',
+                          eyes: 'close',
+                          mouth: 'close',
+                          effects: ['pale', 'tears', 'noise'],
+                        },
+                        secondExpression: 'empty',
+                        secondFaceParts: {
                           brow: 'sad',
                           eyes: 'empty',
                           mouth: 'close',
@@ -2416,11 +2592,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                           '・・・・・・っ、くそ・・・・・・。',
                         aschText:
                           '・・・・・・はぁ、はぁ・・・・・・っ。\n・・・・・・しばらく、俺に話しかけるな・・・・・・っ。',
-                        expression: 'glare',
+                        expression: 'pain',
                         faceParts: {
                           brow: 'pain',
-                          eyes: 'away',
+                          eyes: 'close',
                           mouth: 'grit',
+                          effects: ['pale', 'sweat'],
+                        },
+                        secondExpression: 'glare',
+                        secondFaceParts: {
+                          brow: 'angry',
+                          eyes: 'down',
+                          mouth: 'frown',
                           effects: ['pale', 'sweat'],
                         },
                         voiceEffects: ['tremble'],
@@ -2442,9 +2625,16 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                   '・・・・・・はぁ、はぁ・・・・・・人の頭の中を勝手に暴いておいて、今さら謝って済むと思うな・・・・・・！\n・・・・・・その端末を今すぐ閉じろ・・・・・・っ。',
                 expression: 'glare',
                 faceParts: {
-                  brow: 'angry',
+                  brow: 'pain',
                   eyes: 'glare',
                   mouth: 'grit',
+                  effects: ['pale', 'sweat'],
+                },
+                secondExpression: 'look_away',
+                secondFaceParts: {
+                  brow: 'angry',
+                  eyes: 'away',
+                  mouth: 'frown',
                   effects: ['pale', 'sweat'],
                 },
                 voiceEffects: ['tremble', 'shout'],
@@ -2491,7 +2681,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText: '・・・・・・悪かったよ。お互いに少し熱くなりすぎたな、頭を冷やそう。',
         aschText: '・・・・・・ふん。分かればいい。あまりしつこく妙なことを聞くな。',
         expression: 'look_away',
-        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
         moodDelta: 3,
         guyMoodDelta: 3,
       },
@@ -2512,9 +2702,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '・・・・・・いい加減にしろよ。さっきから何を聞いても突っかかりやがって、人の気も知らないでなんだその態度は。',
         aschText:
-          '・・・・・・っ、それはこっちの台詞だ！　勝手に研究室から連れ出しておいて、指図される筋合いはない！！\nそんなに俺の態度が気に入らないなら、今すぐここから出て行ってやる！',
+          'それはこっちの台詞だ！　勝手に研究室から連れ出しておいて、指図される筋合いはない！！\nそんなに俺の態度が気に入らないなら、今すぐここから出て行ってやる！',
         expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
+        secondFaceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['sweat'] },
         voiceEffects: ['shout'],
         moodDelta: -4,
         guyMoodDelta: -2,
@@ -2539,7 +2730,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         aschText:
           '・・・・・・温度センサーくらいついているが、人間みたいに凍えることはない。\nもっとも、冷えすぎると関節の駆動音がうるさくなるから鬱陶しいがな。',
         expression: 'normal',
-        faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
+        faceParts: { brow: 'normal', eyes: 'normal', mouth: 'close', effects: [] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'doubt', eyes: 'glare', mouth: 'frown', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
         badMoodResponse: {
@@ -2562,11 +2755,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '机の上の書類か？　最近また古代の音機関の調査を手伝っていて、資料が山積みになってるんだよ。',
+          '机の上が散らかっていて悪いな。最近また古代の音機関の調査を手伝っていて、資料が山積みになってるんだ。',
         aschText:
-          '・・・・・・おまえも相変わらずそういう古い機械いじりが好きだな。\nディストの研究所にも似たようなガラクタや、外部と繋がった通信機が山ほど転がっている。',
+          '・・・・・・おまえも相変わらずそういう音機関いじりが好きだな。\nディストの研究所にも、似たようなガラクタや通信機が山ほど転がっている。',
         expression: 'normal',
-        faceParts: { brow: 'normal', eyes: 'normal', mouth: 'close', effects: [] },
+        faceParts: { brow: 'normal', eyes: 'down', mouth: 'close', effects: [] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
         grantsLinkTags: ['hint_lab_comms'],
@@ -2590,11 +2785,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '棚のチェス盤か？　昔、屋敷でおまえにルールを教えたよな。おまえ、負けそうになるとすぐ盤をひっくり返しそうになってたの覚えてるか？',
+          '昔、屋敷でよく相手をさせられたよな。ずっと負け通しだったが・・・・・・。',
         aschText:
-          '・・・・・・いつの話をしている。そんなガキみたいな真似をした覚えはない。\nおまえこそ、俺に追い詰められるとすぐ長考して時間を稼いでいただろうが。',
+          '・・・・・・おまえがわざと手を抜いていたことくらい、とっくに気づいているぞ。\n俺は何度も本気で指せと言ったのに。',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
+        secondExpression: 'look_away',
+        secondFaceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
         moodDelta: 1,
         trustDelta: 1,
         grantsLinkTags: ['hint_chess_board'],
@@ -2618,16 +2815,16 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'そういえば、さっきおまえが怒鳴った時の声、少し裏返りかけなかったか？　その身体だと、声の出し方も勝手が違うのか？',
+          'こうして話していると、声の高さまであの頃のままだよな。やっぱり前とは勝手が違うか？',
         aschText:
-          '・・・・・・っ、うるさい！　聞き間違いに決まっているだろうが！\n11年前の予備機体だから、声帯ユニットまで声変わり前の仕様になっているだけだ！',
-        expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['sweat'] },
+          '・・・・・・ああ。少し声を荒らげただけで高い音が出るから、鬱陶しくて仕方がない。',
+        expression: 'look_away',
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['blush', 'sweat'] },
         moodDelta: 0,
         trustDelta: 1,
         grantsLinkTags: ['hint_voice_crack'],
         badMoodResponse: {
-          aschText: '・・・・・・声帯ユニットまで11年前の声変わり前の仕様になっているだけだ。',
+          aschText: '・・・・・・少し声を荒らげただけで高い音が出るから、鬱陶しくて仕方がない。',
           expression: 'look_away',
           faceParts: { brow: 'angry', eyes: 'down', mouth: 'frown', effects: [] },
           moodDelta: 0,

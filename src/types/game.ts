@@ -131,6 +131,8 @@ export interface MoodVariantResponse {
   aschText: string;
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;
+  secondExpression?: ExpressionId;
+  secondFaceParts?: Partial<FaceParts>;
   voiceEffects?: BubbleVoiceEffect[];
   moodDelta?: number;
   trustDelta?: number;
@@ -145,6 +147,8 @@ export interface AschQuestionReplyOption {
   aschText: string;                // ガイの返答に対するアッシュの反応
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;
+  secondExpression?: ExpressionId;
+  secondFaceParts?: Partial<FaceParts>;
   voiceEffects?: BubbleVoiceEffect[];
   moodDelta?: number;              // 機嫌の変化量（マイナスで不機嫌・怒り、プラスで軟化）
   guyMoodDelta?: number;           // ガイ側の機嫌変化量（マイナスでガイ苛立ち・不機嫌モード、プラスで鎮静）
@@ -184,6 +188,8 @@ export interface TopicExchangeStage {
   aschTextCorrupted?: string;      // 高エラー時の返答（任意）
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;
+  secondExpression?: ExpressionId;
+  secondFaceParts?: Partial<FaceParts>;
   voiceEffects?: BubbleVoiceEffect[];
   typingSpeed?: 'normal' | 'fast' | 'slow' | 'laggy';
   moodDelta?: number;              // 機嫌パラメータの変化量
@@ -255,3 +261,6 @@ export interface ObservationStats {
   overrideCount: number;
   purgeCount: number;              // 感情抑制（機械的制御）の使用回数
 }
+
+export type TopicReplyOption = AschQuestionReplyOption;
+

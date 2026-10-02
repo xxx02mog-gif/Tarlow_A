@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Ghost in the mASCHine",
+  "description": "アッシュ（タルロウA）との対話と情報端末解析を通じて記憶と真実に迫る対話型アドベンチャーゲーム",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

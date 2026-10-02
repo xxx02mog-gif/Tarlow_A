@@ -15,6 +15,7 @@ interface ObservationReportProps {
   stats: ObservationStats;
   sectors: MemorySector[];
   onResetSession: () => void;
+  onOpenAchievements: () => void;
 }
 
 export const ObservationReport: React.FC<ObservationReportProps> = ({
@@ -24,6 +25,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   stats,
   sectors,
   onResetSession,
+  onOpenAchievements,
 }) => {
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
 
@@ -65,13 +67,13 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       label: 'プロテクト解除内訳',
       value: `自然開示：${naturalUnlockedCount}件 ／ 強制解除：${forcedUnlockedCount}件 ／ 未開示：${remainingLockedCount}件`,
     },
-    { label: '平均解答時間', value: `${avgResponseSec} 秒` },
+    { label: '平均返答時間', value: `${avgResponseSec} 秒` },
     { label: '即答回数（2秒以内）', value: `${stats.quickReplyCount} 回` },
     { label: '迷い回数（選択肢切り替え）', value: `${stats.choiceHoverSwitchCount} 回` },
     { label: '無言（放置）発生回数', value: `${stats.idleTimeoutCount} 回` },
     { label: '画面から目を離した回数', value: `${stats.tabSwitchCount} 回` },
     {
-      label: 'データ端末を開いた回数',
+      label: '管理端末を開いた回数',
       value: `${stats.terminalOpenCount} 回（計 ${terminalTotalSec} 秒）`,
     },
   ];
@@ -125,6 +127,16 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         </span>
 
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => {
+              soundEngine.playTerminalTab();
+              onOpenAchievements();
+            }}
+            className="px-4 py-1.5 text-[12px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
+          >
+            実績・記録
+          </button>
+
           <button
             onClick={() => {
               soundEngine.playTerminalTab();
@@ -185,7 +197,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                 </span>
               </div>
               <div className="flex justify-between border-b border-zinc-900 pb-1.5">
-                <span className="text-zinc-400">プログラミング補助</span>
+                <span className="text-zinc-400">プログラミング・テキスト入力補助</span>
                 <span className="text-zinc-100">Google AI Studio</span>
               </div>
               <div className="pt-1 text-[11px] text-zinc-400">

@@ -7,6 +7,7 @@ import {
   InfoCategoryLabel,
 } from '../types/game';
 import { soundEngine } from '../utils/chiptuneAudio';
+import { formatParagraphText } from '../utils/japaneseLineWrap';
 
 interface DataTerminalModalProps {
   isOpen: boolean;
@@ -369,22 +370,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               {/* 上段：感情のグラフ（情動波形）ステータス */}
               <div className="flex items-center justify-between border-b border-zinc-800/90 pb-0.5 shrink-0">
                 <span className="text-[8.5px] text-zinc-400 tracking-wider">
-                  EMOTION_WAVE // 感情波形
-                </span>
-                <span
-                  className={`text-[8px] px-1 py-[0.5px] border ${
-                    isAngry
-                      ? 'border-red-800 text-red-300 bg-red-950/40'
-                      : isHappy
-                        ? 'border-emerald-800 text-emerald-300 bg-emerald-950/40'
-                        : 'border-zinc-700 text-zinc-400 bg-zinc-900'
-                  }`}
-                >
-                  {isAngry
-                    ? '情動昂進（警戒・怒り）'
-                    : isHappy
-                      ? '情動軟化（緩和）'
-                      : '通常波形'}
+                  EMOTION_WAVE
                 </span>
               </div>
 
@@ -418,7 +404,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               <div className="flex-1 min-h-0 flex flex-col pt-0.5">
                 <div className="flex items-center justify-between mb-0.5 shrink-0">
                   <span className="text-[8px] text-zinc-400 tracking-wider">
-                    SYSTEM_LOG // 稼働ログ
+                    SYSTEM_LOG
                   </span>
                   <span className="text-[7.5px] text-zinc-500">
                     {logs.length} RECORDS
@@ -614,11 +600,14 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             {isExpanded && (
                               <div className="px-2 py-1.5 border-t border-zinc-800/90 bg-[#070709] space-y-1">
                                 <p className="text-[9px] leading-relaxed text-zinc-300 whitespace-pre-wrap">
-                                  {item.content}
+                                  {formatParagraphText(item.content, 33.5)}
                                 </p>
                                 {item.subWarning && (
-                                  <p className="text-[8px] leading-snug text-red-400 border-t border-red-950/70 pt-1">
-                                    [PARADOX] {item.subWarning}
+                                  <p className="text-[8px] leading-snug text-red-400 border-t border-red-950/70 pt-1 whitespace-pre-wrap">
+                                    {formatParagraphText(
+                                      `[PARADOX] ${item.subWarning}`,
+                                      36.0
+                                    )}
                                   </p>
                                 )}
                               </div>
@@ -638,7 +627,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
       {/* 2. 手持ち端末イラスト本体 (ドロップシャドウなし、1920x1080 = 16:9比率のtanmatu.pngを640x360で完全一致表示) */}
       <img
         src={tanmatuSrc}
-        alt="データ端末"
+        alt="管理端末"
         className="absolute inset-0 z-30 w-full h-full object-fill pointer-events-none select-none"
         draggable={false}
       />

@@ -368,3 +368,227 @@ body {
   background: rgba(56, 189, 248, 0.85);
   animation: glitchLineBlueMove 2.3s infinite steps(1, end);
 }
+
+/* === 立ち絵・表情パーツのアニメーション演出 === */
+
+/* 1. 待機中の微細な呼吸（素体＋全パーツ一体のコンテナにかけるためパーツズレなし） */
+@keyframes portraitBreathing {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(1.4px);
+  }
+}
+
+.portrait-alive-breathing {
+  animation: portraitBreathing 4.2s ease-in-out infinite;
+}
+
+/* 2. 驚き・図星でビクッと肩が跳ねる（1回のみ） */
+@keyframes portraitStartleOnce {
+  0% {
+    transform: translateY(0);
+  }
+  22% {
+    transform: translateY(-3px);
+  }
+  48% {
+    transform: translateY(1px);
+  }
+  72% {
+    transform: translateY(-0.8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* 3. 怒鳴り・反発でグッと震える（1回のみ） */
+@keyframes portraitAngryJoltOnce {
+  0% {
+    transform: translate(0, 0);
+  }
+  18% {
+    transform: translate(-2px, -1.5px);
+  }
+  36% {
+    transform: translate(2px, 1px);
+  }
+  54% {
+    transform: translate(-1.4px, -0.6px);
+  }
+  74% {
+    transform: translate(1px, 0.4px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* 4. 苦悶・動揺で身体が小刻みに震える（1回のみ） */
+@keyframes portraitPainTrembleOnce {
+  0% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-1.5px, 0.8px);
+  }
+  30% {
+    transform: translate(1.5px, 0.4px);
+  }
+  45% {
+    transform: translate(-1.2px, 1px);
+  }
+  60% {
+    transform: translate(1.2px, 0.4px);
+  }
+  80% {
+    transform: translate(-0.8px, 0.4px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* 5. 伏し目・溜息でふっと肩を落とす（1回のみ） */
+@keyframes portraitSighOnce {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.portrait-react-startle {
+  animation: portraitStartleOnce 0.34s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.portrait-react-angry {
+  animation: portraitAngryJoltOnce 0.32s ease-out 1 both;
+}
+
+.portrait-react-pain {
+  animation: portraitPainTrembleOnce 0.42s linear 1 both;
+}
+
+.portrait-react-sigh {
+  animation: portraitSighOnce 0.55s ease-in-out 1 both;
+}
+
+/* 6. 目・口・眉の微震動（切り替わった最初の一瞬のみ震えてピタッと静止） */
+@keyframes partMicroTremorOnce {
+  0% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-0.85px, 0.45px);
+  }
+  30% {
+    transform: translate(0.85px, -0.45px);
+  }
+  45% {
+    transform: translate(-0.75px, -0.35px);
+  }
+  60% {
+    transform: translate(0.75px, 0.35px);
+  }
+  75% {
+    transform: translate(-0.5px, 0.25px);
+  }
+  90% {
+    transform: translate(0.4px, -0.2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.part-micro-tremor {
+  animation: partMicroTremorOnce 0.42s linear 1 both;
+}
+
+/* 7. 口パーツ：発声・怒鳴り時の動き（顔の高さ 50% 42% を基準に伸縮） */
+@keyframes mouthSpeakPop {
+  0% {
+    transform: translateY(0.5px) scaleY(0.96);
+  }
+  45% {
+    transform: translateY(-0.6px) scaleY(1.03);
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes mouthShoutPop {
+  0% {
+    transform: translateY(0.8px) scaleY(0.95);
+  }
+  35% {
+    transform: translateY(-1.2px) scaleY(1.05);
+  }
+  70% {
+    transform: translateY(0.4px) scaleY(0.99);
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.mouth-anim-speak {
+  transform-origin: 50% 42%;
+  animation: mouthSpeakPop 0.24s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.mouth-anim-shout {
+  transform-origin: 50% 42%;
+  animation: mouthShoutPop 0.3s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+/* 8. 感情エフェクト：赤面のじわっと表示 ／ 汗・涙の伝う動き */
+@keyframes fxBlushFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fxDropSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2.5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fxSubtleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fx-anim-blush {
+  animation: fxBlushFadeIn 0.48s ease-out 1 both;
+}
+
+.fx-anim-drop {
+  animation: fxDropSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.fx-anim-fade {
+  animation: fxSubtleFadeIn 0.28s ease-out 1 both;
+}
+

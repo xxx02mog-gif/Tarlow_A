@@ -5,6 +5,13 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AlertTriangle,
+  BookOpen,
+  Info,
+  Scale,
+  Users,
+} from 'lucide-react';
+import {
   AschIncomingQuestion,
   AschQuestionReplyOption,
   BrowPartId,
@@ -56,14 +63,33 @@ import {
 import {
   AschPortrait,
   DEFAULT_EXPRESSION_PARTS,
+  DEFAULT_MOTION_TUNING,
+  PortraitMotionTuning,
 } from './components/AschPortrait';
 import { DataTerminalModal } from './components/DataTerminalModal';
 import { DialogueLogModal } from './components/DialogueLogModal';
 import { ManualModal } from './components/ManualModal';
 import { ObservationReport } from './components/ObservationReport';
+import { AchievementArchiveModal } from './components/AchievementArchiveModal';
+import { ExpressionDebugModal } from './components/ExpressionDebugModal';
+import {
+  ACHIEVEMENT_DEFINITIONS,
+  AchievementSaveData,
+  ALL_CANONICAL_DIALOGUE_LINES,
+  ENDING_ARCHIVE_LIST,
+  evaluateMilestoneAchievements,
+  loadAchievementSave,
+  NATURAL_UNLOCKABLE_SECTOR_IDS,
+  persistAchievementSave,
+} from './utils/achievementStore';
 import { soundEngine } from './utils/chiptuneAudio';
 import { getAssetUrl } from './utils/assetPath';
+import { formatBubbleText, formatParagraphText } from './utils/japaneseLineWrap';
 import './game.css';
+
+// 制作・調整中は true（上部バー＆実績画面に『表情ビューワー』を常時表示）
+// 本番公開時に false にすると、全10種ED達成または実績『百面相』(ach_17)解除時のみご褒美として解放されます
+const DEBUG_VIEWER_ALWAYS_VISIBLE = true;
 
 const STAGE_WIDTH = 800;
 const STAGE_HEIGHT = 450;
@@ -107,12 +133,21 @@ const STORAGE_KEY_TANMATU_PNG = 'asch_asset_tanmatu_png_v3';
 
 const GLITCH_CHARS = ['▒', '░', '▓', '■', '□', '◆', '◇', '※', '〓', '〒'];
 
-const PROLOGUE_LINES: string[] = [
-  '「ルーク」がタタル渓谷へ帰ってきてから、1年が経った。',
-  'ディストの私設研究所を訪れた俺は、研究室の隅にいた『10歳当時のアッシュ』と瓜二つの機体を見つけた。',
-  'とてもそのままにはしておけず連れ出そうとした俺に、ディストは「これを持っていきなさい」と一枚の管理端末をよこした。',
-  'そして俺の部屋へ連れ込んだものの――そいつは俺の顔を見ても知らないふりをして、『俺は自律機械タルロウAだ』と言い張り続けている。',
+const PROLOGUE_PAGES: string[][] = [
+  [
+    'ルークがタタル渓谷へ帰ってきてから1年が経った、ある日。',
+    '俺がディストの研究所を訪ねると、部屋の隅に見覚えのある子どもがいた。',
+    'ディストにどういうことなのか尋ねても、奴は管理用の端末を差し出して不気味に笑うだけだった。',
+  ],
+  [
+    '何が何やらわからないが、放置することもできない。',
+    '俺は、半ば強引にそいつを連れ帰ることにした。',
+  ],
 ];
+const TOTAL_PROLOGUE_LINES = PROLOGUE_PAGES.reduce(
+  (sum, page) => sum + page.length,
+  0
+);
 
 const corruptString = (source: string, intensity: number): string => {
   const chars = Array.from(source);
@@ -157,6 +192,124 @@ const resolveVoiceEffectWithGlitch = (
   return 'glitch';
 };
 
+// セリフ枠が出る前の「表情のタメ」用の顔パーツ算出（発声前の口元：息を呑む・食いしばる・への字・閉じ）
+const buildPreSpeechFaceParts = (
+  expr: ExpressionId,
+  parts?: Partial<FaceParts>
+): Partial<FaceParts> => {
+  const basePreset =
+    DEFAULT_EXPRESSION_PARTS[expr] || DEFAULT_EXPRESSION_PARTS.normal;
+  const brow = parts?.brow ?? basePreset.brow;
+  const eyes = parts?.eyes ?? basePreset.eyes;
+  const targetMouth = parts?.mouth ?? basePreset.mouth;
+  const effects = parts?.effects ? [...parts.effects] : [...basePreset.effects];
+
+  let preMouth: MouthPartId = 'close';
+  if (expr === 'shock' || targetMouth === 'gasp') {
+    preMouth = 'gasp';
+  } else if (
+    targetMouth === 'shout' ||
+    targetMouth === 'grit' ||
+    expr === 'pain'
+  ) {
+    preMouth = 'grit';
+  } else if (targetMouth === 'frown' || brow === 'angry') {
+    preMouth = 'frown';
+  }
+
+  return {
+    brow,
+    eyes,
+    mouth: preMouth,
+    effects,
+  };
+};
+
+const getPreSpeechTameDurationMs = (
+  expr: ExpressionId,
+  parts?: Partial<FaceParts>
+): number => {
+  const eff = parts?.effects ?? [];
+  if (
+    expr === 'shock' ||
+    expr === 'pain' ||
+    eff.includes('blush') ||
+    eff.includes('sweat') ||
+    eff.includes('pale')
+  ) {
+    return 720;
+  }
+  return 580;
+};
+
+// 2枠連続セリフで secondFaceParts が未指定の場合でも、1枠目→2枠目のニュアンス変化に合わせて表情を自然に切り替える補助関数
+const deriveAutomaticSecondFaceParts = (
+  baseExpr: ExpressionId,
+  firstParts: Partial<FaceParts> | undefined,
+  firstLine: string,
+  secondLine: string
+): Partial<FaceParts> | undefined => {
+  const preset =
+    DEFAULT_EXPRESSION_PARTS[baseExpr] || DEFAULT_EXPRESSION_PARTS.normal;
+  const brow = firstParts?.brow ?? preset.brow;
+  const eyes = firstParts?.eyes ?? preset.eyes;
+  const mouth = firstParts?.mouth ?? preset.mouth;
+  const effects = firstParts?.effects ? [...firstParts.effects] : [...preset.effects];
+
+  // 2枠目が「・・・・・・ふん」「・・・・・・やれやれ」「・・・・・・まあいい」等の息つき・呆れで始まる場合は閉じ目にする
+  if (
+    /^・・・・・・(ふん|やれやれ|まあいい|とにかく)/.test(secondLine) &&
+    eyes !== 'close'
+  ) {
+    return {
+      brow: brow === 'angry' ? 'normal' : brow,
+      eyes: 'close',
+      mouth: mouth === 'shout' ? 'frown' : 'close',
+      effects: effects.filter((e) => e !== 'sweat'),
+    };
+  }
+
+  // 1枠目が怒鳴り(shout)・見開き(wide)・息呑み(gasp)で、2枠目が「・・・・・・」で始まる落ち着いたトーンの場合
+  if (
+    (mouth === 'shout' || eyes === 'wide' || mouth === 'gasp') &&
+    secondLine.startsWith('・・・・・・') &&
+    !secondLine.includes('！！')
+  ) {
+    return {
+      brow: brow === 'angry' ? 'sad' : brow,
+      eyes: eyes === 'wide' ? 'away' : eyes === 'glare' ? 'close' : eyes,
+      mouth: 'frown',
+      effects,
+    };
+  }
+
+  // 1枠目が閉じ目(close)で、2枠目で語りかける場合
+  if (eyes === 'close' && !secondLine.startsWith('・・・・・・ふん')) {
+    return {
+      brow,
+      eyes: 'away',
+      mouth,
+      effects,
+    };
+  }
+
+  // 1枠目と2枠目で少し目線や口元に変化をつける（1枠目がそらしなら2枠目で伏し目or閉じ目など）
+  if (
+    firstLine.endsWith('！') &&
+    !secondLine.endsWith('！') &&
+    mouth === 'shout'
+  ) {
+    return {
+      brow,
+      eyes: eyes === 'glare' ? 'away' : eyes,
+      mouth: 'frown',
+      effects,
+    };
+  }
+
+  return undefined;
+};
+
 interface AschBubbleItemProps {
   text: string;
   effect: BubbleVoiceEffect;
@@ -174,24 +327,27 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
   const isShout = effect === 'shout' || effect === 'shout_glitch';
   const isTremble = effect === 'tremble' || effect === 'tremble_glitch';
 
+  const formattedText = formatBubbleText(text, effect);
+  const isMultiLine3Plus = formattedText.split('\n').length >= 3;
+
   const [displayText, setDisplayText] = useState<string>(() =>
-    isGlitchy ? corruptString(text, 0.42) : text
+    isGlitchy ? corruptString(formattedText, 0.42) : formattedText
   );
 
   useEffect(() => {
     if (!isGlitchy) {
-      setDisplayText(text);
+      setDisplayText(formattedText);
       return;
     }
 
-    setDisplayText(corruptString(text, 0.42));
+    setDisplayText(corruptString(formattedText, 0.42));
 
     const step1 = window.setTimeout(() => {
-      setDisplayText(corruptString(text, 0.18));
+      setDisplayText(corruptString(formattedText, 0.18));
     }, 80);
 
     const step2 = window.setTimeout(() => {
-      setDisplayText(text);
+      setDisplayText(formattedText);
     }, 170);
 
     let decodeStep1: number | undefined;
@@ -199,12 +355,12 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
 
     const periodicTimer = window.setInterval(() => {
       if (Math.random() < 0.65) {
-        setDisplayText(corruptString(text, 0.18));
+        setDisplayText(corruptString(formattedText, 0.18));
         decodeStep1 = window.setTimeout(() => {
-          setDisplayText(corruptString(text, 0.08));
+          setDisplayText(corruptString(formattedText, 0.08));
         }, 70);
         decodeStep2 = window.setTimeout(() => {
-          setDisplayText(text);
+          setDisplayText(formattedText);
         }, 145);
       }
     }, 680);
@@ -216,7 +372,7 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
       if (decodeStep2) clearTimeout(decodeStep2);
       clearInterval(periodicTimer);
     };
-  }, [text, isGlitchy, effect]);
+  }, [formattedText, isGlitchy, effect]);
 
   const bubbleEffectClass =
     effect === 'shout'
@@ -241,7 +397,9 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
 
   return (
     <div
-      className={`relative w-fit max-w-[335px] bg-[#09090b] text-zinc-100 px-3.5 py-2 ${bubbleEffectClass}`}
+      className={`relative w-fit max-w-[404px] bg-[#09090b] text-zinc-100 px-3.5 ${
+        isMultiLine3Plus ? 'py-1.5' : 'py-2'
+      } ${bubbleEffectClass}`}
     >
       {isGlitchy && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -251,7 +409,9 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
       )}
 
       <p
-        className={`relative z-10 whitespace-pre-wrap break-words ${textSizeClass} ${textEffectClass}`}
+        className={`relative z-10 whitespace-pre-wrap break-words ${textSizeClass} ${
+          isMultiLine3Plus ? '!leading-[1.3]' : ''
+        } ${textEffectClass}`}
       >
         {displayText}
       </p>
@@ -574,6 +734,137 @@ export default function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
   const [isDialogueLogOpen, setIsDialogueLogOpen] = useState<boolean>(false);
   const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+  const [isDebugViewerOpen, setIsDebugViewerOpen] = useState<boolean>(false);
+  const [debugPreviewState, setDebugPreviewState] = useState<{
+    expression: ExpressionId;
+    faceParts: FaceParts;
+  } | null>(null);
+  const [motionTuning, setMotionTuning] = useState<PortraitMotionTuning>(
+    DEFAULT_MOTION_TUNING
+  );
+  const [replayPulse, setReplayPulse] = useState<number>(0);
+  const [isAchievementModalOpen, setIsAchievementModalOpen] =
+    useState<boolean>(false);
+  const [achievementSave, setAchievementSave] = useState<AchievementSaveData>(
+    () => loadAchievementSave()
+  );
+  const [achievementToasts, setAchievementToasts] = useState<
+    {
+      toastId: string;
+      id: string;
+      numberLabel: string;
+      title: string;
+      description: string;
+    }[]
+  >([]);
+  const prevUnlockedAchIdsRef = useRef<string[]>(
+    achievementSave.unlockedAchievementIds
+  );
+  const toastTimersRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    return () => {
+      toastTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      toastTimersRef.current = [];
+    };
+  }, []);
+
+  // 実績が新規解除された瞬間にポップアップ通知を表示
+  useEffect(() => {
+    const prevIds = prevUnlockedAchIdsRef.current;
+    const currentIds = achievementSave.unlockedAchievementIds;
+
+    // 実績モーダルを開いて引き継ぎコード読込・初期化した場合は通知を出さず同期のみ行う
+    if (isAchievementModalOpen) {
+      prevUnlockedAchIdsRef.current = currentIds;
+      return;
+    }
+
+    const newlyUnlockedIds = currentIds.filter((id) => !prevIds.includes(id));
+    prevUnlockedAchIdsRef.current = currentIds;
+
+    if (newlyUnlockedIds.length === 0) return;
+
+    const newToasts = newlyUnlockedIds
+      .map((id) => {
+        const def = ACHIEVEMENT_DEFINITIONS.find((a) => a.id === id);
+        if (!def) return null;
+        return {
+          toastId: `ach-toast-${id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          id: def.id,
+          numberLabel: def.numberLabel,
+          title: def.title,
+          description: def.description,
+        };
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null);
+
+    if (newToasts.length === 0) return;
+
+    soundEngine.playAchievementUnlock();
+    setAchievementToasts((prev) => [...prev, ...newToasts]);
+
+    newToasts.forEach((t) => {
+      const timer = window.setTimeout(() => {
+        setAchievementToasts((prev) =>
+          prev.filter((item) => item.toastId !== t.toastId)
+        );
+        toastTimersRef.current = toastTimersRef.current.filter(
+          (id) => id !== timer
+        );
+      }, 3600);
+      toastTimersRef.current.push(timer);
+    });
+  }, [achievementSave.unlockedAchievementIds, isAchievementModalOpen]);
+
+  const handleUpdateAchievementSave = useCallback(
+    (
+      updater:
+        | AchievementSaveData
+        | ((prev: AchievementSaveData) => AchievementSaveData)
+    ) => {
+      setAchievementSave((prev) => {
+        const rawNext =
+          typeof updater === 'function' ? updater(prev) : updater;
+        const evaluated = evaluateMilestoneAchievements(rawNext);
+        persistAchievementSave(evaluated);
+        return evaluated;
+      });
+    },
+    []
+  );
+
+  const unlockAchievements = useCallback(
+    (...achIds: string[]) => {
+      if (achIds.length === 0) return;
+      handleUpdateAchievementSave((prev) => {
+        const missing = achIds.filter(
+          (id) => !prev.unlockedAchievementIds.includes(id)
+        );
+        if (missing.length === 0) return prev;
+        return {
+          ...prev,
+          unlockedAchievementIds: [...prev.unlockedAchievementIds, ...missing],
+        };
+      });
+    },
+    [handleUpdateAchievementSave]
+  );
+
+  const recordSeenLine = useCallback(
+    (line: string) => {
+      const trimmed = line.trim();
+      if (!trimmed || !ALL_CANONICAL_DIALOGUE_LINES.has(trimmed)) return;
+      handleUpdateAchievementSave((prev) => {
+        if (prev.seenLines.includes(trimmed)) return prev;
+        return {
+          ...prev,
+          seenLines: [...prev.seenLines, trimmed],
+        };
+      });
+    },
+    [handleUpdateAchievementSave]
+  );
 
   // === 時間計測・行動計測・シーケンスキューRef ===
   const [idleWaitSec, setIdleWaitSec] = useState<number>(0);
@@ -599,7 +890,7 @@ export default function App() {
     isAngryGlancingRef.current = false;
     angryGlancesDoneInWaitRef.current = 0;
     angryGlancesMaxInWaitRef.current = Math.random() < 0.5 ? 1 : 2;
-    nextAngryGlanceAtSecRef.current = Math.floor(10 + Math.random() * 9);
+    nextAngryGlanceAtSecRef.current = Math.floor(8 + Math.random() * 7);
     angryGlanceEndAtSecRef.current = 0;
   }, []);
   const tabHiddenAtRef = useRef<number | null>(null);
@@ -636,12 +927,12 @@ export default function App() {
   const baseMoodExpression: ExpressionId =
     mood < 0 && isPhase2OrLater ? 'glare' : 'normal';
 
-  const activeExpression: ExpressionId = overrideExpression ?? baseMoodExpression;
+  const sceneExpression: ExpressionId = overrideExpression ?? baseMoodExpression;
 
   // 現在の場面・機嫌に応じた「眉・目・口・感情」の組み合わせ算出
   const computedSceneParts: FaceParts = (() => {
     const basePreset =
-      DEFAULT_EXPRESSION_PARTS[activeExpression] || DEFAULT_EXPRESSION_PARTS.normal;
+      DEFAULT_EXPRESSION_PARTS[sceneExpression] || DEFAULT_EXPRESSION_PARTS.normal;
     const custom =
       overrideFaceParts ??
       (mood < 0 && isPhase2OrLater
@@ -664,7 +955,17 @@ export default function App() {
     return { brow, eyes, mouth, effects };
   })();
 
-  const activeFaceParts: FaceParts = computedSceneParts;
+  const activeExpression: ExpressionId =
+    debugPreviewState?.expression ?? sceneExpression;
+  const activeFaceParts: FaceParts =
+    debugPreviewState?.faceParts ?? computedSceneParts;
+
+  const isBonusViewerUnlocked =
+    achievementSave.reachedEndingKeys.length >= ENDING_ARCHIVE_LIST.length ||
+    achievementSave.unlockedAchievementIds.includes('ach_17') ||
+    achievementSave.unlockedAchievementIds.includes('ach_18');
+  const canAccessExpressionViewer =
+    DEBUG_VIEWER_ALWAYS_VISIBLE || isBonusViewerUnlocked;
 
   const updateMood = useCallback(
     (delta: number) => {
@@ -783,6 +1084,7 @@ export default function App() {
       if (!trimmed) return;
 
       soundEngine.playBubblePop(speaker, voiceEffect);
+      recordSeenLine(trimmed);
 
       const newBubbleId = `bbl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -839,7 +1141,7 @@ export default function App() {
         },
       ]);
     },
-    []
+    [recordSeenLine]
   );
 
   const appendLog = useCallback(
@@ -912,6 +1214,16 @@ export default function App() {
                 mouth: 'close',
                 effects: [],
               });
+            } else if (idx > 0) {
+              const autoSecondFace = deriveAutomaticSecondFaceParts(
+                expr,
+                partsOverride,
+                lines[0],
+                line
+              );
+              if (autoSecondFace) {
+                setOverrideFaceParts(autoSecondFace);
+              }
             }
             pushScreenBubble('ASCH', line, lineEffect);
           },
@@ -989,6 +1301,7 @@ export default function App() {
                 ? AWAY_RETURN_REACTIONS.angry
                 : AWAY_RETURN_REACTIONS.normal;
             const reaction = pool[idx] ?? pool[pool.length - 1];
+            unlockAchievements('ach_14');
             appendLog('INFO', reaction.logMessage);
             playAschReactionLines(
               reaction.text,
@@ -1132,6 +1445,7 @@ export default function App() {
           'INFO',
           'RESPONSE TIMEOUT // AUTONOMOUS QUERY PROTOCOL SUSPENDED'
         );
+        unlockAchievements('ach_13');
         playAschReactionLines(
           '・・・・・・\nいや、いい。なんでもない。忘れてくれ',
           'look_away',
@@ -1176,6 +1490,7 @@ export default function App() {
           const cooldownReaction =
             ANGRY_COOLDOWN_REACTIONS[cooldownIdx] ??
             ANGRY_COOLDOWN_REACTIONS[ANGRY_COOLDOWN_REACTIONS.length - 1];
+          unlockAchievements('ach_12');
           appendLog('INFO', cooldownReaction.logMessage);
           playAschReactionLines(
             cooldownReaction.text,
@@ -1196,7 +1511,7 @@ export default function App() {
         ) {
           isAngryGlancingRef.current = true;
           angryGlancesDoneInWaitRef.current += 1;
-          angryGlanceEndAtSecRef.current = currentWaitSec + 4;
+          angryGlanceEndAtSecRef.current = currentWaitSec + 5;
           const glancePatterns: {
             expression: ExpressionId;
             faceParts: Partial<FaceParts>;
@@ -1229,10 +1544,10 @@ export default function App() {
               },
             },
             {
-              expression: 'look_away',
+              expression: 'normal',
               faceParts: {
-                brow: 'sad',
-                eyes: 'down',
+                brow: 'doubt',
+                eyes: 'normal',
                 mouth: 'close',
                 effects: ['sweat'],
               },
@@ -1392,6 +1707,9 @@ export default function App() {
             lastTerminalGazeAtRef.current = Date.now();
             const idx = terminalUnrevealedReactionCountRef.current;
             terminalUnrevealedReactionCountRef.current += 1;
+            if (terminalUnrevealedReactionCountRef.current >= 3) {
+              unlockAchievements('ach_02');
+            }
             const reaction =
               TERMINAL_UNREVEALED_REACTIONS[idx] ??
               TERMINAL_UNREVEALED_REACTIONS[TERMINAL_UNREVEALED_REACTIONS.length - 1];
@@ -1423,6 +1741,10 @@ export default function App() {
             lastTerminalGazeAtRef.current = Date.now();
             const idx = terminalGazeReactionCountRef.current;
             terminalGazeReactionCountRef.current += 1;
+            unlockAchievements(
+              'ach_03',
+              ...(terminalGazeReactionCountRef.current >= 3 ? ['ach_02'] : [])
+            );
             const reaction =
               TERMINAL_GAZE_REACTIONS[idx] ??
               TERMINAL_GAZE_REACTIONS[TERMINAL_GAZE_REACTIONS.length - 1];
@@ -1462,10 +1784,10 @@ export default function App() {
       delayMs: idx === 0 ? 320 : 980,
       action: () => {
         if (idx === 0) {
-          setOverrideExpression('normal');
+          setOverrideExpression('look_away');
           setOverrideFaceParts({
             brow: 'sad',
-            eyes: 'normal',
+            eyes: 'down',
             mouth: 'close',
             effects: [],
           });
@@ -1473,6 +1795,14 @@ export default function App() {
             'INFO',
             'PHASE 3 TRANSITION // FINAL IDENTITY QUERY DETECTED'
           );
+        } else {
+          setOverrideExpression('normal');
+          setOverrideFaceParts({
+            brow: 'sad',
+            eyes: 'normal',
+            mouth: 'close',
+            effects: [],
+          });
         }
         if (idx === qLines.length - 1) {
           setPreviewPage(0);
@@ -1551,22 +1881,55 @@ export default function App() {
     if (isTerminalOpen || isDialogueLogOpen || isManualOpen || isSequencing) {
       return;
     }
-    // Phase 2で軸A・B・Cそれぞれ1つ以上（計4つ以上）の深い話を経ている場合は、Phase 3（終幕の問いかけ）へ移行する
+    soundEngine.unlockOnUserInteraction();
+    setIsDecisionMenuOpen(false);
+
+    const isPhase2Now = linkTags.includes('phase2_started');
+    const phase2TalkedCount = Object.entries(topicAskCounts).filter(
+      ([id, count]) => !id.startsWith('p1_') && count > 0
+    ).length;
+
+    // フェーズ2で『ディストの研究所へ帰す』（RETURN）を選んだ際、
+    // 不機嫌・険悪ではなく、かつ深い対話条件を満たしていれば、帰る間際にアッシュから最後の問いかけ（Phase 3）が発生する
     if (
-      linkTags.includes('phase2_started') &&
-      disposition !== 'DESTROY' &&
-      hasEnoughDeepTalkForPhase3
+      isPhase2Now &&
+      disposition === 'RETURN' &&
+      hasEnoughDeepTalkForPhase3 &&
+      mood >= 0 &&
+      guyMood >= 0 &&
+      !isHatredMode
     ) {
       handleStartPhase3Question();
       return;
     }
-    soundEngine.unlockOnUserInteraction();
-    setIsDecisionMenuOpen(false);
-    setCustomEndingKey(null);
+
+    // 『少し休んでいけと声をかける』（KEEP）を選んだ場合：
+    // 不機嫌でなく、かつフェーズ2で2回以上会話している（または機嫌・信頼度が上がっている）場合のみ素直に休む（END 04）。
+    // まだ警戒中（会話不足）や不機嫌な場合は断って帰ってしまう（END 02）。
+    const isNotWarmEnoughYet =
+      mood < 0 ||
+      isHatredMode ||
+      (phase2TalkedCount < 2 && mood < 2 && trustLevel < 2);
+
+    const isStayRefused =
+      isPhase2Now && disposition === 'KEEP' && isNotWarmEnoughYet;
+
+    const forcedCustomEndingKey = isStayRefused
+      ? 'END_PHASE2_INCOMPLETE'
+      : isPhase2Now && disposition === 'RETURN' && isNotWarmEnoughYet
+        ? 'END_PHASE2_INCOMPLETE'
+        : null;
+
+    setCustomEndingKey(forcedCustomEndingKey);
     setEndingDisposition(disposition);
 
-    const resolvedKey = resolveEndingKey(disposition, endingApproach);
+    const resolvedKey =
+      forcedCustomEndingKey ?? resolveEndingKey(disposition, endingApproach);
+    const decisionStageKey = isStayRefused
+      ? 'END_PHASE2_STAY_REFUSED'
+      : resolvedKey;
     const decisionData =
+      FINAL_DECISION_STAGES[decisionStageKey] ||
       FINAL_DECISION_STAGES[resolvedKey] ||
       FINAL_DECISION_STAGES.END_PHASE2_ASCH;
 
@@ -1614,6 +1977,21 @@ export default function App() {
             setOverrideExpression(decisionData.expression);
             setOverrideFaceParts(decisionData.faceParts);
             appendLog('INFO', `SESSION TERMINATED // DISPOSITION: ${resolvedKey}`);
+          } else {
+            const nextFace =
+              decisionData.secondFaceParts ??
+              deriveAutomaticSecondFaceParts(
+                decisionData.expression,
+                decisionData.faceParts,
+                closingLines[0],
+                line
+              );
+            if (decisionData.secondExpression) {
+              setOverrideExpression(decisionData.secondExpression);
+            }
+            if (nextFace) {
+              setOverrideFaceParts(nextFace);
+            }
           }
           pushScreenBubble('ASCH', line, baseEff);
         },
@@ -1679,6 +2057,7 @@ export default function App() {
       setMood(0);
       setGuyMood((prev) => Math.max(0, prev));
       setLinkTags((prev) => prev.filter((t) => t !== 'cold_clash_escalated'));
+      unlockAchievements('ach_10');
       appendLog(
         'INFO',
         'GAZE SYNC DETECTED // HOSTILITY LEVEL RESET'
@@ -1725,10 +2104,30 @@ export default function App() {
       (isBackedOffOnce && currentStage.retryAschText) ||
       currentStage.aschText;
 
-    const guyLines = effectiveSpokenText
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    // --- 機嫌による反応分岐の判定（フェーズ1ではまだタルロウAを演じているため不機嫌拒否を発生させない） ---
+    const isAngryNow = mood < 0 && !isPhase1Now && !caughtAngryGlance;
+    const isGoodMoodNow = mood >= 2 && !isPhase1Now;
+
+    // 1) 不機嫌なときに sensitiveToBadMood な話題（かつ専用の badMoodResponse がない場合）を振ると、答えてくれない（未消化のまま残る）
+    // ※すでに進行中の話題（askCount > 0）の場合は途中で止まらないよう拒否しない
+    const isRefusedByBadMood =
+      askCount === 0 &&
+      isAngryNow &&
+      Boolean(topic.sensitiveToBadMood) &&
+      !currentStage.badMoodResponse;
+
+    // 2) 専用の badMoodResponse が設定されている場合（頭を撫でようとして強く払われる／お茶を渋々飲む等）
+    const useCustomBadMood = isAngryNow && Boolean(currentStage.badMoodResponse);
+
+    // 3) 上機嫌（mood >= 2）で goodMoodResponse が設定されている場合（頭を撫でさせてくれる等）
+    const useCustomGoodMood =
+      !isAngryNow && isGoodMoodNow && Boolean(currentStage.goodMoodResponse);
+
+    // 本題の冒頭にすでに「・・・・・・」や「さっき」「そういえば」「なあ」等の導入がある場合は、二重に言い淀みを重ねない
+    const alreadyHasNaturalLeadIn =
+      /^(?:・・・・・・|さっき|そういえば|ところで|なあ[、　]|おい[、　]|いや[、　]|ほら[、　])/.test(
+        effectiveSpokenText.trim()
+      );
 
     // 気まずい・不機嫌な空気の中で別の通常話題を振って会話を続ける場合、ガイが言い淀みながら切り出す（IMMUTABLE_RULES 6-②）
     const shouldPrependAwkwardPrefix =
@@ -1738,19 +2137,30 @@ export default function App() {
       askCount === 0 &&
       topic.contextCategory !== 'fight' &&
       topic.id !== 'topic_41_apologize' &&
-      !topic.awkwardSilenceTopic;
+      !topic.calmsAnger &&
+      !topic.awkwardSilenceTopic &&
+      (isRefusedByBadMood || !alreadyHasNaturalLeadIn);
 
     const awkwardHesitationLine = shouldPrependAwkwardPrefix
       ? AWKWARD_TOPIC_PREFIXES[nextTotalTurns % AWKWARD_TOPIC_PREFIXES.length]
       : null;
 
+    // 不機嫌でアッシュに拒絶される場合、ガイが長文や明るいセリフを最後まで喋り切る不自然さを防ぎ、切り出しの段階で遮られる形にする
+    const guyLines = isRefusedByBadMood
+      ? [awkwardHesitationLine ?? '・・・・・・なあ、少し聞きたいんだが。']
+      : effectiveSpokenText
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+
     const steps: QueuedStep[] = [];
 
-    const hasGuyHesitation = Boolean(
-      seriousToBrightTransition || awkwardHesitationLine
-    );
+    const hasGuyHesitation =
+      !isRefusedByBadMood &&
+      !alreadyHasNaturalLeadIn &&
+      Boolean(seriousToBrightTransition || awkwardHesitationLine);
 
-    if (seriousToBrightTransition) {
+    if (hasGuyHesitation && seriousToBrightTransition) {
       const hesitateLines = seriousToBrightTransition.guyHesitation
         .split('\n')
         .map((s) => s.trim())
@@ -1763,7 +2173,7 @@ export default function App() {
           },
         });
       });
-    } else if (awkwardHesitationLine) {
+    } else if (hasGuyHesitation && awkwardHesitationLine) {
       steps.push({
         delayMs: 240,
         action: () => {
@@ -1776,7 +2186,7 @@ export default function App() {
       const delay =
         idx === 0
           ? hasGuyHesitation
-            ? 880
+            ? 820
             : 240
           : Math.min(1300, Math.max(780, guyLines[idx - 1].length * 34));
       steps.push({
@@ -1790,10 +2200,6 @@ export default function App() {
 
     const lastGuyLineLen =
       guyLines.length > 0 ? guyLines[guyLines.length - 1].length : 6;
-
-    // --- 機嫌による反応分岐の判定（フェーズ1ではまだタルロウAを演じているため不機嫌拒否を発生させない） ---
-    const isAngryNow = mood < 0 && !isPhase1Now && !caughtAngryGlance;
-    const isGoodMoodNow = mood >= 2 && !isPhase1Now;
 
     let chosenPhase1SlipVariant: Phase1SlipVariant | null = null;
     const nextPhase1QCount = isPhase1Now
@@ -1842,20 +2248,12 @@ export default function App() {
       }
     }
 
-    // 1) 不機嫌なときに sensitiveToBadMood な話題（かつ専用の badMoodResponse がない場合）を振ると、答えてくれない（未消化のまま残る）
-    // ※すでに進行中の話題（askCount > 0）の場合は途中で止まらないよう拒否しない
-    const isRefusedByBadMood =
-      askCount === 0 &&
+    if (
       isAngryNow &&
-      Boolean(topic.sensitiveToBadMood) &&
-      !currentStage.badMoodResponse;
-
-    // 2) 専用の badMoodResponse が設定されている場合（頭を撫でようとして強く払われる／お茶を渋々飲む等）
-    const useCustomBadMood = isAngryNow && Boolean(currentStage.badMoodResponse);
-
-    // 3) 上機嫌（mood >= 2）で goodMoodResponse が設定されている場合（頭を撫でさせてくれる等）
-    const useCustomGoodMood =
-      !isAngryNow && isGoodMoodNow && Boolean(currentStage.goodMoodResponse);
+      (topic.calmsAnger || topic.id === 'topic_41_apologize')
+    ) {
+      unlockAchievements('ach_11');
+    }
 
     const refusalTemplate =
       DEFAULT_BAD_MOOD_REFUSAL_LINES[
@@ -1902,7 +2300,26 @@ export default function App() {
         ? currentStage.badMoodResponse!.faceParts
         : useCustomGoodMood
           ? currentStage.goodMoodResponse!.faceParts
-          : currentStage.faceParts;
+          : isPhase1RewriteSlip && chosenPhase1SlipVariant?.correctedFaceParts
+            ? chosenPhase1SlipVariant.correctedFaceParts
+            : currentStage.faceParts;
+
+    const resolvedSecondExpression: ExpressionId | undefined = isRefusedByBadMood
+      ? undefined
+      : useCustomBadMood
+        ? currentStage.badMoodResponse!.secondExpression
+        : useCustomGoodMood
+          ? currentStage.goodMoodResponse!.secondExpression
+          : currentStage.secondExpression;
+
+    const resolvedSecondFaceParts: Partial<FaceParts> | undefined =
+      isRefusedByBadMood
+        ? undefined
+        : useCustomBadMood
+          ? currentStage.badMoodResponse!.secondFaceParts
+          : useCustomGoodMood
+            ? currentStage.goodMoodResponse!.secondFaceParts
+            : currentStage.secondFaceParts;
 
     const resolvedVoiceEffects: BubbleVoiceEffect[] | undefined =
       isRefusedByBadMood
@@ -1922,59 +2339,6 @@ export default function App() {
       setLastRefusedTopicId(null);
     } else {
       setLastRefusedTopicId(topic.id);
-    }
-
-    // 無言（放置）から復帰した直後の声かけ時、または不機嫌中にチラ見して目が合った瞬間の声かけ時は、アッシュが短い一言を挟んでから本題に答える
-    if (caughtAngryGlance) {
-      const glanceLine =
-        ANGRY_GLANCE_CAUGHT_LINES[
-          nextTotalTurns % ANGRY_GLANCE_CAUGHT_LINES.length
-        ];
-      steps.push({
-        delayMs: Math.min(1100, Math.max(700, lastGuyLineLen * 26)),
-        action: () => {
-          setOverrideExpression('look_away');
-          setOverrideFaceParts({
-            brow: 'angry',
-            eyes: 'down',
-            mouth: 'frown',
-            effects: ['sweat'],
-          });
-          pushScreenBubble('ASCH', glanceLine, 'normal');
-        },
-      });
-    } else if (wasIdleBeforeClick && !isAngryNow && !isHatredMode) {
-      const idleReturnLine =
-        RETURN_FROM_IDLE_LINES[
-          nextTotalTurns % RETURN_FROM_IDLE_LINES.length
-        ];
-      steps.push({
-        delayMs: Math.min(1100, Math.max(700, lastGuyLineLen * 26)),
-        action: () => {
-          setOverrideExpression('look_away');
-          setOverrideFaceParts({
-            brow: 'normal',
-            eyes: 'away',
-            mouth: 'close',
-            effects: [],
-          });
-          pushScreenBubble('ASCH', idleReturnLine, 'normal');
-        },
-      });
-    } else if (seriousToBrightTransition && !isRefusedByBadMood) {
-      // シリアスな話題から急に明るい話題へ切り替えた際、アッシュも一拍戸惑う間を入れる
-      steps.push({
-        delayMs: Math.min(1250, Math.max(850, lastGuyLineLen * 30)),
-        action: () => {
-          setOverrideExpression(seriousToBrightTransition.expression);
-          setOverrideFaceParts(seriousToBrightTransition.faceParts);
-          pushScreenBubble(
-            'ASCH',
-            seriousToBrightTransition.aschTransition,
-            'normal'
-          );
-        },
-      });
     }
 
     const aschLines = resolvedAschText
@@ -2014,27 +2378,54 @@ export default function App() {
       });
     }
 
-    const hasAschPreBubbleToOverwrite =
-      caughtAngryGlance ||
-      (wasIdleBeforeClick && !isAngryNow && !isHatredMode) ||
-      Boolean(seriousToBrightTransition && !isRefusedByBadMood) ||
-      Boolean(
-        isPhase1RewriteSlip && chosenPhase1SlipVariant?.slipPrefixText
+    const hasAschPreBubbleToOverwrite = Boolean(
+      isPhase1RewriteSlip && chosenPhase1SlipVariant?.slipPrefixText
+    );
+
+    // フェーズ2以降：セリフ枠が出る前に、まず立ち絵の表情だけが先に変わって一拍「タメ」を作る演出
+    const usePhase2PreFaceTame =
+      !isPhase1Now && !hasAschPreBubbleToOverwrite && aschLines.length > 0;
+    const phase2TameDurationMs = usePhase2PreFaceTame
+      ? getPreSpeechTameDurationMs(resolvedExpression, resolvedFaceParts)
+      : 0;
+    if (usePhase2PreFaceTame) {
+      const preFacePartsForTame = caughtAngryGlance
+        ? {
+            brow: 'sad' as const,
+            eyes: 'away' as const,
+            mouth: 'frown' as const,
+            effects: ['sweat' as const],
+          }
+        : buildPreSpeechFaceParts(resolvedExpression, resolvedFaceParts);
+      const delayToPreFace = Math.max(
+        440,
+        pauseBeforeAsch - Math.round(phase2TameDurationMs * 0.65)
       );
+      steps.push({
+        delayMs: delayToPreFace,
+        action: () => {
+          setOverrideExpression(
+            caughtAngryGlance ? 'look_away' : resolvedExpression
+          );
+          setOverrideFaceParts(preFacePartsForTame);
+        },
+      });
+    }
 
     // Phase 1で「言い直し（REWRITE）」のボロが選ばれた場合、まず1枠目に本音（slipPrefixText）を表示し、直後に同じ枠へ訂正セリフを上書きする
     if (isPhase1RewriteSlip && chosenPhase1SlipVariant?.slipPrefixText) {
       const slipPrefix = chosenPhase1SlipVariant.slipPrefixText;
+      const slipFace = chosenPhase1SlipVariant.slipFaceParts ?? {
+        brow: 'angry',
+        eyes: 'wide',
+        mouth: 'shout',
+        effects: ['sweat'],
+      };
       steps.push({
         delayMs: pauseBeforeAsch,
         action: () => {
           setOverrideExpression('shock');
-          setOverrideFaceParts({
-            brow: 'angry',
-            eyes: 'wide',
-            mouth: 'shout',
-            effects: ['blush', 'sweat'],
-          });
+          setOverrideFaceParts(slipFace);
           setMood(-2);
           pushScreenBubble('ASCH', slipPrefix, 'normal', false);
         },
@@ -2095,7 +2486,9 @@ export default function App() {
             ? 860
             : chosenPhase1SlipVariant?.type === 'PRE_FACE'
               ? 720
-              : pauseBeforeAsch
+              : usePhase2PreFaceTame
+                ? phase2TameDurationMs
+                : pauseBeforeAsch
           : Math.min(1450, Math.max(860, aschLines[idx - 1].length * 38)) +
             (currentStage.typingSpeed === 'slow' ? 220 : 0);
 
@@ -2114,6 +2507,22 @@ export default function App() {
       steps.push({
         delayMs: delay,
         action: () => {
+          if (idx > 0) {
+            const nextSecondFace =
+              resolvedSecondFaceParts ??
+              deriveAutomaticSecondFaceParts(
+                resolvedExpression,
+                resolvedFaceParts,
+                aschLines[0],
+                line
+              );
+            if (resolvedSecondExpression) {
+              setOverrideExpression(resolvedSecondExpression);
+            }
+            if (nextSecondFace) {
+              setOverrideFaceParts(nextSecondFace);
+            }
+          }
           if (idx === 0) {
             setOverrideExpression(resolvedExpression);
             setOverrideFaceParts(resolvedFaceParts ?? null);
@@ -2282,6 +2691,9 @@ export default function App() {
 
             if (unlockSecId) {
               const stamp = nextOrderStamp();
+              if (!readSectorIds.includes(unlockSecId)) {
+                setHasUnreadSector(true);
+              }
               setSectors((prev) =>
                 prev.map((s) =>
                   s.id === unlockSecId
@@ -2492,11 +2904,12 @@ export default function App() {
     soundEngine.unlockOnUserInteraction();
     setIsDecisionMenuOpen(false);
     setPhase1AccuseStep('NONE');
+    unlockAchievements('ach_09');
 
     const guySpoken =
-      'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。\nおまえが動揺した波形も、内部メモリの記録も全部ここに映ってるぞ。';
+      'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。\nおまえが動揺した波形も、内部の記録も全部ここに映ってるぞ。';
     const aschReply =
-      '・・・・・・チッ、その忌々しい板を俺に向けるな！\nディストの奴、俺の内部記録を見る管理端末までおまえに渡しやがったのか・・・・・・！';
+      '・・・・・・なっ！？　おいガイ、その忌々しい板を俺に向けるな！\nディストの奴、そんなものまでおまえに渡しやがったのか・・・・・・！';
 
     const guyLines = guySpoken.split('\n').filter(Boolean);
     const aschLines = aschReply.split('\n').filter(Boolean);
@@ -2544,15 +2957,22 @@ export default function App() {
                   thoughtText:
                     '「今、俺のことを『ガイ』って呼んだな。やっぱりアッシュじゃないか」と言う',
                   spokenText:
-                    '今、俺のことを「ガイ」って呼んだな。俺の名前を知らないはずの機械が、どうして呼べるんだ？　・・・・・・やっぱりアッシュなんだろ。',
+                    '・・・・・・今、俺のことを「ガイ」って呼んだな。\n俺を知らないはずの譜業が、どうして名前を呼べるんだ？　・・・・・・やっぱりアッシュなんだろ。',
                   aschText:
-                    '・・・・・・っ！！　・・・・・・チッ、端末まで持ち出しやがって・・・・・・。\n・・・・・・分かったよ、『タルロウA』ってのは嘘だ。だが、その名前で俺を呼ぶな。',
-                  expression: 'look_away',
+                    '・・・・・・っ！！\n・・・・・・チッ、分かったよ。ただの譜業だっていうのは嘘だ。だが、その名前で俺を呼ぶな。',
+                  expression: 'shock',
                   faceParts: {
                     brow: 'sad',
-                    eyes: 'away',
+                    eyes: 'wide',
+                    mouth: 'gasp',
+                    effects: ['sweat'],
+                  },
+                  secondExpression: 'look_away',
+                  secondFaceParts: {
+                    brow: 'sad',
+                    eyes: 'close',
                     mouth: 'frown',
-                    effects: ['blush', 'sweat'],
+                    effects: [],
                   },
                   moodDelta: 2,
                   trustDelta: 2,
@@ -2584,14 +3004,14 @@ export default function App() {
           | 'BLUFF_MANNER';
         label: string;
       }[] = [
-        { id: 'REWRITE', label: '途中で言葉を言い直した' },
-        { id: 'PRE_FACE', label: '答える際に、違和感のある表情をした' },
-        { id: 'CALL_NAME', label: '『ガイ』と名前を呼んだ' },
-        { id: 'BLUFF_TONE', label: '声のトーンが明らかに上ずっていた' },
-        { id: 'BLUFF_DELAY', label: '返答までの時間が不自然に長かった' },
+        { id: 'REWRITE', label: 'うっかり口を滑らせて言い直した' },
+        { id: 'PRE_FACE', label: '答える前に、一瞬だけ顔色が変わった' },
+        { id: 'CALL_NAME', label: '思わず『ガイ』と俺の名前を呼んだ' },
+        { id: 'BLUFF_TONE', label: '声が明らかに上ずっていた' },
+        { id: 'BLUFF_DELAY', label: 'やけに早口で言い返した' },
         {
           id: 'BLUFF_MANNER',
-          label: 'タルロウにしては受け答えや口調が違いすぎる',
+          label: 'タルロウにしては口調が違いすぎる',
         },
       ];
 
@@ -2668,14 +3088,13 @@ export default function App() {
       : undefined;
 
     if (matchedSlip) {
+      if (phase1QuestionsCount <= 3) {
+        unlockAchievements('ach_07');
+      }
       // 【正解】：実際にボロが出ていた話題＆正しいボロの種別を指摘できた場合 → アッシュが観念してフェーズ2へ移行
       const guyLines = matchedSlip.variant.guyPointOutSpoken
         .split('\n')
         .filter(Boolean);
-      const aschLines = [
-        '・・・・・・っ！！　・・・・・・チッ、どこまでしつこく観察してやがる・・・・・・！',
-        '・・・・・・分かったよ、俺の負けだ。『タルロウA』ってのは出まかせだ。\n・・・・・・だが、その名前で俺を呼ぶな。',
-      ];
 
       const steps: QueuedStep[] = [];
       guyLines.forEach((line, idx) => {
@@ -2687,60 +3106,79 @@ export default function App() {
         });
       });
 
-      aschLines.forEach((line, idx) => {
-        steps.push({
-          delayMs: idx === 0 ? 1150 : 980,
-          action: () => {
-            if (idx === 0) {
-              setOverrideExpression('shock');
-              setOverrideFaceParts({
-                brow: 'angry',
-                eyes: 'glare',
-                mouth: 'grit',
-                effects: ['blush', 'sweat'],
-              });
-              setMood(-1);
-              pushScreenBubble('ASCH', line, 'shout');
-            } else {
-              setOverrideExpression('look_away');
-              setOverrideFaceParts({
-                brow: 'sad',
-                eyes: 'away',
-                mouth: 'frown',
-                effects: ['blush', 'sweat'],
-              });
-              updateMood(2);
-              setTrustLevel((prev) => prev + 2);
-              setLinkTags((prev) =>
-                Array.from(new Set([...prev, 'phase2_started']))
-              );
-              setPreviewPage(0);
-              const stamp = nextOrderStamp();
-              setSectors((prev) =>
-                prev.map((s) =>
-                  s.id === 'SEC-01' || s.id === 'SEC-02'
-                    ? {
-                        ...s,
-                        discovered: true,
-                        discoveredAt: s.discoveredAt ?? stamp,
-                        unlocked: true,
-                        unlockedAt: s.unlockedAt ?? stamp,
-                        unlockedMethod: s.unlockedMethod ?? 'DIALOGUE',
-                      }
-                    : s
-                )
-              );
-              setReadSectorIds((prev) =>
-                Array.from(new Set([...prev, 'SEC-01', 'SEC-02']))
-              );
-              appendLog(
-                'INFO',
-                'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED'
-              );
-              pushScreenBubble('ASCH', line, 'normal');
-            }
-          },
-        });
+      steps.push({
+        delayMs: 1150,
+        action: () => {
+          setOverrideExpression('shock');
+          setOverrideFaceParts({
+            brow: 'sad',
+            eyes: 'wide',
+            mouth: 'gasp',
+            effects: ['sweat'],
+          });
+          setMood(-1);
+          pushScreenBubble('ASCH', '・・・・・・っ！', 'shout');
+        },
+      });
+
+      steps.push({
+        delayMs: 1050,
+        action: () => {
+          pushScreenBubble(
+            'GUY',
+            '・・・・・・もうシラを切るなよ。やっぱりおまえ、アッシュなんだな。',
+            'normal'
+          );
+        },
+      });
+
+      steps.push({
+        delayMs: 1150,
+        action: () => {
+          setOverrideExpression('look_away');
+          setOverrideFaceParts({
+            brow: 'sad',
+            eyes: 'away',
+            mouth: 'frown',
+            effects: ['shadow'],
+          });
+          updateMood(2);
+          setTrustLevel((prev) => prev + 2);
+          setLinkTags((prev) =>
+            Array.from(new Set([...prev, 'phase2_started']))
+          );
+          setPreviewPage(0);
+          const stamp = nextOrderStamp();
+          if (
+            !readSectorIds.includes('SEC-01') ||
+            !readSectorIds.includes('SEC-02')
+          ) {
+            setHasUnreadSector(true);
+          }
+          setSectors((prev) =>
+            prev.map((s) =>
+              s.id === 'SEC-01' || s.id === 'SEC-02'
+                ? {
+                    ...s,
+                    discovered: true,
+                    discoveredAt: s.discoveredAt ?? stamp,
+                    unlocked: true,
+                    unlockedAt: s.unlockedAt ?? stamp,
+                    unlockedMethod: s.unlockedMethod ?? 'DIALOGUE',
+                  }
+                : s
+            )
+          );
+          appendLog(
+            'INFO',
+            'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED'
+          );
+          pushScreenBubble(
+            'ASCH',
+            '・・・・・・ああ。ただの譜業のフリをしてやり過ごすつもりだったんだがな。',
+            'normal'
+          );
+        },
       });
 
       steps.push({
@@ -2750,6 +3188,7 @@ export default function App() {
 
       enqueueSequence(steps);
     } else {
+      unlockAchievements('ach_08');
       // 【不正解】：ボロが出ていなかった話題、または的外れな理由を指摘した場合 → あしらわれてタルロウA確定EDへ
       const guySpoken =
         selectedChoice.id === 'REWRITE'
@@ -2761,11 +3200,11 @@ export default function App() {
               : selectedChoice.id === 'BLUFF_TONE'
                 ? 'おまえ、さっき声が上ずってたぞ。本当は『タルロウA』なんかじゃないんだろ。'
                 : selectedChoice.id === 'BLUFF_DELAY'
-                  ? 'おまえ、さっき妙に言葉に詰まってたぞ。本当は『タルロウA』なんかじゃないんだろ。'
+                  ? 'おまえ、さっきやけに早口で言い返したぞ。本当は『タルロウA』なんかじゃないんだろ。'
                   : 'おまえ、タルロウにしては口調が違いすぎるぞ。本当は『タルロウA』なんかじゃないんだろ。';
 
       const aschRefute =
-        '言いがかりだな。俺は最初から事実しか言っていないし、動揺などもしていない。\n疑う根拠がないなら、さっさと研究所へ戻せ。';
+        '言いがかりだな。俺は最初から事実しか言っていない。\n疑う根拠がないなら、さっさと研究所へ戻せ。';
 
       const steps: QueuedStep[] = [
         {
@@ -2780,7 +3219,7 @@ export default function App() {
             setOverrideExpression('normal');
             setOverrideFaceParts({
               brow: 'doubt',
-              eyes: 'normal',
+              eyes: 'close',
               mouth: 'close',
               effects: [],
             });
@@ -2798,6 +3237,12 @@ export default function App() {
         {
           delayMs: 950,
           action: () => {
+            setOverrideFaceParts({
+              brow: 'normal',
+              eyes: 'glare',
+              mouth: 'close',
+              effects: [],
+            });
             pushScreenBubble(
               'ASCH',
               aschRefute.split('\n')[1],
@@ -2893,10 +3338,32 @@ export default function App() {
     const pauseBeforeAsch =
       Math.min(1350, Math.max(820, lastGuyLineLen * 30)) + 260;
 
+    const questionTameDurationMs = getPreSpeechTameDurationMs(
+      option.expression,
+      option.faceParts
+    );
+    if (aschLines.length > 0) {
+      const preFacePartsForQuestion = buildPreSpeechFaceParts(
+        option.expression,
+        option.faceParts
+      );
+      const delayToQuestionPreFace = Math.max(
+        440,
+        pauseBeforeAsch - Math.round(questionTameDurationMs * 0.65)
+      );
+      steps.push({
+        delayMs: delayToQuestionPreFace,
+        action: () => {
+          setOverrideExpression(option.expression);
+          setOverrideFaceParts(preFacePartsForQuestion);
+        },
+      });
+    }
+
     aschLines.forEach((line, idx) => {
       const delay =
         idx === 0
-          ? pauseBeforeAsch
+          ? questionTameDurationMs
           : Math.min(1450, Math.max(860, aschLines[idx - 1].length * 38));
       const baseEffect: BubbleVoiceEffect =
         option.voiceEffects?.[idx] ?? option.voiceEffects?.[0] ?? 'normal';
@@ -2909,6 +3376,22 @@ export default function App() {
       steps.push({
         delayMs: delay,
         action: () => {
+          if (idx > 0) {
+            const nextSecondFace =
+              option.secondFaceParts ??
+              deriveAutomaticSecondFaceParts(
+                option.expression,
+                option.faceParts,
+                aschLines[0],
+                line
+              );
+            if (option.secondExpression) {
+              setOverrideExpression(option.secondExpression);
+            }
+            if (nextSecondFace) {
+              setOverrideFaceParts(nextSecondFace);
+            }
+          }
           if (idx === 0) {
             setOverrideExpression(option.expression);
             setOverrideFaceParts(option.faceParts ?? null);
@@ -2950,6 +3433,12 @@ export default function App() {
                   }));
                 }
                 const stamp = nextOrderStamp();
+                if (
+                  !readSectorIds.includes('SEC-01') ||
+                  !readSectorIds.includes('SEC-02')
+                ) {
+                  setHasUnreadSector(true);
+                }
                 setSectors((prev) =>
                   prev.map((s) =>
                     s.id === 'SEC-01' || s.id === 'SEC-02'
@@ -2964,9 +3453,6 @@ export default function App() {
                       : s
                   )
                 );
-                setReadSectorIds((prev) =>
-                  Array.from(new Set([...prev, 'SEC-01', 'SEC-02']))
-                );
               }
             }
             if (option.oralInfo) {
@@ -2977,6 +3463,9 @@ export default function App() {
             }
             if (option.naturalUnlockSectorId) {
               const stamp = nextOrderStamp();
+              if (!readSectorIds.includes(option.naturalUnlockSectorId)) {
+                setHasUnreadSector(true);
+              }
               setSectors((prev) =>
                 prev.map((s) =>
                   s.id === option.naturalUnlockSectorId
@@ -3068,115 +3557,59 @@ export default function App() {
     setActiveAschQuestion(null);
     setIsDecisionMenuOpen(false);
 
-    if (
-      hasEnoughDeepTalkForPhase3 ||
-      linkTags.includes('p2_heard_true_reason')
-    ) {
-      appendLog(
-        'WARNING',
-        'WARNING: WAVEFORM LIMIT EXCEEDED // FORCING PHASE 3 TRANSITION'
-      );
-      const leaveSteps: QueuedStep[] = [
-        {
-          delayMs: 360,
-          action: () => {
-            setOverrideExpression('glare');
-            setOverrideFaceParts({
-              brow: 'angry',
-              eyes: 'away',
-              mouth: 'frown',
-              effects: [],
-            });
-            pushScreenBubble(
-              'ASCH',
-              '・・・・・・もういい、話は終わりだ。俺はディストの研究所へ戻る。',
-              'normal'
-            );
-          },
+    appendLog(
+      'WARNING',
+      'SESSION ABORTED // TARGET UNIT RETURNED TO LAB'
+    );
+    const leaveSteps: QueuedStep[] = [
+      {
+        delayMs: 360,
+        action: () => {
+          setOverrideExpression('glare');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'glare',
+            mouth: 'shout',
+            effects: ['blush'],
+          });
+          pushScreenBubble(
+            'ASCH',
+            '・・・・・・言ったはずだ、これ以上鬱陶しい真似をするなら帰るとな！',
+            'shout'
+          );
         },
-        {
-          delayMs: 1150,
-          action: () => {
-            setOverrideExpression('normal');
-            setOverrideFaceParts({
-              brow: 'sad',
-              eyes: 'normal',
-              mouth: 'close',
-              effects: [],
-            });
-            setPreviewPage(0);
-            setActiveTopicReply({
-              topicId: 'p3_final_who_am_i',
-              options: PHASE3_WHO_AM_I_OPTIONS,
-            });
-            pushScreenBubble(
-              'ASCH',
-              '・・・・・・その前に1つだけ聞かせろ。おまえから見て、今の俺は誰に見える？',
-              'normal'
-            );
-          },
+      },
+      {
+        delayMs: 1100,
+        action: () => {
+          setOverrideExpression('look_away');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'away',
+            mouth: 'frown',
+            effects: [],
+          });
+          pushScreenBubble(
+            'ASCH',
+            'もう話は終わりだ。俺はディストの研究所へ戻る！',
+            'normal'
+          );
         },
-        {
-          delayMs: 420,
-          action: () => {},
+      },
+      {
+        delayMs: 1350,
+        action: () => {
+          setCustomEndingKey('END_PHASE2_INCOMPLETE');
+          setStats((prev) => ({
+            ...prev,
+            endTime: Date.now(),
+          }));
+          setEndingStep(0);
+          setGamePhase('ENDING');
         },
-      ];
-      enqueueSequence(leaveSteps);
-    } else {
-      appendLog(
-        'WARNING',
-        'SESSION ABORTED // TARGET UNIT RETURNED TO LAB'
-      );
-      const leaveSteps: QueuedStep[] = [
-        {
-          delayMs: 360,
-          action: () => {
-            setOverrideExpression('glare');
-            setOverrideFaceParts({
-              brow: 'angry',
-              eyes: 'glare',
-              mouth: 'shout',
-              effects: ['blush'],
-            });
-            pushScreenBubble(
-              'ASCH',
-              '・・・・・・言ったはずだぞ、これ以上鬱陶しい真似をするなら帰るとな！',
-              'shout'
-            );
-          },
-        },
-        {
-          delayMs: 1100,
-          action: () => {
-            setOverrideExpression('look_away');
-            setOverrideFaceParts({
-              brow: 'angry',
-              eyes: 'away',
-              mouth: 'frown',
-              effects: [],
-            });
-            pushScreenBubble(
-              'ASCH',
-              'もう話は終わりだ、俺はディストの研究所へ戻る。じゃあな、ガイ！',
-              'normal'
-            );
-          },
-        },
-        {
-          delayMs: 1350,
-          action: () => {
-            setCustomEndingKey('END_PHASE2_INCOMPLETE');
-            setStats((prev) => ({
-              ...prev,
-              endTime: Date.now(),
-            }));
-            setEndingStep(0);
-            setGamePhase('ENDING');
-          },
-        },
-      ];
-      enqueueSequence(leaveSteps);
-    }
+      },
+    ];
+    enqueueSequence(leaveSteps);
   };
 
   // === 話題内の複数リアクション選択肢（replyOptions）に対するガイの返答処理 ===
@@ -3249,10 +3682,32 @@ export default function App() {
     const pauseBeforeAsch =
       Math.min(1350, Math.max(820, lastGuyLineLen * 30)) + 260;
 
+    const replyTameDurationMs = getPreSpeechTameDurationMs(
+      option.expression,
+      option.faceParts
+    );
+    if (aschLines.length > 0) {
+      const preFacePartsForReply = buildPreSpeechFaceParts(
+        option.expression,
+        option.faceParts
+      );
+      const delayToReplyPreFace = Math.max(
+        440,
+        pauseBeforeAsch - Math.round(replyTameDurationMs * 0.65)
+      );
+      steps.push({
+        delayMs: delayToReplyPreFace,
+        action: () => {
+          setOverrideExpression(option.expression);
+          setOverrideFaceParts(preFacePartsForReply);
+        },
+      });
+    }
+
     aschLines.forEach((line, idx) => {
       const delay =
         idx === 0
-          ? pauseBeforeAsch
+          ? replyTameDurationMs
           : Math.min(1450, Math.max(860, aschLines[idx - 1].length * 38));
       const baseEffect: BubbleVoiceEffect =
         option.voiceEffects?.[idx] ?? option.voiceEffects?.[0] ?? 'normal';
@@ -3261,6 +3716,22 @@ export default function App() {
       steps.push({
         delayMs: delay,
         action: () => {
+          if (idx > 0) {
+            const nextSecondFace =
+              option.secondFaceParts ??
+              deriveAutomaticSecondFaceParts(
+                option.expression,
+                option.faceParts,
+                aschLines[0],
+                line
+              );
+            if (option.secondExpression) {
+              setOverrideExpression(option.secondExpression);
+            }
+            if (nextSecondFace) {
+              setOverrideFaceParts(nextSecondFace);
+            }
+          }
           if (idx === 0) {
             setOverrideExpression(option.expression);
             setOverrideFaceParts(option.faceParts ?? null);
@@ -3302,6 +3773,9 @@ export default function App() {
             }
             if (option.naturalUnlockSectorId) {
               const stamp = nextOrderStamp();
+              if (!readSectorIds.includes(option.naturalUnlockSectorId)) {
+                setHasUnreadSector(true);
+              }
               setSectors((prev) =>
                 prev.map((s) =>
                   s.id === option.naturalUnlockSectorId
@@ -3677,6 +4151,23 @@ export default function App() {
     const steps: QueuedStep[] = firstLines.map((line, idx) => ({
       delayMs: idx === 0 ? 380 : 850,
       action: () => {
+        if (idx === 0) {
+          setOverrideExpression('glare');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'glare',
+            mouth: 'open',
+            effects: [],
+          });
+        } else {
+          setOverrideExpression('normal');
+          setOverrideFaceParts({
+            brow: 'normal',
+            eyes: 'close',
+            mouth: 'close',
+            effects: [],
+          });
+        }
         pushScreenBubble('ASCH', line, 'normal');
         const stamp = nextOrderStamp();
         const targetSecId = idx === 0 ? 'SEC-01' : 'SEC-02';
@@ -3698,8 +4189,16 @@ export default function App() {
     }));
 
     steps.push({
-      delayMs: 460,
-      action: () => {},
+      delayMs: 620,
+      action: () => {
+        setOverrideExpression('normal');
+        setOverrideFaceParts({
+          brow: 'normal',
+          eyes: 'normal',
+          mouth: 'close',
+          effects: [],
+        });
+      },
     });
 
     enqueueSequence(steps);
@@ -3938,9 +4437,172 @@ export default function App() {
     ENDING_SCENARIOS[resolvedEndingScenarioKey] ||
     ENDING_SCENARIOS.END_PHASE2_ASCH;
 
+  // === セクター解放・迷い回数・即答回数・エンディング到達時の実績自動同期 ===
+  useEffect(() => {
+    const unlockedIds = sectors.filter((s) => s.unlocked).map((s) => s.id);
+    const naturalIds = sectors
+      .filter(
+        (s) =>
+          s.unlocked &&
+          s.unlockedMethod === 'DIALOGUE' &&
+          NATURAL_UNLOCKABLE_SECTOR_IDS.includes(s.id)
+      )
+      .map((s) => s.id);
+    const bothAdminUnlocked =
+      unlockedIds.includes('SEC-19') && unlockedIds.includes('SEC-20');
+
+    handleUpdateAchievementSave((prev) => {
+      const mergedUnlocked = Array.from(
+        new Set([...prev.unlockedSectorIds, ...unlockedIds])
+      );
+      const mergedNatural = Array.from(
+        new Set([...prev.naturalUnlockedSectorIds, ...naturalIds])
+      );
+      const nextAchIds =
+        bothAdminUnlocked && !prev.unlockedAchievementIds.includes('ach_05')
+          ? [...prev.unlockedAchievementIds, 'ach_05']
+          : prev.unlockedAchievementIds;
+
+      if (
+        mergedUnlocked.length === prev.unlockedSectorIds.length &&
+        mergedNatural.length === prev.naturalUnlockedSectorIds.length &&
+        nextAchIds.length === prev.unlockedAchievementIds.length
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        unlockedSectorIds: mergedUnlocked,
+        naturalUnlockedSectorIds: mergedNatural,
+        unlockedAchievementIds: nextAchIds,
+      };
+    });
+  }, [sectors, handleUpdateAchievementSave]);
+
+  useEffect(() => {
+    const toUnlock: string[] = [];
+    if (stats.choiceHoverSwitchCount >= 15) {
+      toUnlock.push('ach_15');
+    }
+    if (stats.quickReplyCount >= 10) {
+      toUnlock.push('ach_16');
+    }
+    if (toUnlock.length > 0) {
+      unlockAchievements(...toUnlock);
+    }
+  }, [
+    stats.choiceHoverSwitchCount,
+    stats.quickReplyCount,
+    unlockAchievements,
+  ]);
+
+  // 実績06（ご機嫌取り）：1回のプレイ中にアッシュの機嫌を最大（+5）まで上げた
+  useEffect(() => {
+    if (
+      gamePhase === 'PLAYING' &&
+      linkTags.includes('phase2_started') &&
+      mood >= 5
+    ) {
+      unlockAchievements('ach_06');
+    }
+  }, [gamePhase, linkTags, mood, unlockAchievements]);
+
+  // 実績17（百面相）：表示された表情パーツ（眉・目・口・エフェクト）を累計記録（※デバッグ・ご褒美ビューワー手動操作時は除外）
+  useEffect(() => {
+    if (gamePhase !== 'PLAYING' || debugPreviewState) return;
+    const currentKeys = [
+      `brow:${computedSceneParts.brow}`,
+      `eyes:${computedSceneParts.eyes}`,
+      `mouth:${computedSceneParts.mouth}`,
+      ...computedSceneParts.effects.map((fx) => `fx:${fx}`),
+    ];
+
+    handleUpdateAchievementSave((prev) => {
+      const missing = currentKeys.filter(
+        (k) => !prev.seenFacePartKeys.includes(k)
+      );
+      if (missing.length === 0) return prev;
+      return {
+        ...prev,
+        seenFacePartKeys: [...prev.seenFacePartKeys, ...missing],
+      };
+    });
+  }, [
+    gamePhase,
+    debugPreviewState,
+    computedSceneParts.brow,
+    computedSceneParts.eyes,
+    computedSceneParts.mouth,
+    computedSceneParts.effects,
+    handleUpdateAchievementSave,
+  ]);
+
+  useEffect(() => {
+    if (gamePhase !== 'ENDING' && gamePhase !== 'REPORT') return;
+
+    const endingDialogueLines: string[] = [];
+    currentEndingScenario.dialogues.forEach((d) => {
+      d.text
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((line) => {
+          if (ALL_CANONICAL_DIALOGUE_LINES.has(line)) {
+            endingDialogueLines.push(line);
+          }
+        });
+    });
+
+    const bonusAch: string[] = [];
+    if (stats.terminalOpenCount === 0) {
+      bonusAch.push('ach_01');
+    }
+    if (linkTags.includes('phase2_started') && stats.overrideCount === 0) {
+      bonusAch.push('ach_04');
+    }
+
+    handleUpdateAchievementSave((prev) => {
+      const mergedEndings = prev.reachedEndingKeys.includes(
+        resolvedEndingScenarioKey
+      )
+        ? prev.reachedEndingKeys
+        : [...prev.reachedEndingKeys, resolvedEndingScenarioKey];
+      const mergedSeen = Array.from(
+        new Set([...prev.seenLines, ...endingDialogueLines])
+      );
+      const mergedAch = Array.from(
+        new Set([...prev.unlockedAchievementIds, ...bonusAch])
+      );
+
+      if (
+        mergedEndings.length === prev.reachedEndingKeys.length &&
+        mergedSeen.length === prev.seenLines.length &&
+        mergedAch.length === prev.unlockedAchievementIds.length
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        reachedEndingKeys: mergedEndings,
+        seenLines: mergedSeen,
+        unlockedAchievementIds: mergedAch,
+      };
+    });
+  }, [
+    gamePhase,
+    resolvedEndingScenarioKey,
+    currentEndingScenario,
+    stats.terminalOpenCount,
+    stats.overrideCount,
+    linkTags,
+    handleUpdateAchievementSave,
+  ]);
+
   const endingLines = currentEndingScenario.dialogues.map((d) =>
     d.speaker === 'GUY'
-      ? d.text.replace(/\n/g, '')
+      ? d.text
       : d.speaker === 'ASCH'
         ? `アッシュ「${d.text.replace(/\n/g, '')}」`
         : d.text
@@ -4043,6 +4705,44 @@ export default function App() {
           </div>
         )}
 
+        {/* 実績解除時のポップアップ通知（トースト） */}
+        {achievementToasts.length > 0 && (
+          <div
+            className={`absolute right-3 z-[80] flex flex-col gap-1.5 pointer-events-auto ${
+              gamePhase === 'PLAYING' ? 'bottom-[50px]' : 'bottom-3'
+            }`}
+          >
+            {achievementToasts.map((toast) => (
+              <div
+                key={toast.toastId}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAchievementToasts((prev) =>
+                    prev.filter((item) => item.toastId !== toast.toastId)
+                  );
+                }}
+                title="クリックして閉じる"
+                className="w-[248px] bg-[#0b0c10]/95 text-zinc-100 border border-zinc-400 shadow-[0_6px_20px_rgba(0,0,0,0.65)] px-3 py-2 cursor-pointer animate-bubble-in"
+              >
+                <div className="flex items-center justify-between border-b border-zinc-700/80 pb-0.5 mb-1">
+                  <span className="text-[9.5px] font-mono tracking-widest text-zinc-400">
+                    ACHIEVEMENT UNLOCKED
+                  </span>
+                  <span className="text-[9.5px] font-mono text-zinc-300">
+                    NO.{toast.numberLabel}
+                  </span>
+                </div>
+                <div className="text-[12px] font-bold tracking-wide text-white leading-snug">
+                  実績解除：{toast.title}
+                </div>
+                <div className="text-[10px] text-zinc-300 leading-snug mt-0.5">
+                  {toast.description}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* === 0. タイトル ＆ 二次創作ゲーム表記画面 === */}
         {gamePhase === 'TITLE' && (
           <div
@@ -4059,7 +4759,7 @@ export default function App() {
               <span>PROTOTYPE BUILD</span>
             </div>
 
-            <div className="flex flex-col items-center text-center my-auto space-y-5">
+            <div className="flex flex-col items-center text-center my-auto space-y-6">
               <div className="space-y-2">
                 <p className="text-[11px] tracking-[0.25em] text-zinc-500">
                   OBSERVATION DIALOGUE ADV
@@ -4069,22 +4769,62 @@ export default function App() {
                 </h1>
               </div>
 
-              <div className="max-w-[460px] border border-zinc-800 bg-zinc-950/90 px-5 py-3 space-y-1 text-center">
-                <p className="text-[12px] text-zinc-300">
-                  【二次創作ゲームに関するご案内】
-                </p>
-                <p className="text-[11.5px] leading-relaxed text-zinc-400">
-                  本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
-                  <br />
-                  原作および関係各社様とは一切関係ございません。
-                </p>
-              </div>
+              <span className="text-[12px] tracking-[0.25em] text-zinc-400 hover:text-zinc-100 transition-colors">
+                ― CLICK TO START ―
+              </span>
             </div>
 
-            <div className="flex flex-col items-center gap-1">
-              <span className="px-6 py-1.5 text-[13px] tracking-widest border border-zinc-600 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 transition-colors">
-                画面をクリックして開始
-              </span>
+            <div className="w-full relative flex items-end justify-center">
+              <div className="w-fit border border-zinc-800/80 bg-zinc-950/90 px-2.5 py-1.5 flex items-stretch gap-2.5 text-left font-terminal">
+                {/* 左カラム：注意事項 */}
+                <div className="pr-2.5 border-r border-zinc-800/80 flex flex-col space-y-0.5">
+                  <div className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 border-b border-zinc-800/70 pb-0.5">
+                    <AlertTriangle className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
+                    <span>注意事項</span>
+                  </div>
+                  <ul className="text-[8.5px] leading-tight text-zinc-400 space-y-0.5">
+                    <li className="flex items-center gap-1 whitespace-nowrap">
+                      <BookOpen className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
+                      <span>ED後の独自捏造設定</span>
+                    </li>
+                    <li className="flex items-center gap-1 whitespace-nowrap">
+                      <Users className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
+                      <span>ガイアシュ（恋愛描写なし）</span>
+                    </li>
+                    <li className="flex items-center gap-1 whitespace-nowrap">
+                      <Scale className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
+                      <span>ほのぼの：ギスギス＝８：２</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* 右カラム：二次創作ゲームに関するご案内 */}
+                <div className="flex flex-col space-y-0.5">
+                  <div className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 border-b border-zinc-800/70 pb-0.5">
+                    <Info className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
+                    <span>二次創作ゲームに関するご案内</span>
+                  </div>
+                  <p className="text-[8.5px] leading-snug text-zinc-400 whitespace-nowrap">
+                    本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
+                    <br />
+                    原作および関係各社様とは一切関係ございません。
+                  </p>
+                </div>
+              </div>
+
+              {achievementSave.reachedEndingKeys.length > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundEngine.unlockOnUserInteraction();
+                    soundEngine.playTerminalTab();
+                    setIsAchievementModalOpen(true);
+                  }}
+                  className="absolute right-0 bottom-0 px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  実績・記録
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -4095,7 +4835,7 @@ export default function App() {
             onClick={() => {
               soundEngine.unlockOnUserInteraction();
               soundEngine.playTextAdvance();
-              if (prologueStep < PROLOGUE_LINES.length - 1) {
+              if (prologueStep < TOTAL_PROLOGUE_LINES - 1) {
                 setPrologueStep((prev) => prev + 1);
               } else {
                 startPlayingPhase();
@@ -4104,14 +4844,29 @@ export default function App() {
             className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-center px-12 cursor-pointer"
           >
             <div className="max-w-[460px] w-full space-y-4">
-              {PROLOGUE_LINES.slice(0, prologueStep + 1).map((line, idx) => (
-                <p
-                  key={idx}
-                  className="text-[14px] leading-relaxed tracking-wider text-zinc-200 animate-bubble-in"
-                >
-                  {line}
-                </p>
-              ))}
+              {(() => {
+                let remaining = prologueStep;
+                let pageIdx = 0;
+                while (
+                  pageIdx < PROLOGUE_PAGES.length - 1 &&
+                  remaining >= PROLOGUE_PAGES[pageIdx].length
+                ) {
+                  remaining -= PROLOGUE_PAGES[pageIdx].length;
+                  pageIdx += 1;
+                }
+                const currentPageLines = PROLOGUE_PAGES[pageIdx].slice(
+                  0,
+                  remaining + 1
+                );
+                return currentPageLines.map((line, idx) => (
+                  <p
+                    key={`p-${pageIdx}-${idx}`}
+                    className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
+                  >
+                    {formatParagraphText(line, 30.5)}
+                  </p>
+                ));
+              })()}
             </div>
           </div>
         )}
@@ -4141,9 +4896,9 @@ export default function App() {
               {endingLines.slice(0, endingStep + 1).map((line, idx) => (
                 <p
                   key={idx}
-                  className="text-[14px] leading-relaxed tracking-wider text-zinc-200 animate-bubble-in"
+                  className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
                 >
-                  {line}
+                  {formatParagraphText(line, 32.0)}
                 </p>
               ))}
             </div>
@@ -4159,8 +4914,25 @@ export default function App() {
             stats={stats}
             sectors={sectors}
             onResetSession={handleResetSession}
+            onOpenAchievements={() => setIsAchievementModalOpen(true)}
           />
         )}
+
+        {/* 実績・観測アーカイブモーダル（タイトル画面・リザルト画面から開閉可能） */}
+        <AchievementArchiveModal
+          isOpen={isAchievementModalOpen}
+          onClose={() => setIsAchievementModalOpen(false)}
+          saveData={achievementSave}
+          onUpdateSaveData={handleUpdateAchievementSave}
+          canOpenBonusViewer={canAccessExpressionViewer}
+          onOpenBonusViewer={() => {
+            setIsAchievementModalOpen(false);
+            if (gamePhase !== 'PLAYING') {
+              startPlayingPhase();
+            }
+            setIsDebugViewerOpen(true);
+          }}
+        />
 
         {/* === 4. メイン対話画面 === */}
         {gamePhase === 'PLAYING' && (
@@ -4168,19 +4940,58 @@ export default function App() {
             {/* 上部黒帯ヘッダー */}
             <header className="relative z-20 w-full h-[44px] bg-[#08080a] text-zinc-100 flex items-center justify-between px-5 shrink-0">
               <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-zinc-100 text-[#08080a] font-bold text-[11px] flex items-center justify-center">
-                  !
+                <span className="w-4 h-4 rounded-full bg-zinc-100 text-[#08080a] flex items-center justify-center shrink-0">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      x="7"
+                      y="2.75"
+                      width="2"
+                      height="6.5"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                    <circle cx="8" cy="11.85" r="1.2" fill="currentColor" />
+                  </svg>
                 </span>
-                <span className="text-[14px] tracking-wider text-zinc-100">
-                  アッシュと会話する
+                <span className="text-[14px] leading-none tracking-wider text-zinc-100">
+                  {isPhase2OrLater
+                    ? 'アッシュと会話する'
+                    : 'タルロウAと会話する'}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
+                {canAccessExpressionViewer && (
+                  <button
+                    onClick={() => {
+                      soundEngine.playTerminalTab();
+                      setIsTerminalOpen(false);
+                      setIsDialogueLogOpen(false);
+                      setIsManualOpen(false);
+                      setIsDebugViewerOpen((prev) => !prev);
+                    }}
+                    title="表情・パーツ挙動ビューワー"
+                    className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
+                      isDebugViewerOpen
+                        ? 'bg-zinc-200 text-zinc-950 border-zinc-100 font-bold'
+                        : 'text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/80'
+                    }`}
+                  >
+                    <span>★</span>
+                    <span>表情</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     soundEngine.playTerminalTab();
                     setIsTerminalOpen(false);
+                    setIsDebugViewerOpen(false);
                     setIsDialogueLogOpen((prev) => !prev);
                   }}
                   title="セリフログ"
@@ -4214,14 +5025,24 @@ export default function App() {
                     }
                   }}
                   title="BGM・SEを一括でON/OFF切り替え"
-                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1.5 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
+                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isSoundMuted
                       ? 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700'
                       : 'text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/80'
                   }`}
                 >
                   <span>♪</span>
-                  <span>{isSoundMuted ? 'BGM/SE: OFF' : 'BGM/SE: ON'}</span>
+                  <span className="inline-grid text-left">
+                    <span className="col-start-1 row-start-1">
+                      {isSoundMuted ? 'BGM/SE: OFF' : 'BGM/SE: ON'}
+                    </span>
+                    <span
+                      className="col-start-1 row-start-1 invisible pointer-events-none select-none"
+                      aria-hidden="true"
+                    >
+                      BGM/SE: OFF
+                    </span>
+                  </span>
                 </button>
 
                 <button
@@ -4247,16 +5068,21 @@ export default function App() {
                 style={
                   bgBlurPx > 0 ? { filter: `blur(${bgBlurPx}px)` } : undefined
                 }
-                className={`relative z-10 w-[58%] h-full pl-6 pr-3 py-3.5 transition-opacity duration-200 ${
+                className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-opacity duration-200 ${
                   isTerminalOpen ? 'pointer-events-none select-none' : ''
                 }`}
               >
-                {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限208pxで下の選択肢と絶対に重ならない） */}
-                <div className="w-full max-h-[208px] overflow-hidden flex flex-col justify-start pt-0.5">
+                {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限200pxで下の選択肢と絶対に重ならない） */}
+                <div className="w-[calc(100%+24px)] -mr-6 max-h-[200px] overflow-hidden flex flex-col justify-start pt-0.5">
                   {visibleBubbles.map((bubble) => {
                     const isAsch = bubble.speaker === 'ASCH';
                     const resolvedEffect: BubbleVoiceEffect =
                       bubble.voiceEffect ?? 'normal';
+                    const formattedGuyText = !isAsch
+                      ? formatBubbleText(bubble.text, 'normal')
+                      : '';
+                    const isGuyMultiLine3Plus =
+                      !isAsch && formattedGuyText.split('\n').length >= 3;
 
                     return (
                       <div
@@ -4273,10 +5099,20 @@ export default function App() {
                             effect={resolvedEffect}
                           />
                         ) : (
-                          <div className="relative w-fit max-w-[335px] bg-[#dcdde3] text-zinc-950 px-3.5 py-2">
+                          <div
+                            className={`relative w-fit max-w-[404px] bg-[#dcdde3] text-zinc-950 px-3.5 ${
+                              isGuyMultiLine3Plus ? 'py-1.5' : 'py-2'
+                            }`}
+                          >
                             <div className="w-0 h-0 absolute -left-[10px] bottom-2 border-y-[6px] border-y-transparent border-r-[11px] border-r-[#dcdde3]" />
-                            <p className="text-[13.5px] leading-snug tracking-wide whitespace-pre-wrap break-words">
-                              {bubble.text}
+                            <p
+                              className={`text-[13.5px] ${
+                                isGuyMultiLine3Plus
+                                  ? 'leading-[1.3]'
+                                  : 'leading-snug'
+                              } tracking-wide whitespace-pre-wrap break-words`}
+                            >
+                              {formattedGuyText}
                             </p>
                           </div>
                         )}
@@ -4285,8 +5121,8 @@ export default function App() {
                   })}
                 </div>
 
-                {/* 下部：ガイの思考選択肢（absolute bottom-4 で下部に完全ピン留めし、吹き出しに一切押し出されない） */}
-                <div className="absolute left-7 right-3 bottom-4 max-w-[395px] h-[116px] flex flex-col justify-start">
+                {/* 下部：ガイの思考選択肢（上部の吹き出し領域(上限y=206px)と重ならず、右端をアッシュのセリフ枠右端と揃える） */}
+                <div className="absolute left-7 -right-3 bottom-3.5 h-[134px] flex flex-col justify-start">
                   {!isInteractionBlocked && (() => {
                     const isPhase1LimitReached =
                       !linkTags.includes('phase2_started') && phase1QuestionsCount >= 5;
@@ -4458,26 +5294,32 @@ export default function App() {
                       isDecisionEventActive && !activeAschQuestion
                         ? !linkTags.includes('phase2_started') &&
                           phase1AccuseStep === 'SELECT_TOPIC'
-                          ? 'どの反応に違和感があったか・・・・・・'
+                          ? 'いつの反応が怪しかった？'
                           : !linkTags.includes('phase2_started') &&
                               phase1AccuseStep === 'SELECT_REASON'
-                            ? '何が怪しかったか・・・・・・'
-                            : 'どう切り出そうか・・・・・・'
+                            ? 'どこでボロが出た？'
+                            : 'どうする？'
                         : isReplyingMode
-                          ? 'どう返そうか・・・・・・'
+                          ? 'どう返す？'
                           : !linkTags.includes('phase2_started')
-                            ? `何を聞こうか・・・・・・（${phase1QuestionsCount}/5）`
-                            : '何について話そうか・・・・・・';
+                            ? '何について聞く？'
+                            : '何について話す？';
+
+                    const choiceListClass =
+                      'relative h-[100px] flex flex-col justify-start gap-[7px]';
+                    const choiceBtnSizeClass =
+                      'w-full max-w-[448px] min-h-[28px]';
+                    const choiceInnerPyClass = 'py-1';
 
                     return (
                       <div className="flex flex-col gap-1.5 py-0.5 animate-[fadeIn_0.22s_ease-out]">
                         {/* 上部見出しバー：左に見出し、右にボタン群（一番右端は常に [ ▶ 他の話題 ] の固定席） */}
-                        <div className="flex items-center justify-between gap-2 mb-1 select-none border-b border-zinc-950/20 text-[12px] font-mono tracking-wider">
+                        <div className="flex items-center justify-between gap-2 mb-1.5 select-none border-b border-zinc-950/20 text-[12px] font-mono tracking-wider">
                           <span className="pb-1 text-zinc-950 font-bold truncate">
                             {headerTitleText}
                           </span>
 
-                          <div className="flex items-center justify-end gap-1 shrink-0">
+                          <div className="flex items-center justify-end gap-1.5 shrink-0">
                             {/* 右側左枠：戻る / 質問を選び直す / 話を切り上げる */}
                             {isDecisionEventActive &&
                             !activeAschQuestion &&
@@ -4496,7 +5338,7 @@ export default function App() {
                                   setPreviewPage(0);
                                   setPhase1AccuseStep('SELECT_TOPIC');
                                 }}
-                                className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
+                                className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                               >
                                 [ ◀ 質問を選び直す ]
                               </button>
@@ -4518,7 +5360,7 @@ export default function App() {
                                     setPreviewPage(0);
                                     setPhase1AccuseStep('NONE');
                                   }}
-                                  className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
+                                  className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                                 >
                                   [ ◀ 戻る ]
                                 </button>
@@ -4540,7 +5382,7 @@ export default function App() {
                                   setPreviewPage(0);
                                   setIsDecisionMenuOpen(false);
                                 }}
-                                className="pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
+                                className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                               >
                                 [ ◀ 話題に戻る ]
                               </button>
@@ -4555,7 +5397,7 @@ export default function App() {
                                   setPreviewPage(0);
                                   setIsDecisionMenuOpen(true);
                                 }}
-                                className="pb-1 text-[11px] text-zinc-600 hover:text-black cursor-pointer whitespace-nowrap transition-colors"
+                                className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-600 hover:text-black cursor-pointer whitespace-nowrap transition-colors"
                                 title="話を切り上げてアッシュの処遇を決める"
                               >
                                 [ 話を切り上げる ]
@@ -4577,7 +5419,7 @@ export default function App() {
                                   return p + 1;
                                 });
                               }}
-                              className={`pb-1 text-[11px] whitespace-nowrap select-none transition-colors ${
+                              className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1.5 pb-1 text-[11px] whitespace-nowrap select-none transition-colors ${
                                 headerTotalPages > 1
                                   ? 'text-zinc-800 font-semibold hover:text-black active:text-zinc-500 cursor-pointer'
                                   : 'text-zinc-400/75 cursor-default pointer-events-none'
@@ -4607,7 +5449,7 @@ export default function App() {
                             );
 
                             return (
-                              <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                              <div className={choiceListClass}>
                                 {currentSlice.map((opt) => (
                                   <button
                                     key={opt.id}
@@ -4618,10 +5460,10 @@ export default function App() {
                                       setPreviewPage(0);
                                       handleSelectAschQuestionReply(opt);
                                     }}
-                                    className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
+                                    className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none`}
                                   >
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                    <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                    <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                       <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
                                         {opt.thoughtText}
                                       </span>
@@ -4643,7 +5485,7 @@ export default function App() {
                             );
 
                             return (
-                              <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                              <div className={choiceListClass}>
                                 {currentSlice.map((opt) => (
                                   <button
                                     key={opt.id}
@@ -4654,10 +5496,10 @@ export default function App() {
                                       setPreviewPage(0);
                                       handleSelectTopicReplyOption(opt);
                                     }}
-                                    className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none"
+                                    className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1 disabled:pointer-events-none`}
                                   >
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                    <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                    <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                       <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
                                         {opt.thoughtText}
                                       </span>
@@ -4668,8 +5510,8 @@ export default function App() {
                             );
                           })()
                         ) : isDecisionEventActive ? (
-                          /* ② イベント決断メニュー（話を切り上げる/質問上限到達：通常話題リストと同じh-[82px]・最大3件1行固定） */
-                          <div className="relative h-[82px] flex flex-col justify-start gap-1 overflow-hidden">
+                          /* ② イベント決断メニュー（話を切り上げる/質問上限到達：通常話題リストと同じ高さ・最大3件1行固定） */
+                          <div className={`${choiceListClass} overflow-hidden`}>
                             {!linkTags.includes('phase2_started') ? (
                               /* フェーズ1決断・ボロ指摘メニュー */
                               phase1AccuseStep === 'SELECT_TOPIC' ? (
@@ -4687,7 +5529,7 @@ export default function App() {
                                   );
 
                                   return (
-                                    <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                                    <div className={choiceListClass}>
                                       {currentSlice.map((tid) => {
                                         const cfg = PHASE1_TOPIC_SLIP_CONFIGS[tid];
                                         const label =
@@ -4705,10 +5547,10 @@ export default function App() {
                                               );
                                               setPhase1AccuseStep('SELECT_REASON');
                                             }}
-                                            className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                            className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
                                           >
                                             <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                            <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                            <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                               <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
                                                 {label}
                                               </span>
@@ -4721,7 +5563,7 @@ export default function App() {
                                 })()
                               ) : phase1AccuseStep === 'SELECT_REASON' &&
                                 phase1AccusedTopicId ? (
-                                <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                                <div className={choiceListClass}>
                                   {phase1ReasonChoices.map((choice) => (
                                     <button
                                       key={choice.id}
@@ -4733,10 +5575,10 @@ export default function App() {
                                           choice
                                         );
                                       }}
-                                      className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                      className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
                                     >
                                       <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                      <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                      <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                         <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
                                           {choice.label}
                                         </span>
@@ -4755,7 +5597,7 @@ export default function App() {
                                   );
 
                                   return (
-                                    <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                                    <div className={choiceListClass}>
                                       {currentSlice.map((item) => (
                                         <button
                                           key={item.id}
@@ -4764,10 +5606,10 @@ export default function App() {
                                             e.stopPropagation();
                                             item.onSelect();
                                           }}
-                                          className="w-fit max-w-[385px] group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                          className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
                                         >
                                           <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                          <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                          <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                             <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
                                               {item.label}
                                             </span>
@@ -4782,33 +5624,33 @@ export default function App() {
                               /* フェーズ2決断メニュー */
                               <>
                                 <button
-                                  {...getChoiceHesitationHandlers('p2_dec_return')}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleExecuteDecision('RETURN');
-                                  }}
-                                  className="group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
-                                >
-                                  <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                  <div className="flex flex-col justify-center py-0.5">
-                                    <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                      本人の意思を尊重してディストの研究所へ見送る
-                                    </span>
-                                  </div>
-                                </button>
-
-                                <button
                                   {...getChoiceHesitationHandlers('p2_dec_keep')}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleExecuteDecision('KEEP');
                                   }}
-                                  className="group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1"
+                                  className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
                                 >
                                   <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
-                                  <div className="flex flex-col justify-center py-0.5">
+                                  <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
                                     <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                      もう少しこの部屋で休んでいけと声をかける
+                                      少し休んでいけと声をかける
+                                    </span>
+                                  </div>
+                                </button>
+
+                                <button
+                                  {...getChoiceHesitationHandlers('p2_dec_return')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleExecuteDecision('RETURN');
+                                  }}
+                                  className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
+                                >
+                                  <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
+                                  <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
+                                    <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
+                                      ディストの研究所へ帰す
                                     </span>
                                   </div>
                                 </button>
@@ -4832,7 +5674,7 @@ export default function App() {
                                 );
 
                                 return (
-                                  <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                                  <div className={choiceListClass}>
                                     {currentSlice.map((topic) => {
                                       const isRead = phase1AskedTopicIds.includes(
                                         topic.id
@@ -4850,7 +5692,7 @@ export default function App() {
                                             if (isRead) return;
                                             handleSelectTopic(topic);
                                           }}
-                                          className={`w-fit max-w-[385px] group text-left flex items-stretch transition-all duration-300 ease-out ${
+                                          className={`${choiceBtnSizeClass} group text-left flex items-stretch transition-all duration-300 ease-out ${
                                             isRead
                                               ? 'opacity-35 cursor-default'
                                               : 'opacity-100 cursor-pointer hover:translate-x-1'
@@ -4863,7 +5705,7 @@ export default function App() {
                                                 : 'bg-zinc-900 group-hover:bg-black'
                                             }`}
                                           />
-                                          <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                          <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                             <span
                                               className={`text-[12.5px] leading-snug whitespace-nowrap truncate transition-colors duration-300 ${
                                                 isRead
@@ -4893,7 +5735,7 @@ export default function App() {
                               );
 
                               return (
-                                <div className="relative h-[82px] flex flex-col justify-start gap-1">
+                                <div className={choiceListClass}>
                                   {currentSlice.map((topic) => {
                                     const askCount = topicAskCounts[topic.id] ?? 0;
                                     const isCompleted =
@@ -4923,7 +5765,7 @@ export default function App() {
                                           if (isCompleted) return;
                                           handleSelectTopic(topic);
                                         }}
-                                        className={`w-fit max-w-[385px] group text-left flex items-stretch transition-all duration-300 ease-out ${
+                                        className={`${choiceBtnSizeClass} group text-left flex items-stretch transition-all duration-300 ease-out ${
                                           isCompleted
                                             ? 'opacity-35 cursor-default'
                                             : 'opacity-100 cursor-pointer hover:translate-x-1'
@@ -4936,7 +5778,7 @@ export default function App() {
                                               : 'bg-zinc-900 group-hover:bg-black'
                                           }`}
                                         />
-                                        <div className="flex flex-col justify-center py-0.5 min-w-0">
+                                        <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                           <span
                                             className={`text-[12.5px] leading-snug whitespace-nowrap truncate transition-colors duration-300 ${
                                               isCompleted
@@ -4972,8 +5814,37 @@ export default function App() {
                   customPartMap={customPartMap}
                   onSelectTestPngFile={(file) => handleLoadImageFile(file)}
                   blurPx={bgBlurPx}
+                  motionTuning={motionTuning}
+                  replayPulse={replayPulse}
                 />
               </div>
+
+              {/* 表情・パーツ挙動ビューワー（左半分に展開し、右側の立ち絵をそのままリアルタイム確認） */}
+              <ExpressionDebugModal
+                isOpen={isDebugViewerOpen}
+                onClose={() => {
+                  setIsDebugViewerOpen(false);
+                  setDebugPreviewState(null);
+                }}
+                activeExpression={activeExpression}
+                activeFaceParts={activeFaceParts}
+                isPreviewOverrideActive={Boolean(debugPreviewState)}
+                onApplyPreview={(expr, parts) => {
+                  setDebugPreviewState({
+                    expression: expr,
+                    faceParts: parts,
+                  });
+                }}
+                onClearPreviewOverride={() => {
+                  setDebugPreviewState(null);
+                  setReplayPulse((p) => p + 1);
+                }}
+                motionTuning={motionTuning}
+                onChangeMotionTuning={setMotionTuning}
+                onReplayMotion={() => setReplayPulse((p) => p + 1)}
+                seenFaceParts={achievementSave.seenFacePartKeys}
+                isBonusMode={!DEBUG_VIEWER_ALWAYS_VISIBLE && isBonusViewerUnlocked}
+              />
 
               {/* 端末展開時：背後の選択肢への誤タップ防止オーバーレイ */}
               <div
@@ -5020,10 +5891,10 @@ export default function App() {
             {/* 下部黒帯フッター */}
             <footer className="relative z-30 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
               <div className="flex items-center">
-                {/* データ端末ボタン（見た目は上部ボタンと揃えた小ぶりなサイズ・透明タップ判定を周囲に拡大） */}
+                {/* 管理端末ボタン（見た目は上部ボタンと揃えた小ぶりなサイズ・透明タップ判定を周囲に拡大） */}
                 <button
                   onClick={handleToggleTerminal}
-                  title="データ端末"
+                  title="管理端末"
                   className={`relative after:content-[''] after:absolute after:-inset-y-2.5 after:-inset-x-4 px-2.5 py-0.5 flex items-center gap-1.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isTerminalOpen
                       ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
@@ -5041,7 +5912,7 @@ export default function App() {
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <line x1="7" y1="12" x2="7.01" y2="12" />
                   </svg>
-                  <span>端末</span>
+                  <span>管理端末</span>
 
                   {hasUnreadSector && !isTerminalOpen && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
