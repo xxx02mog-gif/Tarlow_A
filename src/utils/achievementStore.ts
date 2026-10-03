@@ -85,8 +85,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: 'ach_11',
     numberLabel: '11',
-    title: '機嫌なおして',
-    description: '怒っているアッシュにお茶を淹れるか謝って、機嫌を直してもらった',
+    title: 'なでなでマスター',
+    description: 'アッシュの頭を限界まで撫でた',
   },
   {
     id: 'ach_12',
@@ -142,52 +142,52 @@ export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
   {
     key: 'END_PHASE1_TARLOW',
     numberLabel: 'END 01',
-    hint: '最初の追及で、相手の言い分を鵜呑みにする',
+    hint: '演技を見抜けず、タルロウAのまま研究所へ帰す（ゲームオーバー）',
   },
   {
     key: 'END_PHASE2_INCOMPLETE',
     numberLabel: 'END 02',
-    hint: '正体は見破ったものの、ろくに話せないまま帰られる',
+    hint: '正体は見破ったものの、怒らせて帰られる（ゲームオーバー）',
   },
   {
-    key: 'END_PHASE2_ASCH',
+    key: 'END_PHASE2_NORMAL_RETURN',
     numberLabel: 'END 03',
-    hint: 'じっくり話して、中身は昔のままだと伝える',
+    hint: '深く話さず（核心には触れず）研究所へ帰す（雑談エンド）',
   },
   {
     key: 'END_PHASE2_STAY_REST',
     numberLabel: 'END 04',
-    hint: '話を切り上げるとき、研究所へ戻さず部屋で休ませる',
+    hint: '深く話さず（核心には触れず）家に残して休ませる（雑談エンド）',
   },
   {
-    key: 'END_PHASE3_SWAMPMAN',
+    key: 'END_PHASE2_ASCH',
     numberLabel: 'END 05',
-    hint: '知ってはいけない秘密を覗いた上で、さらに突き放す',
+    hint: '最後の問いかけ（DP-002/003なし）に『アッシュだ』と答える（True）',
   },
   {
     key: 'END_PHASE3_MACHINE',
     numberLabel: 'END 06',
-    hint: '知ってはいけない秘密は暴かず、でも突き放す',
+    hint: '最後の問いかけ（DP-002/003なし）に『ただの譜業だ』と答える',
   },
   {
-    key: 'END_PHASE3_NEW_SELF',
+    key: 'END_PHASE3_SILENCE',
     numberLabel: 'END 07',
-    hint: '過去とは関係ない「今の彼」を認める',
+    hint: '最後の問いかけ（DP-002/003なし）に何も答えない',
   },
   {
     key: 'END_PHASE3_TOMORROW',
     numberLabel: 'END 08',
-    hint: '真面目な質問を、ごはんの話ではぐらかす',
+    hint: 'DP-002/003を解放した上で、秘密を問い詰めずに肯定する',
   },
   {
-    key: 'END_PHASE3_SILENCE',
+    key: 'END_PHASE3_SWAMPMAN',
     numberLabel: 'END 09',
-    hint: '大事な問いかけに、だんまりを決め込む',
+    hint: 'DP-002/003を解放した上で秘密を問い詰め、ルークと目の前の存在の認識が崩壊する',
   },
   {
     key: 'END_PHASE3_MERCY_DESTROY',
     numberLabel: 'END 10',
-    hint: '冷たく当たって、秘密を暴いて、挙句・・・・・・',
+    hint: 'DP-002/003を解放した上で秘密を問い詰め、『ルーク』を守るために目の前の機体を破壊する',
   },
 ];
 
@@ -195,7 +195,7 @@ export const NATURAL_UNLOCKABLE_SECTOR_IDS: string[] = INITIAL_MEMORY_SECTORS.fi
   (s) => s.id !== 'SEC-00' && s.id !== 'SEC-19' && s.id !== 'SEC-20'
 ).map((s) => s.id);
 
-// 方式B（エフェクト含む全パーツ制）：眉6種・目9種・口7種・エフェクト6種の計28パーツキー
+// 方式B（エフェクト含む全パーツ制）：眉6種・目9種・口7種・エフェクト5種の計27パーツキー
 export const ALL_FACE_PART_KEYS: string[] = [
   'brow:normal',
   'brow:angry',
@@ -224,7 +224,6 @@ export const ALL_FACE_PART_KEYS: string[] = [
   'fx:blush',
   'fx:shadow',
   'fx:tears',
-  'fx:noise',
 ];
 
 // ゲーム内の全セリフ枠（方式B：選択肢分岐を含む全吹き出し行）のユニーク集合を構築

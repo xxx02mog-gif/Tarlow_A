@@ -57,9 +57,13 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
   isBonusMode = false,
 }) => {
   const [tab, setTab] = useState<'PARTS' | 'MOTION'>('PARTS');
+  const [previewBonusUI, setPreviewBonusUI] = useState<boolean>(isBonusMode);
   const [copiedText, setCopiedText] = useState(false);
 
   if (!isOpen) return null;
+
+  const showAsBonus = isBonusMode || previewBonusUI;
+  const validSeenCount = seenFaceParts.filter((k) => k !== 'fx:noise').length;
 
   const handleSelectPreset = (expr: ExpressionId) => {
     soundEngine.playTerminalTab();
@@ -151,56 +155,82 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
         <div className="flex items-center justify-between border-b border-zinc-700 pb-1.5">
           <div className="flex items-center gap-2">
             <span className="px-1.5 py-0.5 text-[9.5px] font-mono font-bold bg-zinc-200 text-zinc-950">
-              {isBonusMode ? 'BONUS VIEWER' : 'DEBUG / VIEWER'}
+              {showAsBonus ? 'EXTRA // VIEWER' : 'DEBUG // VIEWER'}
             </span>
             <h3 className="text-[12.5px] font-bold tracking-wider text-white">
-              表情・パーツ挙動ビューワー
+              {showAsBonus
+                ? 'おまけ：表情鑑賞ビューワー'
+                : '表情・パーツ挙動ビューワー（調整用）'}
             </h3>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              soundEngine.playTerminalClose();
-              onClose();
-            }}
-            className="text-[11px] text-zinc-400 hover:text-white px-1.5 py-0.5 cursor-pointer"
-          >
-            ✕ 閉じる
-          </button>
+          <div className="flex items-center gap-2">
+            {!isBonusMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  const next = !previewBonusUI;
+                  setPreviewBonusUI(next);
+                  if (next) setTab('PARTS');
+                }}
+                className="px-2 py-0.5 text-[10px] border border-zinc-600 bg-zinc-900 hover:border-zinc-400 text-zinc-300 hover:text-white cursor-pointer"
+              >
+                {previewBonusUI ? '🔧 開発調整モードへ' : '🎁 ご褒美版の見た目を確認'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playTerminalClose();
+                onClose();
+              }}
+              className="text-[11px] text-zinc-400 hover:text-white px-1.5 py-0.5 cursor-pointer"
+            >
+              ✕ 閉じる
+            </button>
+          </div>
         </div>
 
         {/* タブ切り替え ＆ 再再生ボタン */}
         <div className="flex items-center justify-between border-b border-zinc-800 pt-1.5 pb-1">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                soundEngine.playTerminalTab();
-                setTab('PARTS');
-              }}
-              className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
-                tab === 'PARTS'
-                  ? 'text-white font-bold border-b-2 border-zinc-200'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              ① パーツ組み換え ({seenFaceParts.length}/28)
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                soundEngine.playTerminalTab();
-                setTab('MOTION');
-              }}
-              className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
-                tab === 'MOTION'
-                  ? 'text-white font-bold border-b-2 border-zinc-200'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              ② 動き・拡縮の調整
-            </button>
+            {showAsBonus ? (
+              <span className="text-[11px] text-zinc-300">
+                全パーツ自由に組み合わせて鑑賞できます（本編回収済み: {validSeenCount}/27）
+              </span>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playTerminalTab();
+                    setTab('PARTS');
+                  }}
+                  className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
+                    tab === 'PARTS'
+                      ? 'text-white font-bold border-b-2 border-zinc-200'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  ① パーツ組み換え ({validSeenCount}/27)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playTerminalTab();
+                    setTab('MOTION');
+                  }}
+                  className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
+                    tab === 'MOTION'
+                      ? 'text-white font-bold border-b-2 border-zinc-200'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  ② 動き・拡縮の調整（開発用）
+                </button>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -212,7 +242,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
               }}
               className="px-2 py-0.5 text-[10.5px] bg-zinc-200 hover:bg-white text-zinc-950 font-bold cursor-pointer"
             >
-              ▶ モーション再再生
+              ▶ モーション再生
             </button>
             {isPreviewOverrideActive && (
               <button
@@ -373,11 +403,11 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
               </div>
             </div>
 
-            {/* エフェクト (6種) */}
+            {/* エフェクト (5種) */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-zinc-400 font-mono">
-                  EFFECTS // 感情エフェクト（複数重ね可）
+                  EFFECTS // 感情エフェクト（5種・複数重ね可）
                 </span>
                 {activeFaceParts.effects.length > 0 && (
                   <button
@@ -389,7 +419,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-6 gap-1">
+              <div className="grid grid-cols-5 gap-1">
                 {EFFECT_OPTIONS.map((eff) => {
                   const isCurrent = activeFaceParts.effects.includes(eff.id);
                   const isSeen = seenFaceParts.includes(`fx:${eff.id}`);
@@ -422,7 +452,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
           </>
         )}
 
-        {tab === 'MOTION' && (
+        {!showAsBonus && tab === 'MOTION' && (
           <div className="space-y-2.5 text-[11px]">
             {/* 1. 全体モーション強さ＆呼吸 */}
             <div className="p-2 bg-zinc-900/90 border border-zinc-800 space-y-2">
@@ -681,34 +711,42 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
 
       {/* フッター */}
       <div className="flex items-center justify-between border-t border-zinc-800 pt-1.5 text-[10px] text-zinc-400">
-        <span className="font-mono truncate">
-          BROW:{activeFaceParts.brow} / EYE:{activeFaceParts.eyes} / MOUTH:
-          {activeFaceParts.mouth}
-          {activeFaceParts.effects.length > 0
-            ? ` / FX:${activeFaceParts.effects.join(',')}`
-            : ''}
-        </span>
+        {showAsBonus ? (
+          <span className="text-zinc-400">
+            ※お好みの眉・目・口・エフェクトを組み合わせてアッシュの表情を鑑賞できます
+          </span>
+        ) : (
+          <>
+            <span className="font-mono truncate">
+              BROW:{activeFaceParts.brow} / EYE:{activeFaceParts.eyes} / MOUTH:
+              {activeFaceParts.mouth}
+              {activeFaceParts.effects.length > 0
+                ? ` / FX:${activeFaceParts.effects.join(',')}`
+                : ''}
+            </span>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              soundEngine.playTerminalTab();
-              onChangeMotionTuning(DEFAULT_MOTION_TUNING);
-              onReplayMotion();
-            }}
-            className="px-2 py-0.5 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white cursor-pointer"
-          >
-            動き設定初期化
-          </button>
-          <button
-            type="button"
-            onClick={handleCopyTuningSummary}
-            className="px-2 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-600 cursor-pointer"
-          >
-            {copiedText ? 'コピー完了!' : '設定値をコピー'}
-          </button>
-        </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  onChangeMotionTuning(DEFAULT_MOTION_TUNING);
+                  onReplayMotion();
+                }}
+                className="px-2 py-0.5 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white cursor-pointer"
+              >
+                動き設定初期化
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyTuningSummary}
+                className="px-2 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-600 cursor-pointer"
+              >
+                {copiedText ? 'コピー完了!' : '設定値をコピー'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

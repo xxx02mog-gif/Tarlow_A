@@ -3,6 +3,7 @@ import {
   BubbleVoiceEffect,
   EndingApproach,
   EndingDisposition,
+  EndingTransitionConfig,
   ExpressionId,
   FaceParts,
 } from '../types/game';
@@ -15,6 +16,9 @@ export interface DecisionDialogueStage {
   secondExpression?: ExpressionId;
   secondFaceParts?: Partial<FaceParts>;
   voiceEffects?: BubbleVoiceEffect[];
+  guyWaitMs?: number;
+  aschWaitMs?: number;
+  endingTransition?: EndingTransitionConfig;
 }
 
 export interface EndingScenarioData {
@@ -29,382 +33,551 @@ export interface EndingScenarioData {
 }
 
 export const FINAL_ASCH_QUESTION_LINE =
-  '・・・・・・なあ、ガイ。最後に1つだけ聞かせろ。\n・・・・・・おまえから見て、今の俺は誰に見える？';
+  '・・・・・・ガイ。一つ聞いてもいいか。\nおまえには、俺が何に見える？';
 
-// Phase 3：終幕・存在への問い掛け（「・・・・・・おまえから見て、今の俺は誰に見える？」）に対する選択肢（1〜4）＋2往復目分岐
+// Phase 3：終幕・存在への問い掛け（DP-002/003未解放ルート：END 05 / END 06 / END 07）
 export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
-  // 【選択肢1】「アッシュだ」
+  // 【END 05（True）ルート：アッシュだと答える（通常時）】
   {
     id: 'p3_ans_asch',
-    thoughtText: '「アッシュだ」',
-    spokenText:
-      '・・・・・・アッシュだ。身体がどんなだろうと、今俺の目の前にいるおまえは、紛れもなくアッシュだよ。',
-    aschText:
-      '・・・・・・こんな譜業の身体を見て、よくそんなことが言えるな。\n・・・・・・俺は3年前のエルドラントで死んだんだ。それでもおまえは、俺をアッシュだと呼ぶのか？',
+    thoughtText: '「・・・・・・おまえは、アッシュだよ」',
+    forbidLinkTag: 'terminal_opened_many',
+    spokenText: '・・・・・・おまえは、アッシュだよ',
+    waitMs: 2600,
+    aschText: '・・・・・・っ、こんな、譜業の体でもか',
+    aschWaitMs: 2200,
+    extraExchanges: [
+      {
+        speaker: 'GUY',
+        text: '体が譜業でも何でも、おまえはおまえだろ。違うか？',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'わ、わからない',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'frown',
+          effects: [],
+        },
+        waitMs: 2000,
+      },
+      {
+        speaker: 'GUY',
+        text: 'ははっ、わからないことあるかよ？',
+        waitMs: 1400,
+      },
+      {
+        speaker: 'GUY',
+        text: 'わかんないならいいじゃねえか。一旦アッシュってことで！',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・',
+        expression: 'normal',
+        faceParts: {
+          brow: 'doubt',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'ふっ',
+        expression: 'normal',
+        faceParts: {
+          brow: 'smile',
+          eyes: 'close',
+          mouth: 'smile',
+          effects: ['blush'],
+        },
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '参考にする',
+        expression: 'normal',
+        faceParts: {
+          brow: 'smile',
+          eyes: 'away',
+          mouth: 'smile',
+          effects: ['blush'],
+        },
+        waitMs: 2400,
+      },
+      {
+        speaker: 'GUY',
+        text: 'おいおい、聞いておいて参考にするだけか？',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '俺はもう行く',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 1600,
+      },
+      {
+        speaker: 'GUY',
+        text: '行くって、どこに',
+        waitMs: 1600,
+      },
+      {
+        speaker: 'ASCH',
+        text: '研究所に帰るだけだ',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・またな',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'normal',
+          mouth: 'smile',
+          effects: [],
+        },
+        waitMs: 3000,
+      },
+    ],
     expression: 'shock',
     faceParts: {
       brow: 'sad',
       eyes: 'wide',
       mouth: 'gasp',
-      effects: ['blush', 'sweat'],
+      effects: ['sweat'],
+    },
+    moodDelta: 2,
+    trustDelta: 2,
+    completesTopic: true,
+    triggersEndingKey: 'END_PHASE2_ASCH',
+    endingTransition: {
+      waitBeforeExitMs: 1400,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1800,
+    },
+  },
+
+  // 【END 05（True）ルート：アッシュだと答える（※いっぱい端末を開いているときの差分）】
+  {
+    id: 'p3_ans_asch_terminal_many',
+    thoughtText: '「・・・・・・おまえは、アッシュだよ」',
+    requireLinkTag: 'terminal_opened_many',
+    spokenText: '・・・・・・おまえは、アッシュだよ',
+    waitMs: 2600,
+    aschText:
+      '・・・・・・っ、こんな、譜業の体でもか。\nそれ（管理端末）で、何もかも見えるんだろう？\nそんなのは、人間とは呼べないはずだ',
+    aschWaitMs: 2400,
+    extraExchanges: [
+      {
+        speaker: 'GUY',
+        text: '怒ってる、か？　わ、悪かったって！　興味本位で覗いちまって・・・・・・',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'GUY',
+        text: 'そ、それよりだな\nおまえはおまえだろ。違うか？',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'わ、わからない',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'frown',
+          effects: [],
+        },
+        waitMs: 2000,
+      },
+      {
+        speaker: 'GUY',
+        text: 'ははっ、わからないことあるかよ？',
+        waitMs: 1400,
+      },
+      {
+        speaker: 'GUY',
+        text: 'わかんないならいいじゃねえか。一旦アッシュってことで！',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・',
+        expression: 'normal',
+        faceParts: {
+          brow: 'doubt',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'ふっ',
+        expression: 'normal',
+        faceParts: {
+          brow: 'smile',
+          eyes: 'close',
+          mouth: 'smile',
+          effects: ['blush'],
+        },
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '参考にする',
+        expression: 'normal',
+        faceParts: {
+          brow: 'smile',
+          eyes: 'away',
+          mouth: 'smile',
+          effects: ['blush'],
+        },
+        waitMs: 2400,
+      },
+      {
+        speaker: 'GUY',
+        text: 'おいおい、聞いておいて参考にするだけか？',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '俺はもう行く',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 1600,
+      },
+      {
+        speaker: 'GUY',
+        text: '行くって、どこに',
+        waitMs: 1600,
+      },
+      {
+        speaker: 'ASCH',
+        text: '研究所に帰るだけだ',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・またな',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'normal',
+          mouth: 'smile',
+          effects: [],
+        },
+        waitMs: 3000,
+      },
+    ],
+    expression: 'shock',
+    faceParts: {
+      brow: 'sad',
+      eyes: 'wide',
+      mouth: 'gasp',
+      effects: ['sweat'],
     },
     secondExpression: 'look_away',
     secondFaceParts: {
       brow: 'sad',
       eyes: 'down',
       mouth: 'frown',
-      effects: ['blush'],
+      effects: [],
     },
     moodDelta: 2,
     trustDelta: 2,
-    followUpOptions: [
-      {
-        id: 'p3_ans_asch_2a',
-        thoughtText: '「ああ。今日こうして話して、おまえ自身だと分かったからな」',
-        spokenText:
-          'ああ。今日こうして向き合って話してみて、他の誰でもないおまえ自身だと分かったからな。',
-        aschText:
-          '・・・・・・ふん、勝手にしろ。\n・・・・・・だが、まあ・・・・・・悪くはなかった。茶くらいなら、また飲みに来てやらなくもない。',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'normal',
-          eyes: 'close',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        secondExpression: 'normal',
-        secondFaceParts: {
-          brow: 'smile',
-          eyes: 'away',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE2_ASCH',
-      },
-      {
-        id: 'p3_ans_asch_2b',
-        thoughtText: '「昔、屋敷でおまえの背中を睨んでいた俺が言うんだ。間違えるわけがないだろ」',
-        spokenText:
-          '昔、ファブレ邸でおまえの背中をずっと睨んでいた俺が言うんだ。おまえがアッシュかどうかくらい、俺が間違えるわけないだろ。',
-        aschText:
-          '・・・・・・ハッ、昔の俺を散々睨んでいたおまえが言うなら、間違いないんだろうな。\n・・・・・・今日のところは帰る。外の連中には黙っておけよ、ガイ。',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'smile',
-          eyes: 'close',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        secondExpression: 'normal',
-        secondFaceParts: {
-          brow: 'smile',
-          eyes: 'normal',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE2_ASCH',
-      },
-    ],
+    completesTopic: true,
+    triggersEndingKey: 'END_PHASE2_ASCH',
+    endingTransition: {
+      waitBeforeExitMs: 1400,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1800,
+    },
   },
 
-  // 【選択肢2（封印未解除時）】「・・・・・・ただの譜業だな」
+  // 【END 06ルート：譜業だと答える】
   {
     id: 'p3_ans_machine',
-    thoughtText: '「・・・・・・ただの譜業だな」',
-    forbidLinkTag: 'climax_ready',
+    thoughtText: '「・・・・・・おまえが最初に言っていた通り、おまえは譜業人形みたいだな」',
     spokenText:
-      '・・・・・・ディストが造った、ただの自律譜業『タルロウA』だな。アッシュは3年前のエルドラントで死んだよ。',
-    aschText:
-      '・・・・・・そうか。最初からそう言っていれば、お互いに無駄な時間を過ごさずに済んだものを。\n・・・・・・それでいい。',
-    expression: 'look_away',
+      '・・・・・・おまえが最初に言っていた通り\nおまえは譜業人形みたいだな',
+    waitMs: 2600,
+    aschText: '・・・・・・！！',
+    aschWaitMs: 2200,
+    voiceEffects: ['tremble'],
+    expression: 'shock',
     faceParts: {
       brow: 'sad',
-      eyes: 'close',
-      mouth: 'close',
-      effects: [],
+      eyes: 'wide',
+      mouth: 'gasp',
+      effects: ['pale', 'sweat'],
     },
-    secondFaceParts: {
-      brow: 'sad',
-      eyes: 'down',
-      mouth: 'close',
-      effects: [],
-    },
-    followUpOptions: [
+    extraExchanges: [
       {
-        id: 'p3_ans_machine_2a',
-        thoughtText: '「死んだアッシュのしがらみなんか背負わず、ただの譜業として気楽に稼働しろよ」',
-        spokenText:
-          '・・・・・・ああ。死んだアッシュのしがらみなんか背負わず、ただの譜業として気楽に稼働していろよ。',
-        aschText:
-          '・・・・・・余計なお世話だ。譜業に気楽もクソもあるか。\n・・・・・・研究所へ戻る。次に研究所へ来ても、二度と俺に構うなよ。',
+        speaker: 'ASCH',
+        text: '・・・・・・最、初から、そう言っていれば良かったんだ',
         expression: 'look_away',
         faceParts: {
-          brow: 'angry',
-          eyes: 'glare',
+          brow: 'sad',
+          eyes: 'down',
           mouth: 'frown',
-          effects: [],
+          effects: ['pale'],
         },
-        secondFaceParts: {
+        voiceEffect: 'tremble',
+        waitMs: 2600,
+      },
+      {
+        speaker: 'GUY',
+        text: '悪いね。何でも自分で見て判断したいタチなんだ',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・それで、気は済んだか',
+        expression: 'look_away',
+        faceParts: {
           brow: 'sad',
           eyes: 'away',
           mouth: 'close',
           effects: [],
         },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_MACHINE',
+        waitMs: 2200,
       },
       {
-        id: 'p3_ans_machine_2b',
-        thoughtText: '「これ以上ここにいてもお互いになんの得にもならない。研究所へ戻れ」',
-        spokenText:
-          'これ以上ここにいても、お互いになんの得にもならないからな。ディストの研究所へ戻れよ。',
-        aschText:
-          '・・・・・・言われなくてもそうする。じゃあな、ガイ・セシル。',
-        expression: 'look_away',
+        speaker: 'GUY',
+        text: 'ああ、・・・・・・もう、大丈夫だ',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・そうか',
+        expression: 'normal',
         faceParts: {
-          brow: 'normal',
+          brow: 'sad',
           eyes: 'close',
           mouth: 'close',
           effects: [],
         },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_MACHINE',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'なら、任務完了だ。ディストのところへ帰投する',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        waitMs: 2000,
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・アッシュ',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・タルロウAだ。二度と間違えるな、ガイ・セシル',
+        expression: 'normal',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'empty',
+          mouth: 'close',
+          effects: ['shadow'],
+        },
+        waitMs: 3200,
       },
     ],
+    secondExpression: 'look_away',
+    secondFaceParts: {
+      brow: 'sad',
+      eyes: 'down',
+      mouth: 'frown',
+      effects: ['pale'],
+    },
+    completesTopic: true,
+    triggersEndingKey: 'END_PHASE3_MACHINE',
+    endingTransition: {
+      waitBeforeExitMs: 1400,
+      aschAction: 'fade_out',
+      footsteps: 'fast',
+      footstepsCount: 4,
+      doorAction: 'none',
+      waitAfterDoorMs: 2000,
+    },
   },
 
-  // 【選択肢2（最深部封印を同意なく暴いていた場合）】「・・・・・・ただの譜業だな」→ スワンプマンEND（END 04）へ
+  // 【END 07ルート：何も答えない】
   {
-    id: 'p3_ans_machine_swampman',
-    thoughtText: '「・・・・・・ただの譜業だな」',
-    requireLinkTag: 'climax_ready',
-    spokenText:
-      '・・・・・・ディストが造った、ただの譜業『タルロウA』だな。アッシュは3年前のエルドラントで死んだよ。',
-    aschText:
-      '・・・・・・そうか。おまえがそう言うなら、そうなんだろうな。\n・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ。',
+    id: 'p3_ans_silence',
+    thoughtText: '「・・・・・・（何も答えられない）」',
+    spokenText: '・・・・・・',
+    waitMs: 2400,
+    aschText: '・・・・・・',
+    aschWaitMs: 2000,
     expression: 'look_away',
     faceParts: {
       brow: 'sad',
-      eyes: 'close',
+      eyes: 'down',
       mouth: 'close',
-      effects: ['pale'],
+      effects: ['shadow'],
     },
-    secondExpression: 'empty',
-    secondFaceParts: {
-      brow: 'sad',
-      eyes: 'empty',
-      mouth: 'close',
-      effects: ['pale'],
-    },
-    voiceEffects: ['tremble'],
-    followUpOptions: [
+    extraExchanges: [
       {
-        id: 'p3_ans_machine_swampman_2a',
-        thoughtText: '「・・・・・・っ、待てよ。譜業の身体に記憶だけがあるおまえがアッシュじゃないなら・・・・・・」',
-        spokenText:
-          '・・・・・・っ、待てよ。もし譜業の身体に記憶だけがあるおまえを『アッシュじゃない』とするなら・・・・・・。',
-        aschText:
-          '・・・・・・もういい。俺は研究所へ戻る。二度と俺に構うな、ガイ。',
+        speaker: 'ASCH',
+        text: '・・・・・・、いや。いい。なんでもない',
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
           eyes: 'down',
           mouth: 'close',
-          effects: ['pale'],
+          effects: ['shadow'],
         },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_SWAMPMAN',
-      },
-    ],
-  },
-
-  // 【選択肢3】「アッシュでも譜業でもない。今の、おまえだよ」
-  {
-    id: 'p3_ans_present_you',
-    thoughtText: '「アッシュでも譜業でもない。今の、おまえだよ」',
-    spokenText:
-      '3年前に死んだアッシュそのものでもないし、ただの譜業でもない。・・・・・・今ここで俺と向き合っている『今のおまえ』だよ。',
-    aschText:
-      '・・・・・・『今の俺』だと？\n妙なことを言う奴だな。そんな中途半端な存在に、何の意味がある。',
-    expression: 'shock',
-    faceParts: {
-      brow: 'doubt',
-      eyes: 'wide',
-      mouth: 'gasp',
-      effects: [],
-    },
-    secondExpression: 'normal',
-    secondFaceParts: {
-      brow: 'doubt',
-      eyes: 'away',
-      mouth: 'frown',
-      effects: [],
-    },
-    moodDelta: 1,
-    trustDelta: 2,
-    followUpOptions: [
-      {
-        id: 'p3_ans_present_2a',
-        thoughtText: '「意味なんてこれから作ればいい。ルークだって自分の足で歩いたんだからな」',
-        spokenText:
-          '意味なんて、これから自分で作っていけばいいさ。ルークだって、そうやって自分の足で歩いたんだからな。',
-        aschText:
-          '・・・・・・あいつと一緒にするな。\n・・・・・・ふん、少しは考えておいてやる。また気が向いたら顔を出してやるから、茶でも用意しておけ。',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'angry',
-          eyes: 'away',
-          mouth: 'frown',
-          effects: ['blush'],
-        },
-        secondFaceParts: {
-          brow: 'smile',
-          eyes: 'close',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_NEW_SELF',
+        voiceEffect: 'normal',
+        waitMs: 2000,
       },
       {
-        id: 'p3_ans_present_2b',
-        thoughtText: '「今こうして俺の部屋で向き合って憎まれ口を叩いている、それだけで十分だろ」',
-        spokenText:
-          '大層な意味なんてなくたっていいだろ。少なくとも、今こうして俺の部屋で向き合って憎まれ口を叩いている、それだけで十分じゃないか。',
-        aschText:
-          '・・・・・・どこまでも呑気な奴だな、おまえは。\n・・・・・・だが、まあ、そういうのも悪くはない。じゃあな、ガイ。',
+        speaker: 'ASCH',
+        text: '変なことを聞いた。忘れてくれ',
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
-          eyes: 'close',
-          mouth: 'close',
-          effects: [],
-        },
-        secondExpression: 'normal',
-        secondFaceParts: {
-          brow: 'smile',
-          eyes: 'normal',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_NEW_SELF',
-      },
-    ],
-  },
-
-  // 【選択肢4】「腹が減ったな。・・・・・・明日、美味いもんでも食いに行くか」（部屋に泊まるEND 07）
-  {
-    id: 'p3_ans_tomorrow_meal',
-    thoughtText: '「腹が減ったな。・・・・・・明日、美味いもんでも食いに行くか」',
-    spokenText:
-      '・・・・・・なんだか急に腹が減ったな。なあ、難しい話はもう終わりにして、明日あたり街で美味いもんでも食いに行くか？',
-    aschText:
-      '・・・・・・は？　おまえ、人が真面目に聞いている時に何の冗談だ！\nそれに、この譜業の身体で飯を食ったところで、腹の足しにもならんと知ってて言っているのか！',
-    expression: 'shock',
-    faceParts: {
-      brow: 'doubt',
-      eyes: 'wide',
-      mouth: 'open',
-      effects: ['blush', 'sweat'],
-    },
-    secondExpression: 'glare',
-    secondFaceParts: {
-      brow: 'angry',
-      eyes: 'glare',
-      mouth: 'grit',
-      effects: ['blush', 'sweat'],
-    },
-    voiceEffects: ['shout', 'normal'],
-    moodDelta: 2,
-    trustDelta: 2,
-    followUpOptions: [
-      {
-        id: 'p3_ans_tomorrow_2a',
-        thoughtText: '「明日また連れ出すのも面倒だし、今夜はそこのソファを使っていけよ」',
-        spokenText:
-          '腹の足しにならなくたって、好物のチキンくらい味わえるだろ。明日また研究所から連れ出すのも面倒だし、今夜は帰らずにそこのソファを使っていけよ。',
-        aschText:
-          'なんで・・・・・・っ。\n・・・・・・チッ、まずい店だったら承知しないからな。',
-        expression: 'shock',
-        faceParts: {
-          brow: 'sad',
-          eyes: 'wide',
-          mouth: 'gasp',
-          effects: ['blush', 'sweat'],
-        },
-        secondExpression: 'look_away',
-        secondFaceParts: {
-          brow: 'angry',
           eyes: 'away',
           mouth: 'close',
-          effects: ['blush'],
+          effects: ['shadow'],
         },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_TOMORROW',
-      },
-      {
-        id: 'p3_ans_tomorrow_2b',
-        thoughtText: '「答えなんて急がなくていい。今夜はこの部屋で休んでいけ」',
-        spokenText:
-          'おまえが誰なのかなんて、今夜急いで白黒つけなくてもいいってことさ。もう遅いし、今夜はこの部屋で休んでいけよ。',
-        aschText:
-          '・・・・・・やれやれ、おまえと話していると調子が狂う。\n・・・・・・分かったよ。そのくだらない問答の続きは、また明日にでもしてやる。',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'sad',
-          eyes: 'close',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        secondExpression: 'normal',
-        secondFaceParts: {
-          brow: 'smile',
-          eyes: 'away',
-          mouth: 'close',
-          effects: ['blush'],
-        },
-        completesTopic: true,
-        triggersEndingKey: 'END_PHASE3_TOMORROW',
+        waitMs: 2400,
       },
     ],
+    completesTopic: true,
+    triggersEndingKey: 'END_PHASE3_SILENCE',
+    endingTransition: {
+      waitBeforeExitMs: 1000,
+      aschAction: 'fade_out',
+      footsteps: 'slow',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1400,
+    },
   },
 ];
 
-// 【選択肢5】無言（タイムアウト）発生後のガイの最終反応2択
+// 【END 07ルート：何も答えない（一定秒数答えず待機）】
 export const PHASE3_SILENT_TIMEOUT_OPTIONS: AschQuestionReplyOption[] = [
   {
     id: 'p3_silent_watch_back',
-    thoughtText: '呼び止めず、無言のまま小さな背中を見送る',
-    spokenText: '・・・・・・。',
-    aschText: '・・・・・・じゃあな、ガイ。',
+    thoughtText: '（一定秒数答えず待機）',
+    spokenText: '・・・・・・',
+    waitMs: 2400,
+    aschText: '・・・・・・',
+    aschWaitMs: 2000,
     expression: 'look_away',
     faceParts: {
       brow: 'sad',
-      eyes: 'close',
+      eyes: 'down',
       mouth: 'close',
-      effects: [],
+      effects: ['shadow'],
     },
+    extraExchanges: [
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・、いや。いい。なんでもない',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: ['shadow'],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: '変なことを聞いた。忘れてくれ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'away',
+          mouth: 'close',
+          effects: ['shadow'],
+        },
+        waitMs: 2400,
+      },
+    ],
     completesTopic: true,
     triggersEndingKey: 'END_PHASE3_SILENCE',
-  },
-  {
-    id: 'p3_silent_call_gently',
-    thoughtText: '「すぐには言葉にできなくて悪かった。だけど、またいつでも来いよ」と声をかける',
-    spokenText:
-      '・・・・・・すぐには言葉にできなくて悪かった。だけど、ここはおまえを拒まないから、またいつでも来いよ。',
-    aschText: '・・・・・・ふん。気が向いたらな。',
-    expression: 'look_away',
-    faceParts: {
-      brow: 'smile',
-      eyes: 'away',
-      mouth: 'close',
-      effects: ['blush'],
+    endingTransition: {
+      waitBeforeExitMs: 1000,
+      aschAction: 'fade_out',
+      footsteps: 'slow',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1400,
     },
-    completesTopic: true,
-    triggersEndingKey: 'END_PHASE3_SILENCE',
   },
 ];
 
@@ -412,30 +585,40 @@ export const PHASE3_SILENT_TIMEOUT_OPTIONS: AschQuestionReplyOption[] = [
 export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   END_PHASE1_TARLOW: {
     spokenText:
-      '・・・・・・そこまで『タルロウAだ』と言い張るなら、本当にただの譜業なんだろうな。\n変に引き止めて悪かったよ。研究所へ戻ってくれ。',
+      '・・・・・・ここまで言い張るなら、本当にそうなんだろうな。\n変に引き止めて悪かった',
     aschText:
-      '・・・・・・ああ、そうだ。俺はただの自律譜業タルロウAだ。\n分かったなら、もう二度と研究所から俺を連れ出すな。',
+      '・・・・・・ああ、そうだ。俺はただの自律譜業タルロウAだ。\n分かったなら、もう二度と俺に関わるな',
     expression: 'look_away',
     faceParts: {
       brow: 'normal',
-      eyes: 'close',
+      eyes: 'away',
       mouth: 'close',
       effects: [],
     },
-    secondExpression: 'normal',
+    secondExpression: 'look_away',
     secondFaceParts: {
-      brow: 'normal',
-      eyes: 'normal',
-      mouth: 'close',
+      brow: 'angry',
+      eyes: 'glare',
+      mouth: 'frown',
       effects: [],
     },
     voiceEffects: ['normal'],
+    guyWaitMs: 1800,
+    aschWaitMs: 1900,
+    endingTransition: {
+      waitBeforeExitMs: 800,
+      aschAction: 'fade_out',
+      footsteps: 'fast',
+      footstepsCount: 4,
+      doorAction: 'none',
+      waitAfterDoorMs: 1100,
+    },
   },
   END_PHASE2_INCOMPLETE: {
     spokenText:
-      '・・・・・・もう少し話したかったんだけどね。',
+      'あ、おい！\nまだ聞きたいことが',
     aschText:
-      '・・・・・・。',
+      'フン！\nもう話は終わりだ。俺は研究所へ戻る！',
     expression: 'look_away',
     faceParts: {
       brow: 'angry',
@@ -443,13 +626,93 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
       mouth: 'frown',
       effects: [],
     },
+    secondExpression: 'glare',
+    secondFaceParts: {
+      brow: 'angry',
+      eyes: 'glare',
+      mouth: 'shout',
+      effects: [],
+    },
+    voiceEffects: ['normal', 'shout'],
+    guyWaitMs: 1600,
+    aschWaitMs: 1800,
+    endingTransition: {
+      waitBeforeExitMs: 700,
+      aschAction: 'fade_out',
+      footsteps: 'fast',
+      footstepsCount: 4,
+      doorAction: 'none',
+      waitAfterDoorMs: 1000,
+      keepBgm: true,
+    },
+  },
+  END_PHASE2_NORMAL_RETURN: {
+    spokenText:
+      '・・・・・・今日、おまえと話せてよかったよ。\nおまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ',
+    aschText:
+      '・・・・・・ああ。\n・・・・・・じゃあな、ガイ',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'normal',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
+    },
+    secondExpression: 'look_away',
+    secondFaceParts: {
+      brow: 'smile',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
+    },
     voiceEffects: ['normal'],
+    guyWaitMs: 1900,
+    aschWaitMs: 2000,
+    endingTransition: {
+      waitBeforeExitMs: 800,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1200,
+    },
   },
   END_PHASE2_ASCH: {
     spokenText:
-      '・・・・・・今日、おまえと話せてよかったよ。\nおまえの気持ちは分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ。',
+      '・・・・・・今日、おまえと話せてよかったよ。\nおまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ',
     aschText:
-      '・・・・・・ディストの研究所がうるさくてかなわん時くらいは、考えてやらなくもない。\n・・・・・・じゃあな、ガイ。',
+      '・・・・・・ああ。\n・・・・・・じゃあな、ガイ',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'normal',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
+    },
+    secondExpression: 'look_away',
+    secondFaceParts: {
+      brow: 'smile',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
+    },
+    voiceEffects: ['normal'],
+    guyWaitMs: 1900,
+    aschWaitMs: 2000,
+    endingTransition: {
+      waitBeforeExitMs: 800,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 3,
+      doorAction: 'none',
+      waitAfterDoorMs: 1200,
+    },
+  },
+  END_PHASE2_STAY_REST: {
+    spokenText:
+      '・・・・・・なあ、今すぐ急いで戻らなくてもいいだろ。そこのソファで少し休んでいけよ',
+    aschText:
+      '・・・・・・\n少しだけ、なら',
     expression: 'look_away',
     faceParts: {
       brow: 'angry',
@@ -457,40 +720,28 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
       mouth: 'close',
       effects: ['blush'],
     },
-    secondExpression: 'normal',
+    secondExpression: 'look_away',
     secondFaceParts: {
-      brow: 'smile',
-      eyes: 'normal',
-      mouth: 'close',
-      effects: ['blush'],
-    },
-    voiceEffects: ['normal'],
-  },
-  END_PHASE2_STAY_REST: {
-    spokenText:
-      '・・・・・・なあ、今すぐ急いで戻らなくてもいいだろ。まだ時間も早いし、そこのソファで少し休んでいけよ。',
-    aschText:
-      '・・・・・・戻って早々、ディストの騒がしい相手をするよりはマシか。\n・・・・・・少しだけだぞ。',
-    expression: 'look_away',
-    faceParts: {
       brow: 'sad',
       eyes: 'close',
       mouth: 'close',
       effects: ['blush'],
     },
-    secondFaceParts: {
-      brow: 'angry',
-      eyes: 'away',
-      mouth: 'frown',
-      effects: ['blush'],
-    },
     voiceEffects: ['normal'],
+    guyWaitMs: 1900,
+    aschWaitMs: 2200,
+    endingTransition: {
+      waitBeforeExitMs: 1400,
+      aschAction: 'fade_out',
+      doorAction: 'none',
+      waitAfterDoorMs: 1200,
+    },
   },
   END_PHASE2_STAY_REFUSED: {
     spokenText:
-      '・・・・・・なあ、今すぐ急いで戻らなくてもいいだろ。まだ時間も早いし、そこのソファで少し休んでいけよ。',
+      '・・・・・・なあ、今すぐ急いで戻らなくてもいいだろ。そこのソファで少し休んでいけよ',
     aschText:
-      '・・・・・・話はそれで終わりか？\n俺は研究所へ戻る。',
+      '・・・・・・話はそれで終わりか？\n俺は研究所へ戻る',
     expression: 'look_away',
     faceParts: {
       brow: 'angry',
@@ -500,18 +751,58 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
     },
     secondExpression: 'look_away',
     secondFaceParts: {
-      brow: 'sad',
+      brow: 'angry',
       eyes: 'away',
-      mouth: 'close',
+      mouth: 'shout',
       effects: [],
     },
+    voiceEffects: ['normal', 'shout'],
+    guyWaitMs: 1800,
+    aschWaitMs: 1800,
+    endingTransition: {
+      waitBeforeExitMs: 700,
+      aschAction: 'fade_out',
+      footsteps: 'fast',
+      footstepsCount: 4,
+      doorAction: 'none',
+      waitAfterDoorMs: 1000,
+      keepBgm: true,
+    },
+  },
+  END_PHASE3_TOMORROW: {
+    spokenText:
+      '・・・・・・なんだか急に腹が減って来たな。なあ、明日また研究所から連れ出すのも面倒だし、今夜はそこのソファで休んで、明日美味いもんでも食いに行くか？',
+    aschText:
+      '・・・・・・は？　おまえ、急に何を言い出すんだ！\n・・・・・・チッ、まずい店だったら承知しないからな',
+    expression: 'shock',
+    faceParts: {
+      brow: 'sad',
+      eyes: 'wide',
+      mouth: 'gasp',
+      effects: ['blush', 'sweat'],
+    },
+    secondExpression: 'look_away',
+    secondFaceParts: {
+      brow: 'angry',
+      eyes: 'away',
+      mouth: 'close',
+      effects: ['blush'],
+    },
     voiceEffects: ['normal'],
+    guyWaitMs: 2000,
+    aschWaitMs: 2400,
+    endingTransition: {
+      waitBeforeExitMs: 1600,
+      aschAction: 'fade_out',
+      doorAction: 'none',
+      waitAfterDoorMs: 1400,
+    },
   },
   END_PHASE3_SWAMPMAN: {
     spokenText:
-      '・・・・・・開けられるからって、全部開けて見るんじゃなかったな・・・・・・。',
+      '・・・・・・開けられるからって、全部開けて見るんじゃなかったな・・・・・・',
     aschText:
-      '・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・。',
+      '・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・',
     expression: 'empty',
     faceParts: {
       brow: 'sad',
@@ -539,100 +830,114 @@ export const resolveEndingKey = (
   if (approach === 'ACCOMPLICE') {
     return 'END_PHASE2_INCOMPLETE';
   }
-  return 'END_PHASE2_ASCH';
+  return 'END_PHASE2_NORMAL_RETURN';
 };
 
 export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
+  // END 01：演技を見抜けずタルロウAのまま（ゲームオーバー扱い）
   END_PHASE1_TARLOW: {
     id: 'END_PHASE1_TARLOW',
     title: 'END 01 // たぶんタルロウA',
-    subtitle: 'PHASE 1 END // SO HE SAYS',
+    subtitle: 'GAME OVER // SO HE SAYS',
     dialogues: [
       {
         speaker: 'GUY',
-        text: 'どうやら、俺の思い違いだったようだ。',
+        text: 'どうやら、俺の思い違いだったようだ',
       },
       {
         speaker: 'GUY',
-        text: 'ただの譜業にしちゃ、妙に態度が人間臭かった気もするけど・・・・・・\nまあ、気のせいか。',
+        text: 'ただの譜業にしちゃ、妙に態度が人間臭かった気もするけど・・・・・・\nまあ、気のせいか',
       },
     ],
     summaryText:
-      '『俺はタルロウAだ』という主張を崩せないまま対話を終えた。どこか人間くさい反応に引っかかりを覚えつつも、彼はそのままディストの研究所へと戻っていった。',
+      '『俺はタルロウAだ』という演技を見抜けないまま対話を終えた。どこか人間くさい反応に引っかかりを覚えつつも、彼はそのままディストの研究所へと戻っていった',
   },
 
+  // END 02：怒って帰られる（ゲームオーバー扱い）
   END_PHASE2_INCOMPLETE: {
     id: 'END_PHASE2_INCOMPLETE',
     title: 'END 02 // 怒って帰っちゃった',
-    subtitle: 'PHASE 2 END // SLAMMED DOOR',
+    subtitle: 'GAME OVER // SLAMMED DOOR',
     dialogues: [
       {
         speaker: 'GUY',
-        text: 'まいったな、すっかり臍を曲げられたまま帰られちまった。',
+        text: 'まいったな、すっかり臍を曲げられたまま帰られちまった',
       },
       {
         speaker: 'GUY',
-        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・もう少し落ち着いて話せばよかったな。',
+        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・もう少し落ち着いて話せばよかったな',
       },
     ],
     summaryText:
-      'タルロウAの偽装を暴き、中身がアッシュ本人であることは確かめられたものの、彼がなぜ身を隠し続けるのかという本音には届かないまま別れることとなった。',
+      'タルロウAの偽装を暴き、中身がアッシュ本人であることは確かめられたものの、怒らせて帰られてしまった',
   },
 
-  END_PHASE2_ASCH: {
-    id: 'END_PHASE2_ASCH',
-    title: 'END 03 // 中身はそのまま',
-    subtitle: 'TRUE END // Ghost in the mASCHine',
+  // END 03：深く話さず帰す（雑談エンド）
+  END_PHASE2_NORMAL_RETURN: {
+    id: 'END_PHASE2_NORMAL_RETURN',
+    title: 'END 03 // また気が向いたら',
+    subtitle: 'CASUAL END // SEE YOU AROUND',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '最後の最後まで素直じゃないな、あいつは。',
+        text: '詳しい事情までは聞けなかったけど・・・・・・まあ、本人が言いたくないなら無理に暴くこともないか',
       },
       {
         speaker: 'GUY',
-        text: '身体が譜業だろうと何だろうと・・・・・・俺には、昔から知ってるアッシュにしか見えなかった。',
+        text: 'せめてナタリアには会ってやりゃいいのに',
       },
     ],
     summaryText:
-      '対話を通じてアッシュの不器用な本音を受け止めた。身体が譜業であっても彼は確かにアッシュであり、穏やかな余韻と共に物語は幕を閉じた。',
+      '正体がアッシュであることを確かめ、穏やかに雑談を交わして送り出した。深い事情には踏み込まないまま、秘密の共有者として静かに見送った',
   },
 
+  // END 04：深く話さず家に残す（雑談エンド）
   END_PHASE2_STAY_REST: {
     id: 'END_PHASE2_STAY_REST',
     title: 'END 04 // たまにはゆっくり',
-    subtitle: 'PHASE 2 END // GOODNIGHT FOR NOW',
+    subtitle: 'CASUAL END // GOODNIGHT FOR NOW',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '口ではあんなことを言ってたけど、やっぱり疲れてたんだろう。',
+        text: '相変わらず可愛げのない態度だけど、なんだかんだ堪えてるみたいだな・・・・・・',
       },
       {
         speaker: 'GUY',
-        text: '今日くらいはそのままゆっくり休めよ。',
+        text: '休息は必要ないらしいが、子どもみたいにソファに丸まって横になっている',
+      },
+      {
+        speaker: 'GUY',
+        text: 'これは、「少し」じゃ済まないかもな',
       },
     ],
     summaryText:
-      '無理にすべてを問い詰めることも研究所へ送り返すこともせず、この部屋で休んでいくよう声をかけた。静かな部屋のソファで、彼は穏やかに目を閉じた。',
+      '無理に深い事情を問い詰めることも研究所へ送り返すこともせず、この部屋で休んでいくよう声をかけた。静かな部屋のソファで、彼は穏やかに目を閉じた',
   },
 
-  END_PHASE3_SWAMPMAN: {
-    id: 'END_PHASE3_SWAMPMAN',
-    title: 'END 05 // つまり、そういうこと',
-    subtitle: 'PHASE 3 END // NOBODY CAME HOME',
+  // END 05：最後の問いかけ（DP-002/003なし）に「アッシュだ」と答える（True）
+  END_PHASE2_ASCH: {
+    id: 'END_PHASE2_ASCH',
+    title: 'END 05 // 一旦そういうことで',
+    subtitle: 'PHASE 3 END // ASCH FOR NOW',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '譜業の身体にアッシュの記憶だけがあるものをアッシュじゃないとするなら、アッシュの身体にルークの記憶だけがあるものは・・・・・・？',
+        text: '我ながら随分と適当なことを言ったもんだ',
       },
       {
         speaker: 'GUY',
-        text: '・・・・・・いや、よそう。何も、考えたくない。',
+        text: 'だけど、あいつの存在を証明するのに、これ以上の理屈なんて必要ない',
+      },
+      {
+        speaker: 'GUY',
+        text: '参考にもしてくれるらしいしな',
       },
     ],
     summaryText:
-      '同意なく封印記録を暴いた上で、譜業の身体に記憶だけがある彼をアッシュではないと否定した。その瞬間、アッシュの身体にルークの記憶だけがある「帰ってきたルーク」の存在までもが揺らぎ、すべてを見失った。',
+      '身体が譜業であっても「おまえはおまえだ、一旦アッシュってことで」と笑い飛ばした。これ以上の理屈など必要なく、「またな」と去っていく背中を穏やかに見送った',
   },
 
+  // END 06：最後の問いかけ（DP-002/003なし）に「譜業だ」と答える
   END_PHASE3_MACHINE: {
     id: 'END_PHASE3_MACHINE',
     title: 'END 06 // そういうことにした',
@@ -640,86 +945,118 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
     dialogues: [
       {
         speaker: 'GUY',
-        text: '・・・・・・これでよかったんだ。',
+        text: '扉が閉まる',
       },
       {
         speaker: 'GUY',
-        text: 'あいつはただの譜業で、アッシュは3年前に死んだ。・・・・・・そういうことにしておこう。',
+        text: 'あいつのしたいようにやらせてやるのが一番なんだ、と自分に言い聞かせる',
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・いや。そうすることしか、できなかった',
       },
     ],
     summaryText:
-      'アッシュからの最後の問いかけに対し、『ただの譜業だ』と答えて線を引いた。過去の苦しみから切り離すように、彼は二度と振り返ることなく研究所へと戻っていった。',
+      '譜業人形だと告げられ、アッシュは「タルロウA」として去っていった。あいつのしたいようにやらせてやるのが一番なんだと自分に言い聞かせることしか、できなかった',
   },
 
-  END_PHASE3_NEW_SELF: {
-    id: 'END_PHASE3_NEW_SELF',
-    title: 'END 07 // 誰でもないあなた',
-    subtitle: 'PHASE 3 END // WALK ON YOUR OWN FEET',
-    dialogues: [
-      {
-        speaker: 'GUY',
-        text: '次にここへ顔を出した時、あいつがなんて名乗るかは分からない。',
-      },
-      {
-        speaker: 'GUY',
-        text: 'どうあれ、今のあいつとして生きていければいいんだが。',
-      },
-    ],
-    summaryText:
-      '過去の生前の姿にも譜業という枠にも縛られず、今ここで向き合っている彼自身を新たな存在として認めた。定義から解き放たれた彼は、どこか穏やかな足取りで帰っていった。',
-  },
-
-  END_PHASE3_TOMORROW: {
-    id: 'END_PHASE3_TOMORROW',
-    title: 'END 08 // とりあえず寝て、続きは明日',
-    subtitle: 'PHASE 3 END // ROAST CHICKEN FOR TOMORROW',
-    dialogues: [
-      {
-        speaker: 'GUY',
-        text: 'さて、あいつに毛布でも出してやるか。',
-      },
-      {
-        speaker: 'GUY',
-        text: '難しい話の続きは、明日美味いもんでも食ってからで十分だろ。',
-      },
-    ],
-    summaryText:
-      '存在の定義に明確な答えを出さず、今夜はこの部屋で休んで明日も続いていく日常を選んだ。憎まれ口を叩き合いながら向き合う二人の時間は、これからも続いていく。',
-  },
-
+  // END 07：最後の問いかけ（DP-002/003なし）に何も答えない
   END_PHASE3_SILENCE: {
     id: 'END_PHASE3_SILENCE',
-    title: 'END 09 // 何も言えなかった',
+    title: 'END 07 // 何も言えなかった',
     subtitle: 'PHASE 3 END // BETTER LEFT UNSAID',
     dialogues: [
       {
         speaker: 'GUY',
-        text: 'そんなこと聞かれても、そう簡単に返せる訳ないだろ。',
+        text: 'そう言って、アッシュは部屋から出ていった',
       },
       {
         speaker: 'GUY',
-        text: '・・・・・・次に顔を合わせる時までには、もう少しマシな答えを考えておかないとな。',
+        text: '翌日、研究所に出向いたが、奴の姿はなかった。\n残ったのは、この管理端末だけだ',
       },
     ],
     summaryText:
-      '最後の問いかけに対し、言葉で定義することを選ばず沈黙を貫いた。白黒をつけないまま、互いの複雑な距離感を噛みしめる静かな幕切れとなった。',
+      '最後の問いかけに答えられないまま沈黙し、アッシュは部屋を出ていった。翌日研究所を訪ねたが彼の姿はなく、手元には管理端末だけが残された',
   },
 
-  END_PHASE3_MERCY_DESTROY: {
-    id: 'END_PHASE3_MERCY_DESTROY',
-    title: 'END 10 // これでぜんぶ元通り',
-    subtitle: 'PHASE 2 END // NOTHING HAPPENED HERE',
+  // END 08：DP-002, DP-003を解放した上で、秘密を問い詰めない
+  END_PHASE3_TOMORROW: {
+    id: 'END_PHASE3_TOMORROW',
+    title: 'END 08 // 全部がうまくいく',
+    subtitle: 'SECRET END // LET IT BE UNSAID',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '・・・・・・これでいい。こいつはアッシュなんかじゃない、最初からただの譜業だったんだ。',
+        text: '体がどうであれ、アッシュはアッシュで、ルークはルークだ',
       },
       {
         speaker: 'GUY',
-        text: 'タタル渓谷へ帰ってきたあいつは、俺たちのルークだ。',
+        text: '変に話して、混乱させる必要もないだろう',
+      },
+      {
+        speaker: 'GUY',
+        text: 'この真実を、俺が黙っているだけでいい',
+      },
+      {
+        speaker: 'GUY',
+        text: 'そうだ。それできっと、全部がうまくいく',
       },
     ],
     summaryText:
-      '切り分けられた記憶を持つ彼が存在し続けることで、帰還したルークの存在までが揺らぐ恐怖に耐えきれず、目の前の機体を「ただの譜業」と言い聞かせて破壊した。すべてを無かったことにし、歪んだ安堵と共に部屋を後にした。',
+      '肉体の秘密を知りながらも真実を口にせず、もう一杯の茶を淹れた。真実を胸の奥にしまい込み、あいつと生きる平穏な日常を守ることを選んだ',
+  },
+
+  // END 09：DP-002, DP-003を解放した上で、問い詰めずに殺す
+  END_PHASE3_MERCY_DESTROY: {
+    id: 'END_PHASE3_MERCY_DESTROY',
+    title: 'END 09 // これでぜんぶ元通り',
+    subtitle: 'DEAD END // NOTHING HAPPENED HERE',
+    dialogues: [
+      {
+        speaker: 'GUY',
+        text: '床に横たわった、動かなくなった譜業を見下ろす',
+      },
+      {
+        speaker: 'GUY',
+        text: 'タタル渓谷へ帰ってきて、今バチカルで笑っているあいつは、これからもずっと『ルーク』だ',
+      },
+      {
+        speaker: 'GUY',
+        text: 'あとは、俺が今日のことを忘れてしまうだけでいい',
+      },
+      {
+        speaker: 'GUY',
+        text: 'そうだ。それできっと、全部がうまくいく',
+      },
+    ],
+    summaryText:
+      '秘密を問い詰めることなく、動かなくなった機体をただ見下ろした。今バチカルにいるルークの日常を守るため、今日の記憶を自分だけの胸に葬り去った',
+  },
+
+  // END 10：DP-002, DP-003を解放した上で、秘密を問い詰める
+  END_PHASE3_SWAMPMAN: {
+    id: 'END_PHASE3_SWAMPMAN',
+    title: 'END 10 // 魂の証明',
+    subtitle: 'Ghost in the mASCHine',
+    dialogues: [
+      {
+        speaker: 'GUY',
+        text: '好奇心と真実を確かめたい気持ちが災いしてしまった',
+      },
+      {
+        speaker: 'GUY',
+        text: '何もかも明らかにすることがいいことばかりではない',
+      },
+      {
+        speaker: 'GUY',
+        text: '一度根を張った認識は、簡単にどうにかなるものではないようだ',
+      },
+      {
+        speaker: 'GUY',
+        text: '――俺は、いつかこいつを心から信じ切ることができるのだろうか',
+      },
+    ],
+    summaryText:
+      '真実を確かめようとした結果、一度芽生えた疑惑と認識の歪みは消えなくなった。それでもこいつを信じようと、自分に言い聞かせるように明日へと歩き出す',
   },
 };

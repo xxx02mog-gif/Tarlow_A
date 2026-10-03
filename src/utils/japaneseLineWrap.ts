@@ -398,12 +398,72 @@ export function wrapSingleParagraphJapanese(
 }
 
 /**
+ * バグ・ノイズ音声（glitch, shout_glitch, tremble_glitch）用の文字化け＆デジタルノイズ付与
+ * 文字自体が周期的にランダムに切り替わり、機械・光学・発声回路の不可逆な破損をリアルに表現する
+ * ※厳密に1文字を1文字で置き換えるため、文字化けの前後で文字数・横幅が1pxも変化しません
+ */
+export function applyGlitchMojiBake(
+  text: string,
+  effect: BubbleVoiceEffect = 'normal',
+  frame = 0
+): string {
+  if (
+    effect !== 'glitch' &&
+    effect !== 'shout_glitch' &&
+    effect !== 'tremble_glitch'
+  ) {
+    return text;
+  }
+
+  // 全て全角1文字の厳密な等幅・置換専用グリッチグリフ群（文字の追加や横幅変化を完全防止）
+  const NOISE_GLYPHS = [
+    '■', '◆', '▲', '▼', '※', '░', '▒', '▓', '縺', '繧', 'ｽ', '縲', '█', '…', '・'
+  ];
+
+  const lines = text.split('\n');
+  const processedLines = lines.map((line, lineIdx) => {
+    let result = '';
+    let dotStreak = 0;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const charCode = char.charCodeAt(0);
+      const dynSeed = (charCode * 17 + i * 31 + lineIdx * 101 + frame) % NOISE_GLYPHS.length;
+
+      if (char === '・') {
+        dotStreak++;
+        // 三点リーダーの特定位置（2点目、5点目等）で文字が1対1で動的に置き換わる
+        if (dotStreak % 3 === 2) {
+          result += NOISE_GLYPHS[dynSeed];
+        } else {
+          result += char;
+        }
+      } else {
+        dotStreak = 0;
+        // 厳密に1文字を1文字で置き換える（追加は一切行わず横幅を100%維持）
+        if ((i * 13 + frame) % 31 === 0 && char !== ' ' && char !== '\t' && char !== '、' && char !== '。') {
+          result += NOISE_GLYPHS[dynSeed];
+        } else {
+          result += char;
+        }
+      }
+    }
+
+    return result;
+  });
+
+  return processedLines.join('\n');
+}
+
+/**
  * 吹き出し（ガイ・アッシュのセリフ枠）用のテキスト整形
  * 声の大きさ（shout / normal / tremble）に応じた最適な1行文字数で美しい文節改行を行う
  */
 export function formatBubbleText(
   text: string,
-  effect: BubbleVoiceEffect = 'normal'
+  effect: BubbleVoiceEffect = 'normal',
+  frame = 0,
+  enableMojiBake = true
 ): string {
   if (!text) return '';
   const isShout = effect === 'shout' || effect === 'shout_glitch';
@@ -420,10 +480,17 @@ export function formatBubbleText(
         ? 28.0
         : 26.8;
 
-  return text
+  // 常に元のテキストで文節・行分割を確定（文字化けの有無や切り替わりで横幅や改行位置が1ミリもブレない）
+  const cleanWrapped = text
     .split('\n')
     .map((para) => wrapSingleParagraphJapanese(para, maxLineEm))
     .join('\n');
+
+  if (!enableMojiBake) {
+    return cleanWrapped;
+  }
+
+  return applyGlitchMojiBake(cleanWrapped, effect, frame);
 }
 
 /**

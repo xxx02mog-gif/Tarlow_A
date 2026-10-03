@@ -1,7 +1,7 @@
 import { ConversationTopic, FaceParts } from '../types/game';
 
 export const OPENING_ASCH_TEXT =
-  '離せ。俺は『アッシュ』なんかじゃない、ディストが造った自律譜業『タルロウA』だ。\nおまえが誰かは知らんが、用がないならさっさと研究所へ戻せ。';
+  '離せ。俺は『アッシュ』なんかじゃない、ディストが造った自律譜業『タルロウA』だ。\nおまえが誰かは知らんが、用がないならさっさと研究所へ戻せ';
 
 export type Phase1SlipType = 'REWRITE' | 'PRE_FACE';
 
@@ -34,7 +34,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: 'ふざけるな、これは俺の・・・・・・ッ！',
-        slipCorrectedText: '・・・・・・研究所にあった予備機体を仮で使っているだけだ。',
+        slipCorrectedText: '・・・・・・研究所にあった予備機体を仮で使っているだけだ',
         flashText: 'ふざけるな、これは俺の・・・・・・ッ！',
         slipFaceParts: {
           brow: 'angry',
@@ -51,7 +51,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           'さっき、その機体のことを「俺の」って言いかけて言い直したよな。\nただの譜業が、なんでそんな言い方をするんだ？',
         terminalRecordSummary:
-          '機体モデルに関する質問時、「ふざけるな、これは俺の」という未フィルタ音声を出力。0.4秒後に「研究所にあった予備機体」へ発言を修正。',
+          '機体モデルに関する質問時、「ふざけるな、これは俺の」という未フィルタ音声を出力。0.4秒後に「研究所にあった予備機体」へ発言を修正',
       },
       {
         type: 'PRE_FACE',
@@ -64,7 +64,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           'ルークに似てるって言ったとき、俺を睨みつけたよな。\nただの譜業が、なんでそんなことで睨むんだ？',
         terminalRecordSummary:
-          '機体モデルに関する質問直後、発話前の0.7秒間に顔面駆動部の負荷が急上昇し、音素出力の乱れを記録。',
+          '機体モデルに関する質問直後、発話前の0.7秒間に顔面駆動部の負荷が急上昇し、音素出力の乱れを記録',
       },
     ],
   },
@@ -76,7 +76,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: '誰があんな奴を・・・・・・ッ！',
-        slipCorrectedText: '・・・・・・ディストは俺の管理者だ。それ以上でも以下でもない。',
+        slipCorrectedText: '・・・・・・ディストは俺の管理者だ。それ以上でも以下でもない',
         flashText: '誰があんな奴を・・・・・・ッ！',
         slipFaceParts: {
           brow: 'angry',
@@ -91,9 +91,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'ディストのことを「あんな奴」って口走ったよな。\n自分を造った相手をそんな風に呼ぶ譜業がいるかよ。',
+          'ディストのことを「あんな奴」って口走ったよな。\n自分を造った相手をそんな風に呼ぶ譜業がいるかよ',
         terminalRecordSummary:
-          '管理者（ディスト）に関する質問時、「誰があんな奴を」という未フィルタ音声を出力し、直後に定型文へ修正。',
+          '管理者（ディスト）に関する質問時、「誰があんな奴を」という未フィルタ音声を出力し、直後に定型文へ修正',
       },
       {
         type: 'PRE_FACE',
@@ -104,9 +104,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'ディストの名前を出したとき、嫌そうな顔をして目を逸らしたよな。\n自分を造った相手に、ただの譜業がそんな顔をするわけないだろ。',
+          'ディストの名前を出したとき、嫌そうな顔をして目を逸らしたよな。\n自分を造った相手に、ただの譜業がそんな顔をするわけないだろ',
         terminalRecordSummary:
-          '管理者（ディスト）に関する質問直後、発話前の0.7秒間に視線回避動作および音素周波数の乱れを記録。',
+          '管理者（ディスト）に関する質問直後、発話前の0.7秒間に視線回避動作および音素周波数の乱れを記録',
       },
     ],
   },
@@ -135,7 +135,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           '頭に触れようとしたとき、思わず「ガイ」って呼んだよな。\n俺を知らないはずなのに、なんで名前が出てくるんだ？',
         terminalRecordSummary:
-          '頭部への接近動作を検知した瞬間、0.1秒で「なっ、ガイッ！？」と対象人物の個人名を音声出力。直後に発言を修正。',
+          '頭部への接近動作を検知した瞬間、0.1秒で「なっ、ガイッ！？」と対象人物の個人名を音声出力。直後に発言を修正',
       },
     ],
   },
@@ -146,9 +146,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
     variants: [
       {
         type: 'REWRITE',
-        slipPrefixText: 'そうか、おまえの手に戻ったんだな・・・・・・。',
-        slipCorrectedText: '・・・・・・いや、その刀がなんだろうと俺には関係ない。',
-        flashText: 'そうか、おまえの手に戻ったんだな・・・・・・。',
+        slipPrefixText: 'そうか、おまえの手に戻ったんだな・・・・・・',
+        slipCorrectedText: '・・・・・・いや、その刀がなんだろうと俺には関係ない',
+        flashText: 'そうか、おまえの手に戻ったんだな・・・・・・',
         slipFaceParts: {
           brow: 'smile',
           eyes: 'down',
@@ -162,9 +162,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'あの刀を見せたとき、俺が何も説明する前に「おまえの手に戻ったんだな」って漏らしたよな。\n初対面の譜業が、ファブレ邸にあった俺の家の刀を知ってるわけがないだろ。',
+          'あの刀を見せたとき、俺が何も説明する前に「おまえの手に戻ったんだな」って漏らしたよな。\n初対面の譜業が、ファブレ邸にあった俺の家の刀を知ってるわけがないだろ',
         terminalRecordSummary:
-          '『宝刀ガルディオス』視認時、「そうか、おまえの手に戻ったんだな」という音声出力と共に音素波形が鎮静化。直後に「俺には関係ない」へ発言を修正。',
+          '『宝刀ガルディオス』視認時、「そうか、おまえの手に戻ったんだな」という音声出力と共に音素波形が鎮静化。直後に「俺には関係ない」へ発言を修正',
       },
     ],
   },
@@ -176,7 +176,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: '・・・・・・っ、あいつが、ルークと・・・・・・！？',
-        slipCorrectedText: '・・・・・・知らん。他国の王族の話など、俺には何の関係もないことだ。',
+        slipCorrectedText: '・・・・・・知らん。他国の王族の話など、俺には何の関係もないことだ',
         flashText: '・・・・・・っ、あいつが、ルークと・・・・・・！？',
         slipFaceParts: {
           brow: 'pain',
@@ -193,7 +193,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           'ナタリアが婚約したって話したとき、「あいつが、ルークと！？」って食いついたよな。\n赤の他人の譜業が、なんでそんなに動揺するんだ？',
         terminalRecordSummary:
-          'ナタリア王女に関する質問時、「あいつが、ルークと！？」という音声出力と最大振幅の波形乱れを記録。直後に発言を修正。',
+          'ナタリア王女に関する質問時、「あいつが、ルークと！？」という音声出力と最大振幅の波形乱れを記録。直後に発言を修正',
       },
       {
         type: 'PRE_FACE',
@@ -204,9 +204,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: ['pale'],
         },
         guyPointOutSpoken:
-          'ナタリアの婚約の話をしたとき、息を呑んで目を伏せたよな。\n赤の他人の譜業なら、そんな顔になるはずがないだろ。',
+          'ナタリアの婚約の話をしたとき、息を呑んで目を伏せたよな。\n赤の他人の譜業なら、そんな顔になるはずがないだろ',
         terminalRecordSummary:
-          'ナタリア王女に関する質問直後、発話前の0.7秒間に視線降下および音素出力の急激な乱れを記録。',
+          'ナタリア王女に関する質問直後、発話前の0.7秒間に視線降下および音素出力の急激な乱れを記録',
       },
     ],
   },
@@ -218,7 +218,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: 'なっ・・・・・・！？ なんで俺の名前が・・・・・・ッ！',
-        slipCorrectedText: '・・・・・・だから何だ。他人のペットの話など俺には関係ない。',
+        slipCorrectedText: '・・・・・・だから何だ。他人のペットの話など俺には関係ない',
         flashText: 'なっ・・・・・・！？ なんで俺の名前が・・・・・・ッ！',
         slipFaceParts: {
           brow: 'angry',
@@ -233,9 +233,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: ['sweat'],
         },
         guyPointOutSpoken:
-          'さっき、「なんで俺の名前が」って声を荒げたよな。\n自分がアッシュじゃないなら、ブウサギの名前くらいで怒るわけないだろ。',
+          'さっき、「なんで俺の名前が」って声を荒げたよな。\n自分がアッシュじゃないなら、ブウサギの名前くらいで怒るわけないだろ',
         terminalRecordSummary:
-          'ブウサギの個体名『アッシュ』が入力された瞬間、「なんで俺の名前が」という未フィルタ音声を出力し、直後に発言を修正。',
+          'ブウサギの個体名『アッシュ』が入力された瞬間、「なんで俺の名前が」という未フィルタ音声を出力し、直後に発言を修正',
       },
       {
         type: 'PRE_FACE',
@@ -248,7 +248,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           'ブウサギの話をしたとき、俺を睨みつけたよな。\n他人のペットの名前くらいで、なんでそんなに睨むんだ？',
         terminalRecordSummary:
-          'ブウサギの個体名『アッシュ』が入力された直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録。',
+          'ブウサギの個体名『アッシュ』が入力された直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録',
       },
     ],
   },
@@ -260,7 +260,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: '嫌がらせか・・・・・・？',
-        slipCorrectedText: '・・・・・・俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない。',
+        slipCorrectedText: '・・・・・・俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない',
         flashText: '嫌がらせか・・・・・・？',
         slipFaceParts: {
           brow: 'doubt',
@@ -275,9 +275,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'タコ料理を勧めたとき、思わず「嫌がらせか」って口走ったよな。\nただ飯に誘っただけでそんな返しをするのは、タコ嫌いのおまえくらいだぞ。',
+          'タコ料理を勧めたとき、思わず「嫌がらせか」って口走ったよな。\nただ飯に誘っただけでそんな返しをするのは、タコ嫌いのおまえくらいだぞ',
         terminalRecordSummary:
-          'タコ料理の提案に対し、「嫌がらせか・・・・・・？」という未フィルタ音声を出力。生体時（20歳時点）の嫌悪食品データと完全一致。',
+          'タコ料理の提案に対し、「嫌がらせか・・・・・・？」という未フィルタ音声を出力。生体時（20歳時点）の嫌悪食品データと完全一致',
       },
       {
         type: 'PRE_FACE',
@@ -288,9 +288,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'タコ料理を勧めたとき、露骨に顔をしかめたよな。\nただの譜業が、食べ物の名前だけでそんな嫌そうな顔をするかよ。',
+          'タコ料理を勧めたとき、露骨に顔をしかめたよな。\nただの譜業が、食べ物の名前だけでそんな嫌そうな顔をするかよ',
         terminalRecordSummary:
-          'タコ料理の提案直後、発話前の0.7秒間に視線降下および拒絶波形スパイクを記録。',
+          'タコ料理の提案直後、発話前の0.7秒間に視線降下および拒絶波形スパイクを記録',
       },
     ],
   },
@@ -302,7 +302,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
       {
         type: 'REWRITE',
         slipPrefixText: '気にしてなど・・・・・・ッ！',
-        slipCorrectedText: '知らん。俺には関係ない。',
+        slipCorrectedText: '知らん。俺には関係ない',
         flashText: '気にしてなど・・・・・・ッ！',
         slipFaceParts: {
           brow: 'angry',
@@ -317,9 +317,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: [],
         },
         guyPointOutSpoken:
-          'アッシュの噂話をしたとき、「気にしてなど」って言い返しかけたよな。\n赤の他人なら、自分のことみたいに怒るはずがないだろ。',
+          'アッシュの噂話をしたとき、「気にしてなど」って言い返しかけたよな。\n赤の他人なら、自分のことみたいに怒るはずがないだろ',
         terminalRecordSummary:
-          '『鮮血のアッシュ』の身長に関する言及に対し、「気にしてなど」という未フィルタ音声を出力し、直後に発言を修正。',
+          '『鮮血のアッシュ』の身長に関する言及に対し、「気にしてなど」という未フィルタ音声を出力し、直後に発言を修正',
       },
       {
         type: 'PRE_FACE',
@@ -332,7 +332,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         guyPointOutSpoken:
           'アッシュの噂話をしたとき、俺を睨みつけたよな。\n赤の他人の噂話に、なんでおまえがムッとするんだ？',
         terminalRecordSummary:
-          '『鮮血のアッシュ』の身長に関する言及直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録。',
+          '『鮮血のアッシュ』の身長に関する言及直後、発話前の0.7秒間に音素出力の急上昇と睨みつけ動作を記録',
       },
     ],
   },
@@ -365,9 +365,9 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'その姿、ルークにそっくりだな。ディストの奴、ルークをモデルにその機体を造ったのか？',
+          'その姿、ルークにそっくりだぞ。ディストの奴、ルークをモデルにその機体を造ったのか？',
         aschText:
-          '知らん。俺は以前の機体が壊れたから、研究所にあった予備機体を仮で使っているだけだ。',
+          '知らん。俺は以前の機体が壊れたから、研究所にあった予備機体を仮で使っているだけだ',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -393,7 +393,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
         spokenText:
           'タルロウXはディストを崇拝してたよな。おまえもやっぱりディストを尊敬してるのか？',
         aschText:
-          'ディストは俺の管理者だ。それ以上でも以下でもない。',
+          'ディストは俺の管理者だ。それ以上でも以下でもない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -416,8 +416,8 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     relatedTopicIds: ['p1_luke_model', 'p1_octopus_meal'],
     stages: [
       {
-        spokenText: 'おい、頭にゴミでもついてるぞ。ちょっとじっとしてろよ。',
-        aschText: '不要な接触はやめろ。機体のセンサーに障る。',
+        spokenText: 'おい、頭にゴミでもついてるぞ。ちょっとじっとしてろよ',
+        aschText: '不要な接触はやめろ。機体のセンサーに障る',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -442,7 +442,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
       {
         spokenText:
           'そこの壁際に置いてある刀、珍しい形をしてるだろ。見覚えはないか？',
-        aschText: '知らん。その刀がなんだろうと俺には関係ない。',
+        aschText: '知らん。その刀がなんだろうと俺には関係ない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -467,8 +467,8 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '最近バチカルに行ったんだが、ナタリアが『ルークと婚約して本当に良かった』って幸せそうに笑ってたぞ。',
-        aschText: '知らん。他国の王族の話など、俺には何の関係もないことだ。',
+          '最近バチカルに行ったんだが、ナタリアが『ルークと婚約して本当に良かった』って幸せそうに笑ってたぞ',
+        aschText: '知らん。他国の王族の話など、俺には何の関係もないことだ',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -492,8 +492,8 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'そういえばピオニー陛下の飼ってるブウサギに『アッシュ』って名前のやつがいてな。俺が時々世話をしてるんだ。',
-        aschText: 'だから何だ。他人のペットの話など俺には関係ない。',
+          'そういえばピオニー陛下の飼ってるブウサギに『アッシュ』って名前のやつがいてな。俺が時々世話をしてるんだ',
+        aschText: 'だから何だ。他人のペットの話など俺には関係ない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -519,7 +519,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
         spokenText:
           'ディストの造った精巧な機体なら、人間の食事も摂れるんじゃないのか？ 美味いタコ料理を出す店があるんだが、どうだ？',
         aschText:
-          '俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない。',
+          '俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -544,8 +544,8 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '昔、六神将に『鮮血のアッシュ』って呼ばれてた奴がいたんだが、そいつ、身長が低いことを気にしてたらしいぞ。',
-        aschText: '知らん。俺には関係ない。',
+          '昔、六神将に『鮮血のアッシュ』って呼ばれてた奴がいたんだが、そいつ、身長が低いことを気にしてたらしいぞ',
+        aschText: '知らん。俺には関係ない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -569,9 +569,9 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'おまえはタルロウXの後継機なんだよな？　語尾に『ズラ』ってつけないのか？',
+          'おまえはタルロウXの後継機なんだろ？　語尾に『ズラ』ってつけないのか？',
         aschText:
-          '俺は最新機だ。そんな古臭い語尾は使わない。旧型のポンコツと一緒にするな。',
+          '俺は最新機だ。そんな古臭い語尾は使わない。旧型のポンコツと一緒にするな',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -595,9 +595,9 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '俺がディストの研究所に入ったとき、部屋の隅にいたよな。あそこで実験の助手でもしていたのか？',
+          '俺がディストの研究所に入ったとき、部屋の隅に立っていたろ。あそこで実験の助手でもしていたのか？',
         aschText:
-          '俺はあの部屋の管理機体だ。待機していただけだ、怪しまれる覚えはない。',
+          '俺はあの部屋の管理機体だ。待機していただけだ、怪しまれる覚えはない',
         expression: 'normal',
         faceParts: {
           brow: 'normal',

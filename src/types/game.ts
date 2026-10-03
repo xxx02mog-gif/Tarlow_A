@@ -140,11 +140,44 @@ export interface MoodVariantResponse {
   oralInfo?: OralInfoEntry;
 }
 
+export interface SilentFaceStep {
+  delayMs: number;
+  expression?: ExpressionId;
+  faceParts?: Partial<FaceParts>;
+}
+
+export interface ExtraDialogueExchange {
+  speaker: 'GUY' | 'ASCH';
+  text: string;
+  expression?: ExpressionId;
+  faceParts?: Partial<FaceParts>;
+  secondExpression?: ExpressionId;
+  secondFaceParts?: Partial<FaceParts>;
+  voiceEffect?: BubbleVoiceEffect;
+  waitMs?: number;                 // この行の表示後の待機時間（ミリ秒・タメ時間）
+  specialEffect?: 'destroy' | 'collapse' | 'shout_shock' | 'none'; // 破壊音・倒れる演出・叫び衝撃トリガー
+  silentFaceSequence?: SilentFaceStep[]; // 発話後の静寂中に順番に変化させる表情シーケンス
+}
+
+export interface EndingTransitionConfig {
+  waitBeforeExitMs?: number;      // セリフ表示後の待機ミリ秒（例: 500）
+  aschAction?: 'fade_out' | 'stay' | 'collapse' | 'none'; // アッシュ立ち絵の挙動
+  footsteps?: 'slow' | 'normal' | 'fast'; // 足音SE
+  footstepsCount?: number;        // 歩数
+  doorAction?: 'soft' | 'normal' | 'slam' | 'none'; // ドア開閉SE
+  waitAfterDoorMs?: number;       // ドアが閉まった後の余韻待機ミリ秒
+  keepBgm?: boolean;              // BGMを止めずに維持するかどうか（END 02等用）
+}
+
 export interface AschQuestionReplyOption {
   id: string;
   thoughtText: string;             // ガイの返答選択肢テキスト
   spokenText: string;              // ガイの実際のセリフ
+  waitMs?: number;                 // ガイ発話後の待機時間（ミリ秒・タメ時間）
   aschText: string;                // ガイの返答に対するアッシュの反応
+  aschWaitMs?: number;             // アッシュ返答後の待機時間（ミリ秒・タメ時間）
+  extraExchanges?: ExtraDialogueExchange[]; // 同一選択肢内でさらに続くG/Aの連続ラリー
+  specialEffect?: 'destroy' | 'collapse' | 'shout_shock' | 'none'; // アッシュ通常返答の2行目等で発生する破壊・特殊演出
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;
   secondExpression?: ExpressionId;
@@ -169,6 +202,7 @@ export interface AschQuestionReplyOption {
   resetsTopicProgress?: boolean;   // trueの場合、「一旦引き下がる」等で話題を一旦終了しつつ未完了状態に戻す（後でまた聞ける）
   triggersEnding?: EndingDisposition; // 指定された場合、この返答のやり取り完了後に該当エンディングへ直接遷移する
   triggersEndingKey?: string;      // 指定された場合、この返答のやり取り完了後に指定IDのエンディングへ直接遷移する
+  endingTransition?: EndingTransitionConfig; // エンディング直結イベントの特殊演出（待機時間、足音、ドア開閉、アッシュ退場等）
   followUpOptions?: AschQuestionReplyOption[]; // この反応の後にさらに続くガイの反応選択肢
 }
 
@@ -208,6 +242,7 @@ export interface TopicExchangeStage {
   replyOptions?: AschQuestionReplyOption[]; // このステージのアッシュの返答に対してガイが選べる複数の反応選択肢
   completesTopic?: boolean;
   triggersEndingKey?: string;
+  endingTransition?: EndingTransitionConfig;
   systemLog?: string;
 }
 

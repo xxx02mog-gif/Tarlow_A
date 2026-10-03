@@ -46,7 +46,6 @@ export const EFFECT_OPTIONS: { id: EmotionEffectId; label: string; file: string 
   { id: 'blush', label: '頬染め', file: 'fx_blush.png' },
   { id: 'shadow', label: '目元影', file: 'fx_shadow.png' },
   { id: 'tears', label: '涙', file: 'fx_tears.png' },
-  { id: 'noise', label: '走査線', file: 'fx_noise.png' },
 ];
 
 export const DEFAULT_EXPRESSION_PARTS: Record<ExpressionId, FaceParts> = {
@@ -136,6 +135,7 @@ interface AschPortraitProps {
   blurPx?: number;
   motionTuning?: PortraitMotionTuning;
   replayPulse?: number;
+  eyeGlitchPulse?: number;
 }
 
 export const AschPortrait: React.FC<AschPortraitProps> = ({
@@ -149,8 +149,10 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
   blurPx = 0,
   motionTuning = DEFAULT_MOTION_TUNING,
   replayPulse = 0,
+  eyeGlitchPulse = 0,
 }) => {
   const [isResettingAnim, setIsResettingAnim] = React.useState(false);
+  const [isEyeGlitching, setIsEyeGlitching] = React.useState(false);
 
   React.useEffect(() => {
     if (replayPulse <= 0) return;
@@ -162,6 +164,15 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
     });
     return () => cancelAnimationFrame(raf);
   }, [replayPulse]);
+
+  React.useEffect(() => {
+    if (eyeGlitchPulse <= 0) return;
+    setIsEyeGlitching(true);
+    const timer = window.setTimeout(() => {
+      setIsEyeGlitching(false);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [eyeGlitchPulse]);
 
   const imgFilterStyle =
     blurPx > 0 ? { filter: `blur(${blurPx}px)` } : undefined;
@@ -194,27 +205,51 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
 
   const primaryBaseSrc = basePartSrc || singleSheetSrc || customTestPngSrc || null;
 
-  // 3. 各パーツレイヤーのパス解決
-  const mouthFile = `mouth_${faceParts.mouth}.png`;
-  const eyeFile = `eye_${faceParts.eyes}.png`;
-  const browFile = `brow_${faceParts.brow}.png`;
+  // 3. 各パーツレイヤー（目・口・眉）の全バリエーションをDOM上に常駐
+  // これにより、表情切り替えやグリッチパルス時の再マウント・点滅・一瞬の消失を100%防止
+  const allMouthItems = React.useMemo(() => {
+    return MOUTH_OPTIONS.map((opt) => ({
+      id: opt.id,
+      src: basePartSrc ? resolvePartSrc(opt.file, 'mouth_close.png') : resolvePartSrc(opt.file),
+    })).filter((item): item is { id: MouthPartId; src: string } => Boolean(item.src));
+  }, [basePartSrc, customPartMap, availablePartFiles, availableRootFiles]);
 
-  const mouthSrc = basePartSrc
-    ? resolvePartSrc(mouthFile, 'mouth_close.png')
-    : resolvePartSrc(mouthFile);
-  const eyeSrc = basePartSrc
-    ? resolvePartSrc(eyeFile, 'eye_normal.png')
-    : resolvePartSrc(eyeFile);
-  const browSrc = basePartSrc
-    ? resolvePartSrc(browFile, 'brow_normal.png')
-    : resolvePartSrc(browFile);
+  const allEyeItems = React.useMemo(() => {
+    return EYE_OPTIONS.map((opt) => ({
+      id: opt.id,
+      src: basePartSrc ? resolvePartSrc(opt.file, 'eye_normal.png') : resolvePartSrc(opt.file),
+    })).filter((item): item is { id: EyePartId; src: string } => Boolean(item.src));
+  }, [basePartSrc, customPartMap, availablePartFiles, availableRootFiles]);
 
-  const effectSrcList = faceParts.effects
-    .map((eff) => ({
-      id: eff,
-      src: resolvePartSrc(`fx_${eff}.png`),
-    }))
-    .filter((item): item is { id: EmotionEffectId; src: string } => Boolean(item.src));
+  const allBrowItems = React.useMemo(() => {
+    return BROW_OPTIONS.map((opt) => ({
+      id: opt.id,
+      src: basePartSrc ? resolvePartSrc(opt.file, 'brow_normal.png') : resolvePartSrc(opt.file),
+    })).filter((item): item is { id: BrowPartId; src: string } => Boolean(item.src));
+  }, [basePartSrc, customPartMap, availablePartFiles, availableRootFiles]);
+
+  const activeEyeId = allEyeItems.some((i) => i.id === faceParts.eyes)
+    ? faceParts.eyes
+    : 'normal';
+  const activeMouthId = allMouthItems.some((i) => i.id === faceParts.mouth)
+    ? faceParts.mouth
+    : 'close';
+  const activeBrowId = allBrowItems.some((i) => i.id === faceParts.brow)
+    ? faceParts.brow
+    : 'normal';
+
+  // 感情エフェクト：すべての登録エフェクト画像をDOM上に常駐させ、
+  // activeフラグによる opacity (0 ⇄ 1) の CSS transition (0.36s) で制御。
+  // これにより、会話進行やパーツ更新時の再マウント・点滅・チカつきが100%防止され、
+  // 「ふわっと出現」および「ふわっと退場」が完全に安定して実現します。
+  const allEffectItems = EFFECT_OPTIONS.map((opt) => ({
+    id: opt.id,
+    src: resolvePartSrc(opt.file),
+    active: faceParts.effects.includes(opt.id),
+  })).filter(
+    (item): item is { id: EmotionEffectId; src: string; active: boolean } =>
+      Boolean(item.src)
+  );
 
   const scaleMul = motionTuning.motionScale;
 
@@ -298,7 +333,10 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
     scaleMul > 0 &&
     (motionTuning.forceTremor ||
       faceParts.eyes === 'pain' ||
-      (faceParts.eyes === 'wide' && faceParts.effects.includes('sweat')) ||
+      (faceParts.eyes === 'wide' &&
+        (faceParts.effects.includes('sweat') ||
+          faceParts.effects.includes('pale') ||
+          faceParts.brow === 'pain')) ||
       (faceParts.eyes === 'empty' && faceParts.effects.includes('tears')));
 
   // === 4. 口パーツの発声・噛み締めオフセット＆震え ===
@@ -314,18 +352,21 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
       mouthTransform = `translateY(${-0.5 * scaleMul}px) scaleY(${1 + 0.03 * scaleMul})`;
     }
   }
+  const isMouthTrembling =
+    !isResettingAnim &&
+    scaleMul > 0 &&
+    (motionTuning.forceTremor || faceParts.mouth === 'grit');
+
   const mouthAnimClass =
     isResettingAnim || scaleMul <= 0
       ? ''
-      : motionTuning.forceTremor
-        ? 'part-micro-tremor'
-        : faceParts.mouth === 'shout'
-          ? 'mouth-anim-shout'
-          : faceParts.mouth === 'open' || faceParts.mouth === 'gasp'
-            ? 'mouth-anim-speak'
-            : faceParts.mouth === 'grit'
-              ? 'part-micro-tremor'
-              : '';
+      : faceParts.mouth === 'shout'
+        ? 'mouth-anim-shout'
+        : faceParts.mouth === 'open' || faceParts.mouth === 'gasp'
+          ? 'mouth-anim-speak'
+          : '';
+
+  const tremorSignature = `${expression}-${faceParts.brow}-${faceParts.eyes}-${faceParts.mouth}-${(faceParts.effects ?? []).join(',')}-${replayPulse}`;
 
   return (
     <div className="relative w-full h-full flex items-end justify-center select-none overflow-hidden">
@@ -360,7 +401,7 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
               />
 
               {/* レイヤー2：口パーツ（mouth_*.png） */}
-              {mouthSrc && (
+              {allMouthItems.length > 0 && (
                 <div
                   style={{
                     transform: mouthTransform,
@@ -368,20 +409,39 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                   }}
                   className="absolute inset-0 z-11 w-full h-full transition-transform duration-150 ease-out pointer-events-none"
                 >
-                  <div className={`w-full h-full ${mouthAnimClass}`}>
-                    <img
-                      src={mouthSrc}
-                      alt=""
-                      decoding="sync"
-                      style={imgFilterStyle}
-                      className="w-full h-full object-contain pointer-events-none"
-                    />
+                  <div
+                    key={`mouth-burst-${tremorSignature}`}
+                    className={`w-full h-full ${
+                      isMouthTrembling ? 'part-micro-tremor-burst' : ''
+                    }`}
+                  >
+                    <div
+                      className={`w-full h-full ${
+                        isMouthTrembling
+                          ? 'part-micro-tremor-sustained'
+                          : mouthAnimClass
+                      }`}
+                    >
+                      {allMouthItems.map((item) => (
+                        <img
+                          key={item.id}
+                          src={item.src}
+                          alt=""
+                          decoding="sync"
+                          style={{
+                            ...imgFilterStyle,
+                            visibility: item.id === activeMouthId ? 'visible' : 'hidden',
+                          }}
+                          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* レイヤー3：目パーツ（eye_*.png） */}
-              {eyeSrc && (
+              {allEyeItems.length > 0 && (
                 <div
                   style={{
                     transform: eyeTransform,
@@ -390,23 +450,42 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                   className="absolute inset-0 z-12 w-full h-full transition-transform duration-200 ease-out pointer-events-none"
                 >
                   <div
+                    key={`eye-burst-${tremorSignature}`}
                     className={`w-full h-full ${
-                      isEyeTrembling ? 'part-micro-tremor' : ''
+                      isEyeTrembling ? 'part-micro-tremor-burst' : ''
                     }`}
                   >
-                    <img
-                      src={eyeSrc}
-                      alt=""
-                      decoding="sync"
-                      style={imgFilterStyle}
-                      className="w-full h-full object-contain pointer-events-none"
-                    />
+                    <div
+                      className={`w-full h-full ${
+                        isEyeTrembling ? 'part-micro-tremor-sustained' : ''
+                      }`}
+                    >
+                      <div
+                        className={`w-full h-full ${
+                          isEyeGlitching ? 'eye-glitch-split' : ''
+                        }`}
+                      >
+                        {allEyeItems.map((item) => (
+                          <img
+                            key={item.id}
+                            src={item.src}
+                            alt=""
+                            decoding="sync"
+                            style={{
+                              ...imgFilterStyle,
+                              visibility: item.id === activeEyeId ? 'visible' : 'hidden',
+                            }}
+                            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* レイヤー4：眉パーツ（brow_*.png） */}
-              {browSrc && (
+              {allBrowItems.length > 0 && (
                 <div
                   style={{
                     transform: `translateY(${browTranslateY}px)`,
@@ -414,50 +493,55 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                   className="absolute inset-0 z-13 w-full h-full transition-transform duration-200 ease-out pointer-events-none"
                 >
                   <div
+                    key={`brow-burst-${tremorSignature}`}
                     className={`w-full h-full ${
-                      isBrowTrembling ? 'part-micro-tremor' : ''
+                      isBrowTrembling ? 'part-micro-tremor-burst' : ''
                     }`}
                   >
-                    <img
-                      src={browSrc}
-                      alt=""
-                      decoding="sync"
-                      style={imgFilterStyle}
-                      className="w-full h-full object-contain pointer-events-none"
-                    />
+                    <div
+                      className={`w-full h-full ${
+                        isBrowTrembling ? 'part-micro-tremor-sustained' : ''
+                      }`}
+                    >
+                      {allBrowItems.map((item) => (
+                        <img
+                          key={item.id}
+                          src={item.src}
+                          alt=""
+                          decoding="sync"
+                          style={{
+                            ...imgFilterStyle,
+                            visibility: item.id === activeBrowId ? 'visible' : 'hidden',
+                          }}
+                          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* レイヤー5：感情エフェクト差分パーツ（fx_*.png 複数重ね対応） */}
-              {effectSrcList.map((eff) => {
-                const fxAnimClass =
-                  isResettingAnim || scaleMul <= 0
-                    ? ''
-                    : eff.id === 'blush'
-                      ? 'fx-anim-blush'
-                      : eff.id === 'sweat' || eff.id === 'tears'
-                        ? 'fx-anim-drop'
-                        : 'fx-anim-fade';
-                return (
-                  <div
-                    key={eff.id}
-                    className={`absolute inset-0 z-14 w-full h-full pointer-events-none ${fxAnimClass}`}
-                  >
-                    <img
-                      src={eff.src}
-                      alt=""
-                      decoding="sync"
-                      style={imgFilterStyle}
-                      className={`w-full h-full object-contain pointer-events-none ${
-                        !isResettingAnim && scaleMul > 0 && eff.id === 'tears'
-                          ? 'part-micro-tremor'
-                          : ''
-                      }`}
-                    />
-                  </div>
-                );
-              })}
+              {/* レイヤー5：感情エフェクト差分パーツ（常駐DOM＋CSS opacity transition）
+                  再マウントによるリセットや点滅・チカつきを完全に防ぎつつ、
+                  出現時はふわっとフェードイン、消失時はふわっとフェードアウト */}
+              {allEffectItems.map((eff) => (
+                <div
+                  key={eff.id}
+                  style={{
+                    opacity: eff.active ? 1 : 0,
+                    transition: 'opacity 0.36s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                  className="absolute inset-0 z-14 w-full h-full pointer-events-none"
+                >
+                  <img
+                    src={eff.src}
+                    alt=""
+                    decoding="sync"
+                    style={imgFilterStyle}
+                    className="w-full h-full object-contain pointer-events-none"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         ) : (

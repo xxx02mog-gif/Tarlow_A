@@ -232,6 +232,12 @@ class ChiptuneAudioEngine {
   // 各種 SE (効果音)
   // ============================================================================
 
+  /** 手を払う鋭い打撃・風切り音（「バシッ！」） */
+  public playHandSlap() {
+    this.playHardClack(360.0, 1400, 0.022, 0.32);
+    this.playRustleSwoosh(1400, 480, 240, 0.08, 0.28);
+  }
+
   /** 1. タイトル画面クリック（機械的な2連スイッチ音「カッ・カッ」） */
   public playTitleStart() {
     if (this.muted) return;
@@ -263,7 +269,18 @@ class ChiptuneAudioEngine {
     const isTremble = voiceEffect === 'tremble' || voiceEffect === 'tremble_glitch';
 
     if (speaker === 'GUY') {
-      // ガイ：低めの落ち着いた「カッ／コッ」 (349.23Hz固定)
+      if (isShout) {
+        // ガイ激昂・大声：重く鋭い低音インパクト＋胸を突くドラマチック重低音
+        this.playHardClack(260.0, 950, 0.016, 0.25);
+        this.playHeavyShoutThud();
+        return;
+      }
+      if (isTremble) {
+        // ガイ小声・懇願：弱く静かな「カッ」
+        this.playHardClack(310.0, 900, 0.008, 0.1);
+        return;
+      }
+      // ガイ通常：低めの落ち着いた「カッ／コッ」 (349.23Hz固定)
       this.playHardClack(349.23, 1100, 0.012, 0.16);
       return;
     }
@@ -343,6 +360,25 @@ class ChiptuneAudioEngine {
   /** 5. ガイの思考選択肢クリック音（不要のため無音） */
   public playChoiceSelect(_mode: 'normal' | 'override' | 'decision' = 'normal') {
     // 選択肢を選んだときの効果音は鳴らさない
+  }
+
+  /** 5-1. エラー・操作不能音（低音のブザー警告） */
+  public playSelectError() {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.setValueAtTime(110, now + 0.08);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.22);
   }
 
   /** 6. データ端末の展開音（「サッ」と端末を取り出す動作音） */
@@ -752,6 +788,295 @@ class ChiptuneAudioEngine {
       this.bgmAudioEl.volume = this.bgmVolume;
       this.bgmAudioEl.play().catch(() => {});
     }
+  }
+
+  /**
+   * BGMを即座に停止（フェードなし／完全停止）
+   */
+  public stopBgm() {
+    this.isPlayingPhase = false;
+    this.stopBgmNodes();
+    if (this.bgmAudioEl) {
+      try {
+        this.bgmAudioEl.pause();
+        this.bgmAudioEl.currentTime = 0;
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * 12. 退室・立ち去る足音（革靴・ブーツの床音をWeb Audioで合成）
+   */
+  public playFootsteps(
+    speed: 'slow' | 'normal' | 'fast' = 'normal',
+    count = 3,
+    onStep?: (currentStep: number) => void
+  ) {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+
+    const intervalMs = speed === 'slow' ? 440 : speed === 'fast' ? 210 : 320;
+
+    for (let i = 0; i < count; i++) {
+      window.setTimeout(() => {
+        if (this.muted) return;
+        const now = ctx.currentTime;
+
+        // 1. ノイズによる床との摩擦音
+        const bufferSize = Math.floor(ctx.sampleRate * 0.06);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let j = 0; j < bufferSize; j++) {
+          output[j] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const bandpass = ctx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        const stepPitch =
+          speed === 'fast'
+            ? Math.max(220, 430 - i * 40)
+            : Math.max(260, 480 - i * 45);
+        bandpass.frequency.setValueAtTime(stepPitch, now);
+        bandpass.Q.setValueAtTime(speed === 'fast' ? 2.4 : 2.0, now);
+
+        const stepGain = ctx.createGain();
+        const decayVol =
+          speed === 'fast'
+            ? Math.max(0.18, (0.50 - i * 0.07) * this.seVolume)
+            : Math.max(0.12, (0.42 - i * 0.07) * this.seVolume);
+        stepGain.gain.setValueAtTime(decayVol, now);
+        stepGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+        whiteNoise.connect(bandpass);
+        bandpass.connect(stepGain);
+        stepGain.connect(ctx.destination);
+
+        whiteNoise.start(now);
+        whiteNoise.stop(now + 0.062);
+
+        // 2. コツッ／ドタッという踵（かかと）の打撃音（fast時は低音を効かせてドタドタ感を強化）
+        const heelOsc = ctx.createOscillator();
+        const heelGain = ctx.createGain();
+        heelOsc.type = 'triangle';
+        const heelStart =
+          speed === 'fast' ? Math.max(160, 220 - i * 18) : 260 - i * 20;
+        const heelEnd = speed === 'fast' ? 85 : 110;
+        heelOsc.frequency.setValueAtTime(heelStart, now);
+        heelOsc.frequency.exponentialRampToValueAtTime(heelEnd, now + 0.048);
+
+        heelGain.gain.setValueAtTime(
+          speed === 'fast' ? decayVol * 1.1 : decayVol * 0.85,
+          now
+        );
+        heelGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.048);
+
+        heelOsc.connect(heelGain);
+        heelGain.connect(ctx.destination);
+        heelOsc.start(now);
+        heelOsc.stop(now + 0.05);
+
+        if (onStep) {
+          onStep(i + 1);
+        }
+      }, i * intervalMs);
+    }
+  }
+
+  /**
+   * 13. ドア開閉音（電子合成方針に基づき無音化）
+   */
+  public playDoorOpen() {
+    // 電子合成統一のため無音
+  }
+
+  public playDoorClose(_style: 'soft' | 'normal' | 'slam' = 'soft') {
+    // 電子合成統一のため無音
+  }
+
+  /**
+   * 14. 制御核・機械パーツの破壊音（鋭い破断音＋電気スパーク放電ノイズ＋電源切断）
+   */
+  public playMechanicalDestroy() {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // A. 鋭い破断・打撃音（スナップ音）
+    const snapOsc = ctx.createOscillator();
+    const snapGain = ctx.createGain();
+    snapOsc.type = 'triangle';
+    snapOsc.frequency.setValueAtTime(420, now);
+    snapOsc.frequency.exponentialRampToValueAtTime(50, now + 0.05);
+
+    snapGain.gain.setValueAtTime(0.48 * this.seVolume, now);
+    snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+
+    snapOsc.connect(snapGain);
+    snapGain.connect(ctx.destination);
+    snapOsc.start(now);
+    snapOsc.stop(now + 0.06);
+
+    // B. クラッシュノイズ（破片・金属の軋み破断）
+    const noiseLength = Math.floor(ctx.sampleRate * 0.07);
+    const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseLength; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.setValueAtTime(1900, now);
+    bandpass.Q.setValueAtTime(2.8, now);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.42 * this.seVolume, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+    noiseSource.connect(bandpass);
+    bandpass.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.072);
+
+    // C. 放電スパーク（電気短絡ジジッ）
+    const sparkDelays = [0.035, 0.065, 0.095];
+    sparkDelays.forEach((del) => {
+      const sparkNow = now + del;
+      const sparkOsc = ctx.createOscillator();
+      const sparkGain = ctx.createGain();
+      sparkOsc.type = 'sawtooth';
+      sparkOsc.frequency.setValueAtTime(800 + Math.random() * 400, sparkNow);
+      sparkOsc.frequency.exponentialRampToValueAtTime(140, sparkNow + 0.025);
+
+      sparkGain.gain.setValueAtTime(0.22 * this.seVolume, sparkNow);
+      sparkGain.gain.exponentialRampToValueAtTime(0.0001, sparkNow + 0.025);
+
+      sparkOsc.connect(sparkGain);
+      sparkGain.connect(ctx.destination);
+      sparkOsc.start(sparkNow);
+      sparkOsc.stop(sparkNow + 0.028);
+    });
+
+    // D. 低音の機能停止・通電遮断ドウン
+    const shutOsc = ctx.createOscillator();
+    const shutGain = ctx.createGain();
+    shutOsc.type = 'sine';
+    shutOsc.frequency.setValueAtTime(110, now + 0.04);
+    shutOsc.frequency.exponentialRampToValueAtTime(32, now + 0.28);
+
+    shutGain.gain.setValueAtTime(0.35 * this.seVolume, now + 0.04);
+    shutGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+
+    shutOsc.connect(shutGain);
+    shutGain.connect(ctx.destination);
+    shutOsc.start(now + 0.04);
+    shutOsc.stop(now + 0.29);
+  }
+
+  /**
+   * 15. 崩れ落ち・倒れ込み音（重いドサッという床への倒伏音）
+   */
+  public playBodyFall() {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 低域の重い衝撃（ドサッの中心音）
+    const thudOsc = ctx.createOscillator();
+    const thudGain = ctx.createGain();
+    thudOsc.type = 'sine';
+    thudOsc.frequency.setValueAtTime(80, now);
+    thudOsc.frequency.exponentialRampToValueAtTime(30, now + 0.22);
+
+    thudGain.gain.setValueAtTime(0.55 * this.seVolume, now);
+    thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    thudOsc.connect(thudGain);
+    thudGain.connect(ctx.destination);
+    thudOsc.start(now);
+    thudOsc.stop(now + 0.23);
+
+    // 衣擦れ・衝撃の鈍いノイズ（低域ローパス）
+    const noiseLength = Math.floor(ctx.sampleRate * 0.16);
+    const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseLength; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.setValueAtTime(280, now);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.38 * this.seVolume, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+
+    noiseSource.connect(lowpass);
+    lowpass.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.17);
+
+    // わずかに遅れた関節・手足の二次着地音（バタンの小余韻）
+    const secondaryNow = now + 0.07;
+    const secOsc = ctx.createOscillator();
+    const secGain = ctx.createGain();
+    secOsc.type = 'triangle';
+    secOsc.frequency.setValueAtTime(65, secondaryNow);
+    secOsc.frequency.exponentialRampToValueAtTime(25, secondaryNow + 0.14);
+
+    secGain.gain.setValueAtTime(0.24 * this.seVolume, secondaryNow);
+    secGain.gain.exponentialRampToValueAtTime(0.0001, secondaryNow + 0.14);
+
+    secOsc.connect(secGain);
+    secGain.connect(ctx.destination);
+    secOsc.start(secondaryNow);
+    secOsc.stop(secondaryNow + 0.15);
+  }
+
+  /**
+   * 16. ガイの激昂・魂の叫び時の重い衝撃・胸を突く打撃音（低域レゾナンスの効いたドラマチックな重低音）
+   */
+  public playHeavyShoutThud() {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.18);
+
+    gain.gain.setValueAtTime(0.48 * this.seVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(260, now);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.23);
   }
 
   /**

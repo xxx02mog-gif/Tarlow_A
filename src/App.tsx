@@ -21,6 +21,7 @@ import {
   EmotionEffectId,
   EndingApproach,
   EndingDisposition,
+  EndingTransitionConfig,
   ExpressionId,
   EyePartId,
   FaceParts,
@@ -72,6 +73,11 @@ import { ManualModal } from './components/ManualModal';
 import { ObservationReport } from './components/ObservationReport';
 import { AchievementArchiveModal } from './components/AchievementArchiveModal';
 import { ExpressionDebugModal } from './components/ExpressionDebugModal';
+import {
+  InspectorViewMode,
+  ScenarioInspectorModal,
+  ScriptLinePreview,
+} from './components/ScenarioInspectorModal';
 import {
   ACHIEVEMENT_DEFINITIONS,
   AchievementSaveData,
@@ -131,8 +137,6 @@ const DEFAULT_ROOT_FILES = [
 const STORAGE_KEY_TEST_PNG = 'asch_asset_test_png_v3';
 const STORAGE_KEY_TANMATU_PNG = 'asch_asset_tanmatu_png_v3';
 
-const GLITCH_CHARS = ['▒', '░', '▓', '■', '□', '◆', '◇', '※', '〓', '〒'];
-
 const PROLOGUE_PAGES: string[][] = [
   [
     'ルークがタタル渓谷へ帰ってきてから1年が経った、ある日。',
@@ -148,19 +152,6 @@ const TOTAL_PROLOGUE_LINES = PROLOGUE_PAGES.reduce(
   (sum, page) => sum + page.length,
   0
 );
-
-const corruptString = (source: string, intensity: number): string => {
-  const chars = Array.from(source);
-  return chars
-    .map((ch) => {
-      if (ch === '\n' || ch === ' ' || ch === '　') return ch;
-      if (Math.random() < intensity) {
-        return GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-      }
-      return ch;
-    })
-    .join('');
-};
 
 const resolveVoiceEffectWithGlitch = (
   baseEffect: BubbleVoiceEffect,
@@ -313,69 +304,57 @@ const deriveAutomaticSecondFaceParts = (
 interface AschBubbleItemProps {
   text: string;
   effect: BubbleVoiceEffect;
+  isLatest?: boolean;
 }
 
 const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
   text,
   effect,
+  isLatest = true,
 }) => {
-  const isGlitchy =
+  const isGlitchEffect =
     effect === 'glitch' ||
     effect === 'shout_glitch' ||
     effect === 'tremble_glitch';
 
+  // 次のセリフ枠が送られたら（isLatest === false）グリッチも文字化けも完全に停止する
+  const isGlitchy = isLatest && isGlitchEffect;
+
   const isShout = effect === 'shout' || effect === 'shout_glitch';
   const isTremble = effect === 'tremble' || effect === 'tremble_glitch';
 
-  const formattedText = formatBubbleText(text, effect);
-  const isMultiLine3Plus = formattedText.split('\n').length >= 3;
-
-  const [displayText, setDisplayText] = useState<string>(() =>
-    isGlitchy ? corruptString(formattedText, 0.42) : formattedText
-  );
+  const [glitchFrame, setGlitchFrame] = useState(0);
 
   useEffect(() => {
-    if (!isGlitchy) {
-      setDisplayText(formattedText);
-      return;
-    }
-
-    setDisplayText(corruptString(formattedText, 0.42));
-
-    const step1 = window.setTimeout(() => {
-      setDisplayText(corruptString(formattedText, 0.18));
-    }, 80);
-
-    const step2 = window.setTimeout(() => {
-      setDisplayText(formattedText);
-    }, 170);
-
-    let decodeStep1: number | undefined;
-    let decodeStep2: number | undefined;
-
-    const periodicTimer = window.setInterval(() => {
-      if (Math.random() < 0.65) {
-        setDisplayText(corruptString(formattedText, 0.18));
-        decodeStep1 = window.setTimeout(() => {
-          setDisplayText(corruptString(formattedText, 0.08));
-        }, 70);
-        decodeStep2 = window.setTimeout(() => {
-          setDisplayText(formattedText);
-        }, 145);
+    if (!isGlitchy) return;
+    let count = 0;
+    const maxTicks = 6; // 登場時のみ約400ms (65ms × 6回) 激しく切り替わり、その後静止
+    const interval = window.setInterval(() => {
+      count++;
+      setGlitchFrame(count);
+      if (count >= maxTicks) {
+        window.clearInterval(interval);
       }
-    }, 680);
+    }, 65);
+    return () => window.clearInterval(interval);
+  }, [isGlitchy, text]);
 
-    return () => {
-      clearTimeout(step1);
-      clearTimeout(step2);
-      if (decodeStep1) clearTimeout(decodeStep1);
-      if (decodeStep2) clearTimeout(decodeStep2);
-      clearInterval(periodicTimer);
-    };
-  }, [formattedText, isGlitchy, effect]);
+  // 枠の最大サイズを決定するテンプレートテキスト（文字化け時の全角グリフ幅を基準にセリフ枠の横幅・高さを決定）
+  const templateText = formatBubbleText(text, effect, 0, isGlitchEffect);
+  // 実際に表示するテキスト（最新枠かつグリッチ時のみ文字化け、次の枠が来たら元の正常文字）
+  const displayFormattedText = isGlitchy
+    ? formatBubbleText(text, effect, glitchFrame, true)
+    : formatBubbleText(text, effect, 0, false);
 
-  const bubbleEffectClass =
-    effect === 'shout'
+  const isMultiLine3Plus = templateText.split('\n').length >= 3;
+
+  const bubbleEffectClass = !isLatest
+    ? isShout
+      ? 'bubble-voice-shout'
+      : isTremble
+        ? 'bubble-voice-tremble'
+        : ''
+    : effect === 'shout'
       ? 'bubble-voice-shout'
       : effect === 'tremble'
         ? 'bubble-voice-tremble'
@@ -401,20 +380,45 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
         isMultiLine3Plus ? 'py-1.5' : 'py-2'
       } ${bubbleEffectClass}`}
     >
+      {/* 色ズレ極細直線ノイズ（最新のグリッチ枠のみ不定期出現） */}
       {isGlitchy && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="glitch-scanline-red" />
-          <div className="glitch-scanline-blue" />
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+          <div className="bubble-glitch-h-line-red" />
+          <div className="bubble-glitch-h-line-cyan" />
         </div>
       )}
 
-      <p
-        className={`relative z-10 whitespace-pre-wrap break-words ${textSizeClass} ${
+      {/* 基準サイズ決定レイヤー（不可視）：
+          文字化け時の最大全角グリフ幅を基準にセリフ枠の縦横サイズを固定。
+          各行をwhitespace-nowrapで保持することで予期せぬ改行落ちやはみ出しを100%防止 */}
+      <div
+        aria-hidden="true"
+        className={`invisible select-none pointer-events-none ${textSizeClass} ${
+          isMultiLine3Plus ? '!leading-[1.3]' : ''
+        }`}
+      >
+        {templateText.split('\n').map((line, idx) => (
+          <div key={idx} className="whitespace-nowrap">
+            {line}
+          </div>
+        ))}
+      </div>
+
+      {/* 実際の表示テキスト（絶対配置オーバーレイ）：
+          基準レイヤーと全く同一の行構造で文字化けを描画。絶対に枠からはみ出さない */}
+      <div
+        className={`absolute inset-0 px-3.5 ${
+          isMultiLine3Plus ? 'py-1.5' : 'py-2'
+        } z-10 ${textSizeClass} ${
           isMultiLine3Plus ? '!leading-[1.3]' : ''
         } ${textEffectClass}`}
       >
-        {displayText}
-      </p>
+        {displayFormattedText.split('\n').map((line, idx) => (
+          <div key={idx} className="whitespace-nowrap">
+            {line}
+          </div>
+        ))}
+      </div>
 
       {/* 右向きポインタ */}
       <div className="w-0 h-0 absolute -right-[10px] top-2.5 border-y-[7px] border-y-transparent border-l-[11px] border-l-[#09090b]" />
@@ -425,6 +429,8 @@ const AschBubbleItem: React.FC<AschBubbleItemProps> = ({
 interface QueuedStep {
   delayMs: number;
   action: () => void;
+  isBubble?: boolean;
+  isTerminal?: boolean;
 }
 
 interface OccurredPhase1Slip {
@@ -460,11 +466,53 @@ const createInitialStats = (): ObservationStats => ({
   purgeCount: 0,
 });
 
+/**
+ * セリフの文字数・話者交代に応じた「基本の秒数」（標準テンポ）
+ * - 特別なタメ・長秒数はED演出（waitMs指定）のみに限定し、それ以外は快適な標準秒数を適用
+ * - 同一話者の改行送り: 約700ms〜950ms
+ * - 話者交代時の呼吸: 約900ms〜1,200ms
+ * - 最小保証: 680ms、最大上限: 1,300ms
+ */
+function calculateLineDelayMs(
+  text: string,
+  options?: {
+    isSpeakerChange?: boolean;
+    typingSpeed?: 'slow' | 'normal' | 'fast' | 'laggy';
+    extraTameMs?: number;
+  }
+): number {
+  const trimmed = text.trim();
+  const len = trimmed.length;
+
+  let ms = options?.isSpeakerChange ? 820 + len * 22 : 620 + len * 18;
+
+  if (options?.typingSpeed === 'slow') {
+    ms += 180;
+  } else if (options?.typingSpeed === 'laggy') {
+    ms += 140;
+  } else if (options?.typingSpeed === 'fast') {
+    ms -= 120;
+  }
+
+  if (options?.extraTameMs) {
+    ms += options.extraTameMs;
+  }
+
+  const minMs = options?.isSpeakerChange ? 880 : 680;
+  const maxMs = options?.isSpeakerChange ? 1300 : 1050;
+  return Math.min(maxMs, Math.max(minMs, Math.round(ms)));
+}
+
 export default function App() {
   // === 16:9 (800x450) 固定キャンバスの拡大・縮小スケール計算 ＆ スマホ縦持ち時の横画面自動回転 ===
   const [stageScale, setStageScale] = useState<number>(1);
   const [isPortraitRotated, setIsPortraitRotated] = useState<boolean>(false);
   const [isCompactViewport, setIsCompactViewport] = useState<boolean>(false);
+  const [isScenarioInspectorOpen, setIsScenarioInspectorOpen] =
+    useState<boolean>(false);
+  const [inspectorViewMode, setInspectorViewMode] =
+    useState<InspectorViewMode>('dock');
+  const previousPhaseBeforeInspectorRef = useRef<GamePhaseState | null>(null);
 
   useEffect(() => {
     const updateScale = () => {
@@ -473,9 +521,15 @@ export default function App() {
       const portrait = h > w;
       setIsPortraitRotated(portrait);
 
-      const effectiveW = portrait ? h : w;
+      // インスペクターがドックモードで開いている場合、右側のパネル幅(最大540px)を差し引いてキャンバスを最適スケーリング
+      const dockWidth =
+        isScenarioInspectorOpen && inspectorViewMode === 'dock' && w >= 1050
+          ? Math.min(540, Math.floor(w * 0.42))
+          : 0;
+
+      const effectiveW = portrait ? h : Math.max(380, w - dockWidth);
       const effectiveH = portrait ? w : h;
-      const scale = Math.min(effectiveW / STAGE_WIDTH, effectiveH / STAGE_HEIGHT);
+      const scale = Math.min((effectiveW - 16) / STAGE_WIDTH, (effectiveH - 16) / STAGE_HEIGHT);
       setStageScale(Math.max(0.2, scale));
 
       const shortSide = Math.min(w, h);
@@ -493,7 +547,7 @@ export default function App() {
       window.removeEventListener('resize', updateScale);
       window.removeEventListener('orientationchange', updateScale);
     };
-  }, []);
+  }, [isScenarioInspectorOpen, inspectorViewMode]);
 
   const [availableRootFiles, setAvailableRootFiles] = useState<Set<string>>(
     () => new Set(DEFAULT_ROOT_FILES)
@@ -639,7 +693,12 @@ export default function App() {
   const [endingStep, setEndingStep] = useState<number>(0);
 
   useEffect(() => {
-    soundEngine.setPlayingPhase(gamePhase === 'PLAYING');
+    if (gamePhase === 'PLAYING') {
+      soundEngine.setPlayingPhase(true);
+    } else {
+      soundEngine.stopBgm();
+      soundEngine.setPlayingPhase(false);
+    }
   }, [gamePhase]);
 
   // === 対話ステート・機嫌パラメータ（裏パラメータ）・消化状況 ===
@@ -660,6 +719,8 @@ export default function App() {
   }, [mood]);
   // ガイ側の機嫌パラメータ（-5 〜 +5、マイナスでガイが不機嫌モード）
   const [guyMood, setGuyMood] = useState<number>(0);
+  // アッシュの頭部インタラクション（撫でる）回数カウンター
+  const [headPatCount, setHeadPatCount] = useState<number>(0);
 
   const [linkTags, setLinkTags] = useState<string[]>([]);
   const [phase1QuestionsCount, setPhase1QuestionsCount] = useState<number>(0);
@@ -708,6 +769,18 @@ export default function App() {
 
   const [visibleBubbles, setVisibleBubbles] = useState<ScreenBubble[]>([]);
   const [isSequencing, setIsSequencing] = useState<boolean>(false);
+  const [isAschExited, setIsAschExited] = useState<boolean>(false);
+  const [isAschCollapsed, setIsAschCollapsed] = useState<boolean>(false);
+  const [eyeGlitchPulse, setEyeGlitchPulse] = useState<number>(0);
+  const [screenShakePulse, setScreenShakePulse] = useState<number>(0);
+  const [isScreenShaking, setIsScreenShaking] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (screenShakePulse <= 0) return;
+    setIsScreenShaking(true);
+    const timer = window.setTimeout(() => setIsScreenShaking(false), 440);
+    return () => window.clearTimeout(timer);
+  }, [screenShakePulse]);
   const [endingDisposition, setEndingDisposition] = useState<EndingDisposition>('KEEP');
   const [customEndingKey, setCustomEndingKey] = useState<string | null>(null);
 
@@ -1056,7 +1129,7 @@ export default function App() {
     [clearPendingSequence, runNextQueuedStep]
   );
 
-  const handleSkipCurrentDelay = () => {
+  const handleSkipCurrentDelay = useCallback(() => {
     soundEngine.unlockOnUserInteraction();
     if (!isSequencing || pendingStepsRef.current.length === 0) return;
     if (isTerminalOpen || isDialogueLogOpen || isManualOpen) return;
@@ -1065,12 +1138,27 @@ export default function App() {
       window.clearTimeout(activeTimeoutRef.current);
       activeTimeoutRef.current = null;
     }
-    const step = pendingStepsRef.current.shift();
-    if (step) {
-      step.action();
+
+    // 1回のタップで「次のセリフ枠（吹き出し表示）」または「終了処理」まで一気に進める
+    let reachedBubbleOrEnd = false;
+    while (pendingStepsRef.current.length > 0 && !reachedBubbleOrEnd) {
+      const step = pendingStepsRef.current.shift();
+      if (step) {
+        step.action();
+        if (step.isBubble || step.isTerminal || pendingStepsRef.current.length === 0) {
+          reachedBubbleOrEnd = true;
+        }
+      }
     }
+
     runNextQueuedStep();
-  };
+  }, [
+    isSequencing,
+    isTerminalOpen,
+    isDialogueLogOpen,
+    isManualOpen,
+    runNextQueuedStep,
+  ]);
 
   // === 画面上のセリフ枠（最大3つ）に新しい1枠を下から追加（overwriteLastSameSpeaker=true の場合は直前の同話者枠を1つの枠内で上書き） ===
   const pushScreenBubble = useCallback(
@@ -1085,6 +1173,13 @@ export default function App() {
 
       soundEngine.playBubblePop(speaker, voiceEffect);
       recordSeenLine(trimmed);
+
+      if (voiceEffect === 'shout' || voiceEffect === 'shout_glitch') {
+        if (speaker === 'GUY') {
+          // ガイの叫びに対してアッシュがハッとする（立ち絵の微細リアクション）
+          setReplayPulse((p) => p + 1);
+        }
+      }
 
       const newBubbleId = `bbl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -1117,15 +1212,15 @@ export default function App() {
 
         const calcTotalHeight = (list: typeof next) =>
           list.reduce((sum, b) => {
-            const explicitLines = b.text.split('\n').reduce((acc, line) => {
-              return acc + Math.max(1, Math.ceil(line.length / 22));
-            }, 0);
-            return sum + 22 + explicitLines * 19 + 8;
+            const formatted = formatBubbleText(b.text, b.voiceEffect ?? 'normal');
+            const linesCount = formatted.split('\n').length;
+            // py-2/py-1.5 (~12px padding) + linesCount * line-height (~18px) + mb-2 (8px margin)
+            return sum + 12 + linesCount * 18 + 8;
           }, 0);
 
         while (
           next.length > 1 &&
-          (next.length > MAX_VISIBLE_BUBBLES || calcTotalHeight(next) > 202)
+          (next.length > MAX_VISIBLE_BUBBLES || calcTotalHeight(next) > 206)
         ) {
           next.shift();
         }
@@ -1143,6 +1238,346 @@ export default function App() {
     },
     [recordSeenLine]
   );
+
+  // === 全シナリオ・演出インスペクター用の実機プレビュー実行（本番の演出・タメ・分割・積み重ねと完全同期） ===
+  const handlePreviewInspectorSequence = useCallback(
+    (
+      lines: ScriptLinePreview[],
+      onComplete?: () => void,
+      endingTransition?: EndingTransitionConfig
+    ) => {
+      soundEngine.unlockOnUserInteraction();
+      if (endingTransition && !endingTransition.keepBgm) {
+        // EDプレビュー時はBGMを即座に停止（ただしEND 02等のkeepBgm指定時は継続）
+        soundEngine.stopBgm();
+        soundEngine.setPlayingPhase(false);
+      } else if (gamePhase !== 'PLAYING') {
+        setGamePhase('PLAYING');
+        soundEngine.setPlayingPhase(true);
+      }
+      clearPendingSequence();
+      setVisibleBubbles([]);
+      setIsAschExited(false);
+      setIsAschCollapsed(false);
+      setEyeGlitchPulse(0);
+
+      // 1. 各行に \n が含まれている場合は本番と同様に複数枠（1枠目・2枠目）へ自動分割・平坦化
+      const expandedLines: ScriptLinePreview[] = [];
+      lines.forEach((line) => {
+        const splitTexts = line.text
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (splitTexts.length <= 1) {
+          expandedLines.push(line);
+        } else {
+          splitTexts.forEach((st, sIdx) => {
+            expandedLines.push({
+              ...line,
+              text: st,
+              expression:
+                sIdx === 0
+                  ? line.expression
+                  : line.secondExpression ?? line.expression,
+              faceParts:
+                sIdx === 0
+                  ? line.faceParts
+                  : line.secondFaceParts ?? line.faceParts,
+            });
+          });
+        }
+      });
+
+      const steps: QueuedStep[] = [];
+      let lastSpeaker: 'GUY' | 'ASCH' | null = null;
+      let lastLineText = '';
+      const isEndingScene = Boolean(endingTransition);
+
+      expandedLines.forEach((line, idx) => {
+        const prevLine = idx > 0 ? expandedLines[idx - 1] : undefined;
+        // 特別な文字送り（waitMs）はED演出のみに適用し、それ以外の通常シーンは基本の秒数を適用
+        let delay: number;
+        if (idx === 0) {
+          delay = 280;
+        } else {
+          if (isEndingScene) {
+            delay = prevLine?.waitMs ?? 1200;
+          } else {
+            const isSpeakerChange = lastSpeaker !== line.speaker;
+            delay = calculateLineDelayMs(lastLineText, { isSpeakerChange });
+          }
+        }
+
+        // アッシュ発話前の一拍「タメ」演出（表情先行変化）
+        if (
+          line.speaker === 'ASCH' &&
+          (line.expression || line.faceParts) &&
+          prevLine?.specialEffect !== 'destroy'
+        ) {
+          const preFaceTime = Math.max(120, Math.round(delay * 0.35));
+          steps.push({
+            delayMs: Math.max(80, delay - preFaceTime),
+            action: () => {
+              if (line.expression) setOverrideExpression(line.expression);
+              if (line.faceParts) {
+                setOverrideFaceParts((prev) => ({
+                  ...(prev ??
+                    DEFAULT_EXPRESSION_PARTS[line.expression ?? activeExpression]),
+                  ...line.faceParts,
+                }));
+              }
+            },
+            isBubble: false,
+          });
+          delay = preFaceTime;
+        }
+
+        steps.push({
+          delayMs: delay,
+          action: () => {
+            if (line.specialEffect === 'destroy') {
+              window.setTimeout(() => {
+                soundEngine.playMechanicalDestroy();
+                setEyeGlitchPulse(Date.now());
+                setOverrideExpression('shock');
+                setOverrideFaceParts({
+                  brow: 'angry',
+                  eyes: 'wide',
+                  mouth: 'shout',
+                  effects: ['shadow'],
+                });
+              }, 850);
+            } else if (line.specialEffect === 'collapse') {
+              setEyeGlitchPulse(Date.now());
+              window.setTimeout(() => {
+                if (line.secondExpression) {
+                  setOverrideExpression(line.secondExpression);
+                }
+                if (line.secondFaceParts) {
+                  setOverrideFaceParts(line.secondFaceParts);
+                } else {
+                  setOverrideExpression('pain');
+                  setOverrideFaceParts({
+                    brow: 'sad',
+                    eyes: 'close',
+                    mouth: 'close',
+                    effects: ['shadow'],
+                  });
+                }
+              }, 1100);
+              window.setTimeout(() => {
+                setIsAschCollapsed(true);
+                soundEngine.playBodyFall();
+              }, 1950);
+            } else if (line.specialEffect === 'shout_shock') {
+              soundEngine.playHeavyShoutThud();
+              setReplayPulse((p) => p + 1);
+              setIsScreenShaking(true);
+              setTimeout(() => setIsScreenShaking(false), 240);
+            }
+            if (line.expression) {
+              setOverrideExpression(line.expression);
+            }
+            if (line.faceParts) {
+              setOverrideFaceParts((prev) => ({
+                ...(prev ??
+                  DEFAULT_EXPRESSION_PARTS[line.expression ?? activeExpression]),
+                ...line.faceParts,
+              }));
+            }
+            if (line.text.trim()) {
+              pushScreenBubble(
+                line.speaker,
+                line.text,
+                line.voiceEffect ?? 'normal',
+                false
+              );
+            }
+          },
+          isBubble: true,
+        });
+
+        lastSpeaker = line.speaker;
+        lastLineText = line.text;
+      });
+
+      const lastLine = expandedLines[expandedLines.length - 1];
+      if (
+        lastLine?.speaker === 'ASCH' &&
+        lastLine.secondFaceParts &&
+        expandedLines.filter((l) => l.speaker === 'ASCH').length === 1
+      ) {
+        steps.push({
+          delayMs: 1000,
+          action: () => {
+            if (lastLine.secondExpression) {
+              setOverrideExpression(lastLine.secondExpression);
+            }
+            setOverrideFaceParts((prev) => ({
+              ...(prev ??
+                DEFAULT_EXPRESSION_PARTS[
+                  lastLine.secondExpression ?? activeExpression
+                ]),
+              ...lastLine.secondFaceParts,
+            }));
+          },
+          isBubble: false,
+        });
+      }
+
+      if (endingTransition) {
+        const trans = endingTransition;
+        const lastLine = expandedLines[expandedLines.length - 1];
+        const waitBefore = lastLine?.waitMs ?? trans.waitBeforeExitMs ?? 800;
+        const stepInterval =
+          trans.footsteps === 'slow' ? 440 : trans.footsteps === 'fast' ? 240 : 360;
+        const count = trans.footstepsCount ?? 3;
+        const footstepsTotalMs = count * stepInterval;
+
+        steps.push({
+          delayMs: waitBefore,
+          action: () => {
+            if (trans.aschAction === 'fade_out') {
+              setIsAschExited(true);
+            } else if (trans.aschAction === 'collapse') {
+              setIsAschCollapsed(true);
+            }
+            if (trans.footsteps) {
+              soundEngine.playFootsteps(trans.footsteps, count);
+            }
+          },
+          isBubble: false,
+        });
+
+        if (trans.doorAction && trans.doorAction !== 'none') {
+          steps.push({
+            delayMs: footstepsTotalMs + 200,
+            action: () => {
+              soundEngine.playDoorOpen();
+            },
+            isBubble: false,
+          });
+
+          steps.push({
+            delayMs: 700,
+            action: () => {
+              soundEngine.playDoorClose(
+                trans.doorAction === 'slam' ? 'slam' : 'soft'
+              );
+            },
+            isBubble: false,
+          });
+
+          if (onComplete) {
+            steps.push({
+              delayMs: Math.max(1000, trans.waitAfterDoorMs ?? 1000),
+              action: () => {
+                onComplete();
+              },
+              isTerminal: true,
+            });
+          }
+        } else {
+          // ドア音なし：足音終了後に静寂余韻を経て完了
+          if (onComplete) {
+            steps.push({
+              delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+              action: () => {
+                onComplete();
+              },
+              isTerminal: true,
+            });
+          }
+        }
+      } else if (onComplete) {
+        const lastLine = expandedLines[expandedLines.length - 1];
+        const finalDelay =
+          lastLine?.waitMs ??
+          Math.min(1450, Math.max(900, (lastLine?.text?.length ?? 10) * 35));
+        steps.push({
+          delayMs: finalDelay,
+          action: () => {
+            onComplete();
+          },
+          isTerminal: true,
+        });
+      }
+
+      enqueueSequence(steps);
+    },
+    [
+      gamePhase,
+      clearPendingSequence,
+      enqueueSequence,
+      pushScreenBubble,
+      activeExpression,
+    ]
+  );
+
+  const handleStopInspectorPlayback = useCallback(() => {
+    clearPendingSequence();
+    setVisibleBubbles([]);
+    setIsAschExited(false);
+    setIsAschCollapsed(false);
+    setEyeGlitchPulse(0);
+  }, [clearPendingSequence]);
+
+  const handlePreviewInspectorSingleLine = useCallback(
+    (
+      speaker: 'GUY' | 'ASCH',
+      text: string,
+      voiceEffect: BubbleVoiceEffect = 'normal',
+      expression?: ExpressionId,
+      faceParts?: Partial<FaceParts>
+    ) => {
+      soundEngine.unlockOnUserInteraction();
+      if (gamePhase !== 'PLAYING') {
+        setGamePhase('PLAYING');
+        soundEngine.setPlayingPhase(true);
+      }
+      clearPendingSequence();
+      setVisibleBubbles([]);
+      if (expression) setOverrideExpression(expression);
+      if (faceParts) {
+        setOverrideFaceParts((prev) => ({
+          ...(prev ??
+            DEFAULT_EXPRESSION_PARTS[expression ?? activeExpression]),
+          ...faceParts,
+        }));
+      }
+      pushScreenBubble(speaker, text, voiceEffect, false);
+    },
+    [gamePhase, clearPendingSequence, pushScreenBubble, activeExpression]
+  );
+
+  const handleOpenScenarioInspector = useCallback(() => {
+    soundEngine.unlockOnUserInteraction();
+    soundEngine.playTerminalTab();
+    setIsTerminalOpen(false);
+    setIsDialogueLogOpen(false);
+    setIsManualOpen(false);
+    setIsDebugViewerOpen(false);
+    if (gamePhase !== 'PLAYING') {
+      previousPhaseBeforeInspectorRef.current = gamePhase;
+      setGamePhase('PLAYING');
+      soundEngine.setPlayingPhase(true);
+    }
+    setIsScenarioInspectorOpen(true);
+  }, [gamePhase]);
+
+  const handleCloseScenarioInspector = useCallback(() => {
+    soundEngine.playTerminalClose();
+    clearPendingSequence();
+    setVisibleBubbles([]);
+    setOverrideExpression(null);
+    setOverrideFaceParts(null);
+    setIsScenarioInspectorOpen(false);
+    if (previousPhaseBeforeInspectorRef.current === 'TITLE') {
+      soundEngine.setPlayingPhase(false);
+      setGamePhase('TITLE');
+      previousPhaseBeforeInspectorRef.current = null;
+    }
+  }, [clearPendingSequence]);
 
   const appendLog = useCallback(
     (type: SystemLogEntry['type'], message: string) => {
@@ -1377,13 +1812,15 @@ export default function App() {
       const currentWaitSec = Math.floor(idleMs / 1000);
       setIdleWaitSec(currentWaitSec);
 
-      // Phase 3（終幕の問いかけ：「おまえから見て、今の俺は誰に見える？」）で30秒間無言だった場合 → 選択肢5（無言タイムアウト）へ分岐
+      // Phase 3（終幕の問いかけ：「おまえから見て、今の俺は誰に見える？」）で30秒間無言だった場合 → 無言タイムアウト（END 07）へ分岐
       if (
         activeTopicReply?.topicId === 'p3_final_who_am_i' &&
         idleMs > 30000
       ) {
         idleStageRef.current = 1;
-        choiceShownAtRef.current = Date.now();
+        setActiveTopicReply(null);
+        soundEngine.stopBgm();
+        soundEngine.setPlayingPhase(false);
         setStats((prev) => ({
           ...prev,
           idleTimeoutCount: prev.idleTimeoutCount + 1,
@@ -1392,38 +1829,89 @@ export default function App() {
           'INFO',
           'RESPONSE TIMEOUT // QUERY WITHDRAWN'
         );
-        setActiveTopicReply({
-          topicId: 'p3_final_silent_followup',
-          options: PHASE3_SILENT_TIMEOUT_OPTIONS,
-        });
-        playAschReactionLines(
-          '・・・・・・。\n・・・・・・いや、いい。忘れてくれ。\nおまえにこんなことを聞いた俺が馬鹿だった。',
-          'look_away',
+        const timeoutSteps: QueuedStep[] = [
+          // ガイの沈黙（タメ 2.4秒）
           {
-            brow: 'sad',
-            eyes: 'away',
-            mouth: 'frown',
-            effects: [],
+            delayMs: 260,
+            action: () => {
+              pushScreenBubble('GUY', '・・・・・・。', 'normal');
+            },
+            isBubble: true,
           },
-          ['normal'],
-          240
-        );
-        return;
-      }
-
-      if (
-        activeTopicReply?.topicId === 'p3_final_silent_followup' &&
-        idleMs > 30000
-      ) {
-        setActiveTopicReply(null);
-        setCustomEndingKey('END_PHASE3_SILENCE');
-        setStats((prev) => ({
-          ...prev,
-          idleTimeoutCount: prev.idleTimeoutCount + 1,
-          endTime: Date.now(),
-        }));
-        setEndingStep(0);
-        setGamePhase('ENDING');
+          // アッシュの息を呑む沈黙（伏し目でタメ 2.0秒）
+          {
+            delayMs: 2400,
+            action: () => {
+              setOverrideExpression('look_away');
+              setOverrideFaceParts({
+                brow: 'sad',
+                eyes: 'down',
+                mouth: 'close',
+                effects: ['shadow'],
+              });
+              pushScreenBubble('ASCH', '・・・・・・', 'normal');
+            },
+            isBubble: true,
+          },
+          // 問いの取り下げ（伏し目のまま呟く・タメ 2.0秒）
+          {
+            delayMs: 2000,
+            action: () => {
+              setOverrideExpression('look_away');
+              setOverrideFaceParts({
+                brow: 'sad',
+                eyes: 'down',
+                mouth: 'close',
+                effects: ['shadow'],
+              });
+              pushScreenBubble(
+                'ASCH',
+                '・・・・・・、いや。いい。なんでもない。',
+                'normal'
+              );
+            },
+            isBubble: true,
+          },
+          // 去り際の一言（目を逸らす・タメ 2.4秒）
+          {
+            delayMs: 2000,
+            action: () => {
+              setOverrideExpression('look_away');
+              setOverrideFaceParts({
+                brow: 'sad',
+                eyes: 'away',
+                mouth: 'close',
+                effects: ['shadow'],
+              });
+              pushScreenBubble('ASCH', '変なことを聞いた。忘れてくれ。', 'normal');
+            },
+            isBubble: true,
+          },
+          // 重く静かな足音で退場（slow 3歩）
+          {
+            delayMs: 2400,
+            action: () => {
+              setIsAschExited(true);
+              soundEngine.playFootsteps('slow', 3);
+            },
+            isBubble: false,
+          },
+          // ED画面へ移行
+          {
+            delayMs: 3 * 440 + 1400,
+            action: () => {
+              setCustomEndingKey('END_PHASE3_SILENCE');
+              setStats((prev) => ({
+                ...prev,
+                endTime: Date.now(),
+              }));
+              setEndingStep(0);
+              setGamePhase('ENDING');
+            },
+            isBubble: false,
+          },
+        ];
+        enqueueSequence(timeoutSteps);
         return;
       }
 
@@ -1631,8 +2119,13 @@ export default function App() {
     updateMood,
   ]);
 
-  // === データ端末の開閉（無操作で閉じた際の覗き見リアクション） ===
+  // ===データ端末の開閉（無操作で閉じた際の覗き見リアクション） ===
   const handleToggleTerminal = () => {
+    if (linkTags.includes('terminal_broken')) {
+      soundEngine.playSelectError();
+      appendLog('WARNING', 'DATA TERMINAL DESTROYED // ACCESS IMPOSSIBLE');
+      return;
+    }
     setIsDialogueLogOpen(false);
     if (!isTerminalOpen) {
       soundEngine.playTerminalOpen();
@@ -1640,10 +2133,18 @@ export default function App() {
       setHasUnreadSector(false);
       terminalOpenedAtRef.current = Date.now();
       terminalActionTakenRef.current = false;
+      const nextOpenCount = stats.terminalOpenCount + 1;
       setStats((prev) => ({
         ...prev,
         terminalOpenCount: prev.terminalOpenCount + 1,
       }));
+      if (nextOpenCount >= 3) {
+        setLinkTags((prev) =>
+          prev.includes('terminal_opened_many')
+            ? prev
+            : [...prev, 'terminal_opened_many']
+        );
+      }
       appendLog('INFO', 'DATA TERMINAL OPENED');
     } else {
       soundEngine.playTerminalClose();
@@ -1656,37 +2157,11 @@ export default function App() {
           terminalTotalDurationMs: prev.terminalTotalDurationMs + durationMs,
         }));
 
-        // DP-019（SEC-19）と DP-020（SEC-20）の両方を解除して端末を閉じた場合のみクライマックス対話へ突入する
+        // DP-002（SEC-19）または DP-003（SEC-20）を解除して端末を閉じた場合は、『端末』タブへ切り替えて選択肢に出現させる（強制発生はしない）
         if (pendingClimaxDilemmaRef.current) {
+          pendingClimaxDilemmaRef.current = false;
           setPreviewTab('端末');
           setPreviewPage(0);
-          const isDilemmaUnread =
-            (topicAskCounts['p2_deep_truth_dilemma'] ?? 0) === 0;
-          const isSec19Unlocked = sectors.some(
-            (s) => s.id === 'SEC-19' && s.unlocked
-          );
-          const isSec20Unlocked = sectors.some(
-            (s) => s.id === 'SEC-20' && s.unlocked
-          );
-
-          if (isDilemmaUnread && isSec19Unlocked && isSec20Unlocked) {
-            pendingClimaxDilemmaRef.current = false;
-            const dilemmaTopic = CONVERSATION_TOPICS.find(
-              (t) => t.id === 'p2_deep_truth_dilemma'
-            );
-            if (dilemmaTopic) {
-              if (isSequencing || isSequencingRef.current) {
-                clearPendingSequence();
-                isSequencingRef.current = false;
-                setIsSequencing(false);
-              }
-              terminalOpenedAtRef.current = null;
-              setActiveTopicReply(null);
-              setActiveAschQuestion(null);
-              handleSelectTopic(dilemmaTopic);
-              return;
-            }
-          }
         }
 
         // 端末認知フラグの連動（IMMUTABLE_RULES 2-①・6-②準拠）：
@@ -1781,7 +2256,10 @@ export default function App() {
       .filter(Boolean);
 
     const steps: QueuedStep[] = qLines.map((line, idx) => ({
-      delayMs: idx === 0 ? 320 : 980,
+      delayMs:
+        idx === 0
+          ? 360
+          : calculateLineDelayMs(qLines[idx - 1], { isSpeakerChange: false }),
       action: () => {
         if (idx === 0) {
           setOverrideExpression('look_away');
@@ -1823,58 +2301,13 @@ export default function App() {
     enqueueSequence(steps);
   };
 
-  // === Phase 3（終幕の問いかけ：「……おまえから見て、俺は誰に見える？」）発生条件判定 ===
-  // 軸A（身体・造り物としての屈辱）、軸B（居場所・過去の喪失）、軸C（記憶の欠落・ガイとの因縁）から
-  // それぞれ最低1つ以上、かつ合計4つ以上の深い対話を終えている場合に発生する
-  const isDeepTopicDone = useCallback(
-    (topicId: string): boolean => {
-      if (topicId === 'p2_why_hide_truth') {
-        return (
-          linkTags.includes('p2_heard_true_reason') ||
-          sectors.some((s) => s.id === 'SEC-12' && s.unlocked)
-        );
-      }
-      if (topicId === 'p2_deep_truth_dilemma') {
-        return (
-          linkTags.includes('p2_dilemma_resolved') ||
-          linkTags.includes('climax_ready')
-        );
-      }
-      return (topicAskCounts[topicId] ?? 0) >= 1;
-    },
-    [linkTags, sectors, topicAskCounts]
-  );
-
-  const deepAxisACount = [
-    'p2_tarlow_past',
-    'p2_sword_limiter',
-    'p2_why_10yo_body',
-    'p2_sleep_and_dreams',
-    'p2_voice_discomfort',
-    'p2_unscarred_hands',
-  ].filter(isDeepTopicDone).length;
-
-  const deepAxisBCount = [
-    'p2_friends_news',
-    'p2_why_hide_truth',
-    'p2_future_whereabouts',
-    'p2_lab_pastime',
-    'p2_jade_suspicion',
-  ].filter(isDeepTopicDone).length;
-
-  const deepAxisCCount = [
-    'p2_eldrant_and_blank',
-    'p2_tarlow_broken_reason',
-    'p2_deep_truth_dilemma',
-    'p2_manor_memories',
-    'p2_parents_thought',
-  ].filter(isDeepTopicDone).length;
-
+  // === Phase 3（終幕の問いかけ：「……おまえから見て、今の俺は誰に見える？」）発生条件判定 ===
+  // 自身が「記憶を模倣されただけの機械なのか、アッシュ本人なのか分からない」という核心の対話
+  // （表の核心『みんなの元へ戻らない理由』または裏の核心『クライマックス対話』）を交わしている場合に発生する
   const hasEnoughDeepTalkForPhase3 =
-    deepAxisACount >= 1 &&
-    deepAxisBCount >= 1 &&
-    deepAxisCCount >= 1 &&
-    deepAxisACount + deepAxisBCount + deepAxisCCount >= 4;
+    linkTags.includes('p2_heard_true_reason') ||
+    linkTags.includes('p2_dilemma_resolved') ||
+    sectors.some((s) => s.id === 'SEC-12' && s.unlocked);
 
   // === 『話を切り上げる』からの終了処理（フェーズに応じた結末へ遷移） ===
   const handleExecuteDecision = (disposition: EndingDisposition) => {
@@ -1933,6 +2366,12 @@ export default function App() {
       FINAL_DECISION_STAGES[resolvedKey] ||
       FINAL_DECISION_STAGES.END_PHASE2_ASCH;
 
+    // EDイベント突入に伴いBGMを即座に停止（ただしEND 02等のkeepBgm指定時は継続）
+    if (!decisionData.endingTransition?.keepBgm) {
+      soundEngine.stopBgm();
+      soundEngine.setPlayingPhase(false);
+    }
+
     const guyLines = decisionData.spokenText
       .split('\n')
       .map((s) => s.trim())
@@ -1942,8 +2381,8 @@ export default function App() {
     guyLines.forEach((line, idx) => {
       const delay =
         idx === 0
-          ? 240
-          : Math.min(1300, Math.max(780, guyLines[idx - 1].length * 34));
+          ? 280
+          : calculateLineDelayMs(guyLines[idx - 1]);
       steps.push({
         delayMs: delay,
         action: () => {
@@ -1952,8 +2391,8 @@ export default function App() {
       });
     });
 
-    const lastGuyLineLen =
-      guyLines.length > 0 ? guyLines[guyLines.length - 1].length : 6;
+    const lastGuyLineText =
+      guyLines.length > 0 ? guyLines[guyLines.length - 1] : '';
 
     const closingLines = decisionData.aschText
       .split('\n')
@@ -1963,8 +2402,9 @@ export default function App() {
     closingLines.forEach((line, idx) => {
       const delay =
         idx === 0
-          ? Math.min(1400, Math.max(950, lastGuyLineLen * 32))
-          : Math.min(1350, Math.max(820, closingLines[idx - 1].length * 36));
+          ? (decisionData.guyWaitMs ??
+            calculateLineDelayMs(lastGuyLineText, { isSpeakerChange: true }))
+          : (decisionData.aschWaitMs ?? calculateLineDelayMs(closingLines[idx - 1]));
       const baseEff =
         decisionData.voiceEffects?.[idx] ??
         decisionData.voiceEffects?.[0] ??
@@ -1998,17 +2438,66 @@ export default function App() {
       });
     });
 
-    steps.push({
-      delayMs: 1300,
-      action: () => {
-        setStats((prev) => ({
-          ...prev,
-          endTime: Date.now(),
-        }));
-        setEndingStep(0);
-        setGamePhase('ENDING');
-      },
-    });
+    // 単行セリフ（END 04等）で後半表情変化（secondFaceParts）が指定されている場合の表情変化ステップ
+    if (closingLines.length === 1 && decisionData.secondFaceParts) {
+      steps.push({
+        delayMs: 1000,
+        action: () => {
+          if (decisionData.secondExpression) {
+            setOverrideExpression(decisionData.secondExpression);
+          }
+          setOverrideFaceParts(decisionData.secondFaceParts!);
+        },
+        isBubble: false,
+      });
+    }
+
+    if (decisionData.endingTransition) {
+      const trans = decisionData.endingTransition;
+      const stepInterval =
+        trans.footsteps === 'slow' ? 440 : trans.footsteps === 'fast' ? 240 : 360;
+      const count = trans.footstepsCount ?? 3;
+      const footstepsTotalMs = trans.footsteps ? count * stepInterval : 0;
+
+      // セリフ表示・余韻後の退場（フェードアウト）＆足音開始
+      steps.push({
+        delayMs: trans.waitBeforeExitMs ?? 800,
+        action: () => {
+          if (trans.aschAction === 'fade_out') {
+            setIsAschExited(true);
+          }
+          if (trans.footsteps) {
+            soundEngine.playFootsteps(trans.footsteps, count);
+          }
+        },
+        isBubble: false,
+      });
+
+      steps.push({
+        delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+        action: () => {
+          setStats((prev) => ({
+            ...prev,
+            endTime: Date.now(),
+          }));
+          setEndingStep(0);
+          setGamePhase('ENDING');
+        },
+        isBubble: false,
+      });
+    } else {
+      steps.push({
+        delayMs: 1300,
+        action: () => {
+          setStats((prev) => ({
+            ...prev,
+            endTime: Date.now(),
+          }));
+          setEndingStep(0);
+          setGamePhase('ENDING');
+        },
+      });
+    }
 
     enqueueSequence(steps);
   };
@@ -2156,6 +2645,7 @@ export default function App() {
     const steps: QueuedStep[] = [];
 
     const hasGuyHesitation =
+      guyLines.length > 0 &&
       !isRefusedByBadMood &&
       !alreadyHasNaturalLeadIn &&
       Boolean(seriousToBrightTransition || awkwardHesitationLine);
@@ -2188,7 +2678,7 @@ export default function App() {
           ? hasGuyHesitation
             ? 820
             : 240
-          : Math.min(1300, Math.max(780, guyLines[idx - 1].length * 34));
+          : calculateLineDelayMs(guyLines[idx - 1]);
       steps.push({
         delayMs: delay,
         action: () => {
@@ -2198,8 +2688,9 @@ export default function App() {
       });
     });
 
-    const lastGuyLineLen =
-      guyLines.length > 0 ? guyLines[guyLines.length - 1].length : 6;
+    const lastGuyLineText =
+      guyLines.length > 0 ? guyLines[guyLines.length - 1] : '';
+    const lastGuyLineLen = lastGuyLineText.length;
 
     let chosenPhase1SlipVariant: Phase1SlipVariant | null = null;
     const nextPhase1QCount = isPhase1Now
@@ -2246,13 +2737,6 @@ export default function App() {
       } else if (shouldSlipNow && !slipConfig?.canSlip) {
         setPhase1PendingSlipCarry(true);
       }
-    }
-
-    if (
-      isAngryNow &&
-      (topic.calmsAnger || topic.id === 'topic_41_apologize')
-    ) {
-      unlockAchievements('ach_11');
     }
 
     const refusalTemplate =
@@ -2346,17 +2830,10 @@ export default function App() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const speedPauseOffset =
-      currentStage.typingSpeed === 'slow'
-        ? 450
-        : currentStage.typingSpeed === 'laggy'
-          ? 380
-          : currentStage.typingSpeed === 'fast'
-            ? 120
-            : 280;
-
-    const pauseBeforeAsch =
-      Math.min(1350, Math.max(820, lastGuyLineLen * 30)) + speedPauseOffset;
+    const pauseBeforeAsch = calculateLineDelayMs(lastGuyLineText, {
+      isSpeakerChange: true,
+      typingSpeed: currentStage.typingSpeed,
+    });
 
     // フェーズ1で「答える直前の一瞬の表情変化（PRE_FACE）」のボロが選ばれた場合、発話前の0.7秒間だけ表情と波形が揺らぐ
     if (
@@ -2489,8 +2966,9 @@ export default function App() {
               : usePhase2PreFaceTame
                 ? phase2TameDurationMs
                 : pauseBeforeAsch
-          : Math.min(1450, Math.max(860, aschLines[idx - 1].length * 38)) +
-            (currentStage.typingSpeed === 'slow' ? 220 : 0);
+          : calculateLineDelayMs(aschLines[idx - 1], {
+              typingSpeed: currentStage.typingSpeed,
+            });
 
       const baseVoiceEffect: BubbleVoiceEffect =
         resolvedVoiceEffects?.[idx] ?? resolvedVoiceEffects?.[0] ?? 'normal';
@@ -2829,7 +3307,6 @@ export default function App() {
           return;
         }
         if (
-          linkTags.includes('phase2_started') &&
           topic.id !== 'p2_deep_truth_dilemma' &&
           !hasReplyOptionsForCurrentStage &&
           effectiveTopicMoodDelta < 0 &&
@@ -2894,6 +3371,281 @@ export default function App() {
     });
 
     enqueueSequence(steps);
+  };
+
+  // === アッシュの頭部インタラクション（頭を触る・撫でる） ===
+  const handleHeadPat = () => {
+    if (
+      isTerminalOpen ||
+      isDialogueLogOpen ||
+      isManualOpen ||
+      isSequencing ||
+      isSequencingRef.current ||
+      isInteractionBlocked ||
+      isDecisionMenuOpen ||
+      isAschCollapsed ||
+      isAschExited
+    ) {
+      return;
+    }
+
+    soundEngine.unlockOnUserInteraction();
+
+    // フェーズ1：頭部接触のカマかけ（p1_touch_shoulder）を直接発動、4回目以降は手を払われ不機嫌ポイント付与＆帰還判定
+    if (!linkTags.includes('phase2_started')) {
+      const currentCount = headPatCount;
+      setHeadPatCount((prev) => prev + 1);
+
+      // フェーズ1でも4回目以降は手を払われ、不機嫌ポイント（mood -1）が付く！
+      if (currentCount >= 3) {
+        unlockAchievements('ach_11');
+        soundEngine.playHandSlap();
+        setReplayPulse((p) => p + 1);
+        setIsScreenShaking(true);
+        setTimeout(() => setIsScreenShaking(false), 200);
+        updateMood(-1);
+
+        // 警告がすでに出ている状態でさらに触ったら、その場で研究所へ帰還（ゲームオーバー）！
+        if (moodWarningGivenRef.current) {
+          triggerMoodLimitDeparture();
+          return;
+        }
+
+        if (currentCount === 3) {
+          const text = 'いい加減にしろ！ 何度も触るなと言っているだろうが！';
+          const face: Partial<FaceParts> = {
+            brow: 'angry',
+            eyes: 'glare',
+            mouth: 'shout',
+            effects: ['shadow'],
+          };
+          setOverrideExpression('glare');
+          setOverrideFaceParts(face);
+          pushScreenBubble('ASCH', text, 'shout');
+          return;
+        }
+
+        // 5回目：帰還前の最終警告！
+        moodWarningGivenRef.current = true;
+        appendLog(
+          'WARNING',
+          'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
+        );
+        const text = 'これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！';
+        const face: Partial<FaceParts> = {
+          brow: 'angry',
+          eyes: 'glare',
+          mouth: 'grit',
+          effects: ['shadow', 'sweat'],
+        };
+        setOverrideExpression('glare');
+        setOverrideFaceParts(face);
+        pushScreenBubble('ASCH', text, 'shout');
+        return;
+      }
+
+      // 1〜3回目：
+      if (phase1QuestionsCount < 5) {
+        const touchTopic = CONVERSATION_TOPICS.find(
+          (t) => t.id === 'p1_touch_shoulder'
+        );
+        if (touchTopic && !phase1AskedTopicIds.includes('p1_touch_shoulder')) {
+          handleSelectTopic(touchTopic);
+          return;
+        }
+      }
+
+      // 2回目・3回目（または5問終了後）の警戒反応
+      soundEngine.playTextAdvance();
+      setReplayPulse((p) => p + 1);
+      const isSecond = currentCount === 1;
+      const text = isSecond
+        ? '不要な接触はやめろと言ったはずだ'
+        : '・・・・・・機体に触れるな。警告は二度目だぞ';
+      setOverrideExpression('glare');
+      setOverrideFaceParts({
+        brow: isSecond ? 'normal' : 'angry',
+        eyes: 'glare',
+        mouth: isSecond ? 'close' : 'frown',
+        effects: [],
+      });
+      pushScreenBubble('ASCH', text, 'normal');
+      return;
+    }
+
+    // フェーズ2：頭撫でリアクション（3回目まで機嫌に応じた反応、4回目以降はどの機嫌でも不機嫌化＆手払い＆帰還判定）
+    const currentCount = headPatCount;
+    setHeadPatCount((prev) => prev + 1);
+
+    // 4回目以上（currentCount >= 3）：どの機嫌であっても手を払われ、不機嫌になる
+    if (currentCount >= 3) {
+      unlockAchievements('ach_11');
+      soundEngine.playHandSlap();
+      setReplayPulse((p) => p + 1);
+      setIsScreenShaking(true);
+      setTimeout(() => setIsScreenShaking(false), 200);
+      updateMood(-1);
+
+      // 警告がすでに出ている状態でさらに触ったら、その場で研究所へ帰還（ゲームオーバー）！
+      if (moodWarningGivenRef.current) {
+        triggerMoodLimitDeparture();
+        return;
+      }
+
+      if (currentCount === 3) {
+        const text = 'いい加減にしろ！ 何度も触るなと言っているだろうが！';
+        const face: Partial<FaceParts> = {
+          brow: 'angry',
+          eyes: 'glare',
+          mouth: 'shout',
+          effects: ['shadow'],
+        };
+        setOverrideExpression('glare');
+        setOverrideFaceParts(face);
+        pushScreenBubble('ASCH', text, 'shout');
+        return;
+      }
+
+      // 5回目：帰還前の最終警告！
+      moodWarningGivenRef.current = true;
+      appendLog(
+        'WARNING',
+        'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
+      );
+      const text = 'これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！';
+      const face: Partial<FaceParts> = {
+        brow: 'angry',
+        eyes: 'glare',
+        mouth: 'grit',
+        effects: ['shadow', 'sweat'],
+      };
+      setOverrideExpression('glare');
+      setOverrideFaceParts(face);
+      pushScreenBubble('ASCH', text, 'shout');
+      return;
+    }
+
+    const isAngry = moodRef.current < 0;
+    const isGood = moodRef.current >= 2;
+
+    if (isAngry) {
+      // 不機嫌時（1〜3回目）：手を払われる（鋭い打撃SE＋画面微振動）、機嫌がさらに悪化
+      soundEngine.playHandSlap();
+      setReplayPulse((p) => p + 1);
+      setIsScreenShaking(true);
+      setTimeout(() => setIsScreenShaking(false), 200);
+      updateMood(-1);
+
+      let text = '触るなと言っているだろうが！ 気安く近寄るな';
+      let face: Partial<FaceParts> = {
+        brow: 'angry',
+        eyes: 'glare',
+        mouth: 'shout',
+        effects: [],
+      };
+      let expr: ExpressionId = 'glare';
+      let voiceEffect: BubbleVoiceEffect = 'shout';
+
+      if (currentCount === 1) {
+        text = 'しつこいぞ！ ガキ扱いするなと言ったのが聞こえなかったのか！';
+        face = {
+          brow: 'angry',
+          eyes: 'glare',
+          mouth: 'shout',
+          effects: ['shadow'],
+        };
+        expr = 'glare';
+        voiceEffect = 'shout';
+      } else if (currentCount === 2) {
+        text = 'いい加減にしろ！ これ以上近寄るな！';
+        face = {
+          brow: 'angry',
+          eyes: 'glare',
+          mouth: 'grit',
+          effects: ['shadow', 'sweat'],
+        };
+        expr = 'pain';
+        voiceEffect = 'shout';
+      }
+
+      setOverrideExpression(expr);
+      setOverrideFaceParts(face);
+      pushScreenBubble('ASCH', text, voiceEffect);
+    } else if (isGood) {
+      // 上機嫌時（1〜3回目）：照れ・軟化（機嫌変化なし）
+      soundEngine.playTextAdvance();
+      setReplayPulse((p) => p + 1);
+
+      let text = 'や、やめろ';
+      let face: Partial<FaceParts> = {
+        brow: 'sad',
+        eyes: 'away',
+        mouth: 'frown',
+        effects: ['blush'],
+      };
+      let expr: ExpressionId = 'look_away';
+
+      if (currentCount === 1) {
+        text = 'やめろと言ってるだろう・・・・・・！';
+        face = {
+          brow: 'angry',
+          eyes: 'away',
+          mouth: 'grit',
+          effects: ['blush'],
+        };
+        expr = 'look_away';
+      } else if (currentCount === 2) {
+        text = '勝手にしろ。どうせ止めても聞かないんだろう';
+        face = {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
+          effects: ['blush'],
+        };
+        expr = 'normal';
+      }
+
+      setOverrideExpression(expr);
+      setOverrideFaceParts(face);
+      pushScreenBubble('ASCH', text, 'normal');
+    } else {
+      // 通常時（1〜3回目）：困惑・驚き（機嫌変化なし）
+      soundEngine.playTextAdvance();
+      setReplayPulse((p) => p + 1);
+
+      let text = 'な、何をする。急に触るな';
+      let face: Partial<FaceParts> = {
+        brow: 'doubt',
+        eyes: 'wide',
+        mouth: 'gasp',
+        effects: [],
+      };
+      let expr: ExpressionId = 'shock';
+
+      if (currentCount === 1) {
+        text = 'おい、さっきから何のつもりだ。髪を撫でて何が楽しい';
+        face = {
+          brow: 'doubt',
+          eyes: 'down',
+          mouth: 'frown',
+          effects: [],
+        };
+        expr = 'normal';
+      } else if (currentCount === 2) {
+        text = 'っ・・・・・・おまえは昔から人の頭を勝手にいじる癖があったな';
+        face = {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
+          effects: [],
+        };
+        expr = 'normal';
+      }
+
+      setOverrideExpression(expr);
+      setOverrideFaceParts(face);
+      pushScreenBubble('ASCH', text, 'normal');
+    }
   };
 
   // === フェーズ1終了時：『手元の端末の画面を本人に見せる』（ロック解除時のみ出現） ===
@@ -3126,7 +3878,7 @@ export default function App() {
         action: () => {
           pushScreenBubble(
             'GUY',
-            '・・・・・・もうシラを切るなよ。やっぱりおまえ、アッシュなんだな。',
+            '・・・・・・もうシラを切るなよ。やっぱりおまえ、アッシュじゃないか。',
             'normal'
           );
         },
@@ -3597,7 +4349,15 @@ export default function App() {
         },
       },
       {
-        delayMs: 1350,
+        delayMs: 700,
+        action: () => {
+          setIsAschExited(true);
+          soundEngine.playFootsteps('fast', 4);
+        },
+        isBubble: false,
+      },
+      {
+        delayMs: 4 * 210 + 1000,
         action: () => {
           setCustomEndingKey('END_PHASE2_INCOMPLETE');
           setStats((prev) => ({
@@ -3607,6 +4367,7 @@ export default function App() {
           setEndingStep(0);
           setGamePhase('ENDING');
         },
+        isBubble: false,
       },
     ];
     enqueueSequence(leaveSteps);
@@ -3626,6 +4387,12 @@ export default function App() {
 
     soundEngine.unlockOnUserInteraction();
     const currentReplyTopicId = activeTopicReply.topicId;
+
+    // EDイベント突入に伴いBGMを即座に完全停止
+    if (option.triggersEndingKey || option.triggersEnding) {
+      soundEngine.stopBgm();
+      soundEngine.setPlayingPhase(false);
+    }
 
     const responseTimeMs = Math.max(0, Date.now() - choiceShownAtRef.current);
     const isQuick = responseTimeMs <= 2000;
@@ -3658,8 +4425,8 @@ export default function App() {
     guyLines.forEach((line, idx) => {
       const delay =
         idx === 0
-          ? 240
-          : Math.min(1300, Math.max(780, guyLines[idx - 1].length * 34));
+          ? 260
+          : calculateLineDelayMs(guyLines[idx - 1]);
       steps.push({
         delayMs: delay,
         action: () => {
@@ -3668,19 +4435,27 @@ export default function App() {
           }
           pushScreenBubble('GUY', line, 'normal');
         },
+        isBubble: true,
       });
     });
 
-    const lastGuyLineLen =
-      guyLines.length > 0 ? guyLines[guyLines.length - 1].length : 6;
+    const lastGuyLineText =
+      guyLines.length > 0 ? guyLines[guyLines.length - 1] : '';
 
     const aschLines = option.aschText
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const pauseBeforeAsch =
-      Math.min(1350, Math.max(820, lastGuyLineLen * 30)) + 260;
+    const isEndingOption = Boolean(
+      option.triggersEndingKey || option.triggersEnding || option.endingTransition
+    );
+
+    const pauseBeforeAsch = isEndingOption
+      ? (option.waitMs ?? 1200)
+      : calculateLineDelayMs(lastGuyLineText, {
+          isSpeakerChange: true,
+        });
 
     const replyTameDurationMs = getPreSpeechTameDurationMs(
       option.expression,
@@ -3701,6 +4476,7 @@ export default function App() {
           setOverrideExpression(option.expression);
           setOverrideFaceParts(preFacePartsForReply);
         },
+        isBubble: false,
       });
     }
 
@@ -3708,7 +4484,9 @@ export default function App() {
       const delay =
         idx === 0
           ? replyTameDurationMs
-          : Math.min(1450, Math.max(860, aschLines[idx - 1].length * 38));
+          : isEndingOption
+          ? Math.max(1400, calculateLineDelayMs(aschLines[idx - 1]))
+          : calculateLineDelayMs(aschLines[idx - 1]);
       const baseEffect: BubbleVoiceEffect =
         option.voiceEffects?.[idx] ?? option.voiceEffects?.[0] ?? 'normal';
       const lineEffect = resolveVoiceEffectWithGlitch(baseEffect, 0, false);
@@ -3731,6 +4509,22 @@ export default function App() {
             if (nextSecondFace) {
               setOverrideFaceParts(nextSecondFace);
             }
+          }
+          if (
+            idx === aschLines.length - 1 &&
+            option.specialEffect === 'destroy'
+          ) {
+            window.setTimeout(() => {
+              soundEngine.playMechanicalDestroy();
+              setEyeGlitchPulse(Date.now());
+              setOverrideExpression('shock');
+              setOverrideFaceParts({
+                brow: 'angry',
+                eyes: 'wide',
+                mouth: 'shout',
+                effects: ['shadow'],
+              });
+            }, 850);
           }
           if (idx === 0) {
             setOverrideExpression(option.expression);
@@ -3793,7 +4587,10 @@ export default function App() {
             }
           }
 
-          if (idx === aschLines.length - 1) {
+          if (
+            idx === aschLines.length - 1 &&
+            !(option.extraExchanges && option.extraExchanges.length > 0)
+          ) {
             const triggers = [
               ...(option.capturedProtect ? [option.capturedProtect] : []),
               ...(option.capturedProtects ?? []),
@@ -3873,77 +4670,323 @@ export default function App() {
 
           pushScreenBubble('ASCH', line, lineEffect);
         },
+        isBubble: true,
       });
     });
 
-    steps.push({
-      delayMs:
-        option.triggersEnding || option.triggersEndingKey ? 1400 : 480,
-      action: () => {
-        if (option.triggersEndingKey) {
-          setCustomEndingKey(option.triggersEndingKey);
-          setStats((prev) => ({
-            ...prev,
-            endTime: Date.now(),
-          }));
-          setEndingStep(0);
-          setGamePhase('ENDING');
-        } else if (option.triggersEnding) {
-          setCustomEndingKey(null);
-          setEndingDisposition(option.triggersEnding);
-          setStats((prev) => ({
-            ...prev,
-            endTime: Date.now(),
-          }));
-          setEndingStep(0);
-          setGamePhase('ENDING');
-        } else if (
-          linkTags.includes('phase2_started') &&
-          currentReplyTopicId !== 'p2_deep_truth_dilemma' &&
-          !currentReplyTopicId.startsWith('p3_') &&
-          !(option.followUpOptions && option.followUpOptions.length > 0) &&
-          (option.moodDelta ?? 0) < 0 &&
-          moodRef.current < 0
-        ) {
-          if (!moodWarningGivenRef.current) {
-            moodWarningGivenRef.current = true;
-            appendLog(
-              'WARNING',
-              'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
-            );
-            playAschReactionLines(
-              '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
-              'glare',
-              {
-                brow: 'angry',
-                eyes: 'glare',
-                mouth: 'grit',
-                effects: ['sweat'],
-              },
-              ['shout'],
-              320
-            );
-          } else {
-            triggerMoodLimitDeparture();
-            return;
+    let prevWaitMsForEnding: number | undefined = isEndingOption
+      ? option.aschWaitMs
+      : undefined;
+
+    if (option.extraExchanges && option.extraExchanges.length > 0) {
+      let prevSpeaker: 'ASCH' | 'GUY' = aschLines.length > 0 ? 'ASCH' : 'GUY';
+      let prevText: string =
+        aschLines.length > 0 ? aschLines[aschLines.length - 1] : '';
+      let prevWaitMs: number | undefined = isEndingOption
+        ? option.aschWaitMs
+        : undefined;
+
+      option.extraExchanges.forEach((ex, exIdx) => {
+        const isLastExtra = exIdx === option.extraExchanges!.length - 1;
+        const exLines = ex.text
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        exLines.forEach((exLine, lineIdx) => {
+          const isVeryLastLine =
+            isLastExtra && lineIdx === exLines.length - 1;
+          const isSpeakerChange = prevSpeaker !== ex.speaker;
+          const delay =
+            lineIdx === 0
+              ? (isEndingOption ? (prevWaitMs ?? 1200) : calculateLineDelayMs(prevText, { isSpeakerChange }))
+              : calculateLineDelayMs(exLines[lineIdx - 1], { isSpeakerChange: false });
+          prevSpeaker = ex.speaker;
+          prevText = exLine;
+          if (lineIdx === exLines.length - 1) {
+            prevWaitMs = isEndingOption ? ex.waitMs : undefined;
           }
-        }
-        if (
-          moodRef.current < 0 &&
-          linkTags.includes('phase2_started') &&
-          !(option.followUpOptions && option.followUpOptions.length > 0)
-        ) {
-          resetAngryGlanceSchedule();
-          setOverrideExpression('glare');
-          setOverrideFaceParts({
-            brow: 'angry',
-            eyes: 'away',
-            mouth: 'frown',
-            effects: [],
+          if (isVeryLastLine && isEndingOption) {
+            prevWaitMsForEnding = ex.waitMs;
+          }
+
+          if (
+            lineIdx === exLines.length - 1 &&
+            ex.silentFaceSequence &&
+            ex.silentFaceSequence.length > 0
+          ) {
+            ex.silentFaceSequence.forEach((s) => {
+              steps.push({
+                delayMs: s.delayMs,
+                action: () => {
+                  if (s.expression) setOverrideExpression(s.expression);
+                  if (s.faceParts) {
+                    setOverrideFaceParts((prev) => ({
+                      ...(prev ??
+                        DEFAULT_EXPRESSION_PARTS[s.expression ?? activeExpression]),
+                      ...s.faceParts,
+                    }));
+                  }
+                },
+                isBubble: false,
+              });
+            });
+          }
+
+          steps.push({
+            delayMs: delay,
+            action: () => {
+              if (ex.specialEffect === 'destroy') {
+                soundEngine.playMechanicalDestroy();
+                setEyeGlitchPulse(Date.now());
+              } else if (ex.specialEffect === 'collapse') {
+                setEyeGlitchPulse(Date.now());
+                window.setTimeout(() => {
+                  if (ex.secondExpression) {
+                    setOverrideExpression(ex.secondExpression);
+                  }
+                  if (ex.secondFaceParts) {
+                    setOverrideFaceParts(ex.secondFaceParts);
+                  } else {
+                    setOverrideExpression('pain');
+                    setOverrideFaceParts({
+                      brow: 'sad',
+                      eyes: 'close',
+                      mouth: 'close',
+                      effects: ['shadow'],
+                    });
+                  }
+                }, 1100);
+                window.setTimeout(() => {
+                  setIsAschCollapsed(true);
+                  soundEngine.playBodyFall();
+                }, 1950);
+              } else if (ex.specialEffect === 'shout_shock') {
+                soundEngine.playHeavyShoutThud();
+                setReplayPulse((p) => p + 1);
+                setIsScreenShaking(true);
+                setTimeout(() => setIsScreenShaking(false), 240);
+              }
+              if (ex.speaker === 'ASCH') {
+                if (lineIdx === 0) {
+                  if (ex.expression) {
+                    setOverrideExpression(ex.expression);
+                  }
+                  if (ex.faceParts) {
+                    setOverrideFaceParts(ex.faceParts);
+                  }
+                } else {
+                  if (ex.secondExpression) {
+                    setOverrideExpression(ex.secondExpression);
+                  } else if (ex.expression) {
+                    setOverrideExpression(ex.expression);
+                  }
+                  if (ex.secondFaceParts) {
+                    setOverrideFaceParts(ex.secondFaceParts);
+                  } else if (ex.faceParts) {
+                    setOverrideFaceParts(ex.faceParts);
+                  }
+                }
+              }
+              if (isVeryLastLine) {
+                if (option.followUpOptions && option.followUpOptions.length > 0) {
+                  setPreviewPage(0);
+                  setActiveTopicReply({
+                    topicId: currentReplyTopicId,
+                    options: option.followUpOptions,
+                  });
+                } else {
+                  const targetTopic = CONVERSATION_TOPICS.find(
+                    (t) => t.id === currentReplyTopicId
+                  );
+                  if (targetTopic && option.completesTopic) {
+                    setTopicAskCounts((prev) => ({
+                      ...prev,
+                      [currentReplyTopicId]: targetTopic.stages.length,
+                    }));
+                  }
+                }
+              }
+              pushScreenBubble(
+                ex.speaker,
+                exLine,
+                ex.voiceEffect ?? 'normal'
+              );
+            },
+            isBubble: true,
           });
-        }
-      },
-    });
+        });
+      });
+    }
+
+    if (
+      option.endingTransition &&
+      (option.triggersEndingKey || option.triggersEnding)
+    ) {
+      const trans = option.endingTransition;
+      const waitBefore =
+        prevWaitMsForEnding !== undefined
+          ? prevWaitMsForEnding
+          : (trans.waitBeforeExitMs ?? 800);
+      const stepInterval =
+        trans.footsteps === 'slow' ? 440 : trans.footsteps === 'fast' ? 240 : 360;
+      const count = trans.footstepsCount ?? 3;
+      const footstepsTotalMs = count * stepInterval;
+
+      // 1. セリフ表示後の余韻を経て、アッシュ退場（フェードアウト）と足音開始
+      steps.push({
+        delayMs: waitBefore,
+        action: () => {
+          if (trans.aschAction === 'fade_out') {
+            setIsAschExited(true);
+          } else if (trans.aschAction === 'collapse') {
+            setIsAschCollapsed(true);
+          }
+          if (trans.footsteps) {
+            soundEngine.playFootsteps(trans.footsteps, count);
+          }
+        },
+        isBubble: false,
+      });
+
+      if (trans.doorAction && trans.doorAction !== 'none') {
+        // ドア開
+        steps.push({
+          delayMs: footstepsTotalMs + 200,
+          action: () => {
+            soundEngine.playDoorOpen();
+          },
+          isBubble: false,
+        });
+
+        // ドア閉
+        steps.push({
+          delayMs: 700,
+          action: () => {
+            soundEngine.playDoorClose(
+              trans.doorAction === 'slam' ? 'slam' : 'soft'
+            );
+          },
+          isBubble: false,
+        });
+
+        // 閉扉後の余韻を経てエンディング画面へ
+        steps.push({
+          delayMs: Math.max(1000, trans.waitAfterDoorMs ?? 1000),
+          action: () => {
+            if (option.triggersEndingKey) {
+              setCustomEndingKey(option.triggersEndingKey);
+            } else if (option.triggersEnding) {
+              setCustomEndingKey(null);
+              setEndingDisposition(option.triggersEnding);
+            }
+            setStats((prev) => ({
+              ...prev,
+              endTime: Date.now(),
+            }));
+            setEndingStep(0);
+            soundEngine.stopBgm();
+            soundEngine.setPlayingPhase(false);
+            setGamePhase('ENDING');
+          },
+          isTerminal: true,
+        });
+      } else {
+        // ドア音なし：足音終了後に静寂余韻を経てエンディング画面へ
+        steps.push({
+          delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+          action: () => {
+            if (option.triggersEndingKey) {
+              setCustomEndingKey(option.triggersEndingKey);
+            } else if (option.triggersEnding) {
+              setCustomEndingKey(null);
+              setEndingDisposition(option.triggersEnding);
+            }
+            setStats((prev) => ({
+              ...prev,
+              endTime: Date.now(),
+            }));
+            setEndingStep(0);
+            soundEngine.stopBgm();
+            soundEngine.setPlayingPhase(false);
+            setGamePhase('ENDING');
+          },
+          isTerminal: true,
+        });
+      }
+    } else {
+      steps.push({
+        delayMs:
+          option.triggersEnding || option.triggersEndingKey ? 1600 : 480,
+        action: () => {
+          if (option.triggersEndingKey) {
+            setCustomEndingKey(option.triggersEndingKey);
+            setStats((prev) => ({
+              ...prev,
+              endTime: Date.now(),
+            }));
+            setEndingStep(0);
+            soundEngine.stopBgm();
+            soundEngine.setPlayingPhase(false);
+            setGamePhase('ENDING');
+          } else if (option.triggersEnding) {
+            setCustomEndingKey(null);
+            setEndingDisposition(option.triggersEnding);
+            setStats((prev) => ({
+              ...prev,
+              endTime: Date.now(),
+            }));
+            setEndingStep(0);
+            soundEngine.stopBgm();
+            soundEngine.setPlayingPhase(false);
+            setGamePhase('ENDING');
+          } else if (
+            linkTags.includes('phase2_started') &&
+            currentReplyTopicId !== 'p2_deep_truth_dilemma' &&
+            !currentReplyTopicId.startsWith('p3_') &&
+            !(option.followUpOptions && option.followUpOptions.length > 0) &&
+            (option.moodDelta ?? 0) < 0 &&
+            moodRef.current < 0
+          ) {
+            if (!moodWarningGivenRef.current) {
+              moodWarningGivenRef.current = true;
+              appendLog(
+                'WARNING',
+                'WARNING: EMOTIONAL WAVEFORM CRITICAL // SESSION ABORT IMMINENT'
+              );
+              playAschReactionLines(
+                '・・・・・・いい加減にしろ。これ以上鬱陶しい真似を続けるなら、俺は今すぐ研究所へ戻るからな！',
+                'glare',
+                {
+                  brow: 'angry',
+                  eyes: 'glare',
+                  mouth: 'grit',
+                  effects: ['sweat'],
+                },
+                ['shout'],
+                320
+              );
+            } else {
+              triggerMoodLimitDeparture();
+              return;
+            }
+          }
+          if (
+            moodRef.current < 0 &&
+            linkTags.includes('phase2_started') &&
+            !(option.followUpOptions && option.followUpOptions.length > 0)
+          ) {
+            resetAngryGlanceSchedule();
+            setOverrideExpression('glare');
+            setOverrideFaceParts({
+              brow: 'angry',
+              eyes: 'away',
+              mouth: 'frown',
+              effects: [],
+            });
+          }
+        },
+      });
+    }
 
     enqueueSequence(steps);
   };
@@ -4137,6 +5180,10 @@ export default function App() {
     isAngryGlancingRef.current = false;
     badMoodRefusalCountRef.current = 0;
     badMoodHintShownRef.current = false;
+    setIsAschExited(false);
+    setIsAschCollapsed(false);
+    setEyeGlitchPulse(0);
+    setHeadPatCount(0);
     setVisibleBubbles([]);
     setDialogueHistory([]);
     setOralInfos([]);
@@ -4248,6 +5295,7 @@ export default function App() {
     setStats(createInitialStats());
     setOverrideExpression(null);
     setOverrideFaceParts(null);
+    setHeadPatCount(0);
     setHasUnreadSector(false);
     setIsTerminalOpen(false);
     setIsDialogueLogOpen(false);
@@ -4668,25 +5716,40 @@ export default function App() {
 
   const bgBlurPx =
     isDialogueLogOpen || isManualOpen ? 6 : isTerminalOpen ? 2 : 0;
+  const isDockActive = isScenarioInspectorOpen && inspectorViewMode === 'dock';
 
   return (
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDropOnStage}
-      className="fixed inset-0 w-screen h-dvh bg-[#050507] flex items-center justify-center overflow-hidden select-none"
+      className={`fixed inset-0 w-screen h-dvh bg-[#050507] flex ${
+        isDockActive
+          ? 'flex-row items-center justify-between'
+          : 'items-center justify-center'
+      } overflow-hidden select-none`}
     >
-      {/* 16:9 固定解像度キャンバス (800×450) */}
+      {/* 画面連動ドック時は左側領域にキャンバスを綺麗に中央配置 */}
       <div
-        style={{
-          width: `${STAGE_WIDTH}px`,
-          height: `${STAGE_HEIGHT}px`,
-          transform: isPortraitRotated
-            ? `rotate(90deg) scale(${stageScale})`
-            : `scale(${stageScale})`,
-          transformOrigin: 'center center',
-        }}
-        className="relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.95)] border border-zinc-800 shrink-0"
+        className={`${
+          isDockActive
+            ? 'flex-1 h-full flex items-center justify-center p-2 overflow-hidden'
+            : 'contents'
+        }`}
       >
+        {/* 16:9 固定解像度キャンバス (800×450) */}
+        <div
+          style={{
+            width: `${STAGE_WIDTH}px`,
+            height: `${STAGE_HEIGHT}px`,
+            transform: isPortraitRotated
+              ? `rotate(90deg) scale(${stageScale})`
+              : `scale(${stageScale})`,
+            transformOrigin: 'center center',
+          }}
+          className={`relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.95)] border border-zinc-800 shrink-0 ${
+            isScreenShaking ? 'screen-heavy-shake' : ''
+          }`}
+        >
         {/* 背面での立ち絵DOMウォームアップ保持 */}
         {gamePhase !== 'PLAYING' && (
           <div
@@ -4798,11 +5861,11 @@ export default function App() {
                   </ul>
                 </div>
 
-                {/* 右カラム：二次創作ゲームに関するご案内 */}
+                {/* 右カラム：このゲームについて */}
                 <div className="flex flex-col space-y-0.5">
                   <div className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 border-b border-zinc-800/70 pb-0.5">
                     <Info className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
-                    <span>二次創作ゲームに関するご案内</span>
+                    <span>このゲームについて</span>
                   </div>
                   <p className="text-[8.5px] leading-snug text-zinc-400 whitespace-nowrap">
                     本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
@@ -4812,19 +5875,32 @@ export default function App() {
                 </div>
               </div>
 
-              {achievementSave.reachedEndingKeys.length > 0 && (
+              <div className="absolute right-0 bottom-0 flex items-center gap-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    soundEngine.unlockOnUserInteraction();
-                    soundEngine.playTerminalTab();
-                    setIsAchievementModalOpen(true);
+                    handleOpenScenarioInspector();
                   }}
-                  className="absolute right-0 bottom-0 px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-[11.5px] tracking-wider border border-emerald-700/80 bg-zinc-950 hover:bg-emerald-950/60 text-emerald-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  実績・記録
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>全シナリオ・演出確認</span>
                 </button>
-              )}
+
+                {achievementSave.reachedEndingKeys.length > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      soundEngine.unlockOnUserInteraction();
+                      soundEngine.playTerminalTab();
+                      setIsAchievementModalOpen(true);
+                    }}
+                    className="px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    実績・記録
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -4966,6 +6042,25 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (isScenarioInspectorOpen) {
+                      handleCloseScenarioInspector();
+                    } else {
+                      handleOpenScenarioInspector();
+                    }
+                  }}
+                  title="全シナリオ・演出インスペクター（確認モード）"
+                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
+                    isScenarioInspectorOpen
+                      ? 'bg-emerald-400 text-zinc-950 border-emerald-300 font-bold'
+                      : 'text-emerald-300 hover:text-white border-emerald-800 hover:border-emerald-600 bg-emerald-950/40'
+                  }`}
+                >
+                  <span>▶</span>
+                  <span>演出確認</span>
+                </button>
+
                 {canAccessExpressionViewer && (
                   <button
                     onClick={() => {
@@ -5074,15 +6169,35 @@ export default function App() {
               >
                 {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限200pxで下の選択肢と絶対に重ならない） */}
                 <div className="w-[calc(100%+24px)] -mr-6 max-h-[200px] overflow-hidden flex flex-col justify-start pt-0.5">
-                  {visibleBubbles.map((bubble) => {
+                  {visibleBubbles.map((bubble, bubbleIdx) => {
                     const isAsch = bubble.speaker === 'ASCH';
+                    const isLatest = bubbleIdx === visibleBubbles.length - 1;
                     const resolvedEffect: BubbleVoiceEffect =
                       bubble.voiceEffect ?? 'normal';
+                    const isGuyShout =
+                      resolvedEffect === 'shout' || resolvedEffect === 'shout_glitch';
+                    const isGuyTremble =
+                      resolvedEffect === 'tremble' || resolvedEffect === 'tremble_glitch';
+
                     const formattedGuyText = !isAsch
-                      ? formatBubbleText(bubble.text, 'normal')
+                      ? formatBubbleText(bubble.text, resolvedEffect)
                       : '';
                     const isGuyMultiLine3Plus =
                       !isAsch && formattedGuyText.split('\n').length >= 3;
+
+                    const guyBubbleEffectClass = isLatest
+                      ? isGuyShout
+                        ? 'bubble-voice-shout text-zinc-900'
+                        : isGuyTremble
+                          ? 'bubble-voice-tremble text-zinc-800'
+                          : ''
+                      : '';
+
+                    const guyTextSizeClass = isGuyShout
+                      ? 'text-size-shout'
+                      : isGuyTremble
+                        ? 'text-size-tremble'
+                        : 'text-size-normal';
 
                     return (
                       <div
@@ -5097,18 +6212,19 @@ export default function App() {
                           <AschBubbleItem
                             text={bubble.text}
                             effect={resolvedEffect}
+                            isLatest={isLatest}
                           />
                         ) : (
                           <div
                             className={`relative w-fit max-w-[404px] bg-[#dcdde3] text-zinc-950 px-3.5 ${
                               isGuyMultiLine3Plus ? 'py-1.5' : 'py-2'
-                            }`}
+                            } ${guyBubbleEffectClass}`}
                           >
                             <div className="w-0 h-0 absolute -left-[10px] bottom-2 border-y-[6px] border-y-transparent border-r-[11px] border-r-[#dcdde3]" />
                             <p
-                              className={`text-[13.5px] ${
+                              className={`${guyTextSizeClass} ${
                                 isGuyMultiLine3Plus
-                                  ? 'leading-[1.3]'
+                                  ? '!leading-[1.3]'
                                   : 'leading-snug'
                               } tracking-wide whitespace-pre-wrap break-words`}
                             >
@@ -5144,10 +6260,12 @@ export default function App() {
 
                     const PAGE_SIZE = 3;
 
-                    // Phase 1 の質問リスト計算
+                    // Phase 1 の質問リスト計算（※頭部接触は立ち絵頭部を直接タップするインタラクションへ移行したため選択肢一覧からは除外）
                     const sortedPhase1 = (() => {
-                      const phase1Topics = CONVERSATION_TOPICS.filter((t) =>
-                        t.id.startsWith('p1_')
+                      const phase1Topics = CONVERSATION_TOPICS.filter(
+                        (t) =>
+                          t.id.startsWith('p1_') &&
+                          t.id !== 'p1_touch_shoulder'
                       );
                       const remainingQuestions = Math.max(
                         0,
@@ -5804,7 +6922,15 @@ export default function App() {
               </div>
 
               {/* 右側：アッシュの立ち絵 */}
-              <div className="relative z-20 w-[42%] h-full flex items-end justify-center pointer-events-none">
+              <div
+                className={`relative z-20 w-[42%] h-full flex items-end justify-center pointer-events-none transition-all duration-700 ease-in ${
+                  isAschCollapsed
+                    ? 'opacity-0 translate-y-28 scale-95'
+                    : isAschExited
+                    ? 'opacity-0'
+                    : 'opacity-100 translate-y-0 scale-100'
+                }`}
+              >
                 <AschPortrait
                   expression={activeExpression}
                   faceParts={activeFaceParts}
@@ -5816,7 +6942,44 @@ export default function App() {
                   blurPx={bgBlurPx}
                   motionTuning={motionTuning}
                   replayPulse={replayPulse}
+                  eyeGlitchPulse={eyeGlitchPulse}
                 />
+
+                {/* 頭部インタラクション（触る・撫でるタップ判定） */}
+                {!isAschCollapsed && !isAschExited && (
+                  <button
+                    type="button"
+                    title={
+                      !linkTags.includes('phase2_started')
+                        ? '頭に手を伸ばす'
+                        : '頭を撫でる'
+                    }
+                    aria-label="アッシュの頭部を触る"
+                    disabled={
+                      isInteractionBlocked ||
+                      isTerminalOpen ||
+                      isDialogueLogOpen ||
+                      isManualOpen ||
+                      isSequencing
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleHeadPat();
+                    }}
+                    style={{
+                      cursor: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath d='M 14 21 C 17 21, 18.5 18, 18.5 14 V 9.5 A 1.1 1.1 0 0 0 16.5 9.5 V 12.5 C 16.5 12.8, 16 12.8, 16 12.5 V 7 A 1.1 1.1 0 0 0 13.8 7 V 11.5 C 13.8 11.8, 13.3 11.8, 13.3 11.5 V 4.5 A 1.1 1.1 0 0 0 11.1 4.5 V 11.5 C 11.1 11.8, 10.6 11.8, 10.6 11.5 V 7 A 1.1 1.1 0 0 0 8.4 7 V 13.2 C 8.4 14, 7.5 14.5, 6.8 14.2 L 4.2 12.6 A 1.1 1.1 0 0 0 3 14.2 L 6.2 18 C 7.2 19.8, 8 21, 10 21 Z' fill='%23ffffff' stroke='%2318181b' stroke-width='1.0' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M 16.2 12.5 V 14.5 M 13.5 11.5 V 14.5 M 10.8 11.5 V 14' fill='none' stroke='%2318181b' stroke-width='0.9' stroke-linecap='round'/%3E%3C/svg%3E") 11 4, grab`,
+                    }}
+                    className={`absolute top-[2%] left-1/2 -translate-x-1/2 w-[180px] h-[95px] z-30 rounded-t-full cursor-grab active:cursor-grabbing pointer-events-auto transition-transform active:scale-95 focus:outline-none ${
+                      isInteractionBlocked ||
+                      isTerminalOpen ||
+                      isDialogueLogOpen ||
+                      isManualOpen ||
+                      isSequencing
+                        ? 'pointer-events-none opacity-0'
+                        : ''
+                    }`}
+                  />
+                )}
               </div>
 
               {/* 表情・パーツ挙動ビューワー（左半分に展開し、右側の立ち絵をそのままリアルタイム確認） */}
@@ -5922,7 +7085,49 @@ export default function App() {
             </footer>
           </>
         )}
+        </div>
       </div>
+
+      {/* 全シナリオ・演出インスペクター（全セリフ・全表情・全演出の実機プレビュー） */}
+      <ScenarioInspectorModal
+        isOpen={isScenarioInspectorOpen}
+        onClose={handleCloseScenarioInspector}
+        onPreviewLine={handlePreviewInspectorSingleLine}
+        onPreviewSequence={handlePreviewInspectorSequence}
+        onStopPlayback={handleStopInspectorPlayback}
+        onSkipAdvance={handleSkipCurrentDelay}
+        onApplyFaceOnly={(expr, parts) => {
+          soundEngine.unlockOnUserInteraction();
+          if (gamePhase !== 'PLAYING') {
+            setGamePhase('PLAYING');
+            soundEngine.setPlayingPhase(true);
+          }
+          setOverrideExpression(expr);
+          if (parts) {
+            setOverrideFaceParts((prev) => ({
+              ...(prev ?? DEFAULT_EXPRESSION_PARTS[expr]),
+              ...parts,
+            }));
+          }
+          setReplayPulse((p) => p + 1);
+        }}
+        onClearPreview={() => {
+          clearPendingSequence();
+          setOverrideExpression(null);
+          setOverrideFaceParts(null);
+          setDebugPreviewState(null);
+          setVisibleBubbles([]);
+        }}
+        activeExpression={activeExpression}
+        activeFaceParts={activeFaceParts}
+        availableRootFiles={availableRootFiles}
+        availablePartFiles={availablePartFiles}
+        customTestPngSrc={customTestPng}
+        customPartMap={customPartMap}
+        motionTuning={motionTuning}
+        viewMode={inspectorViewMode}
+        onChangeViewMode={setInspectorViewMode}
+      />
     </div>
   );
 }
