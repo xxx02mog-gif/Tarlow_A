@@ -151,7 +151,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         flashText: 'そうか、おまえの手に戻ったんだな・・・・・・',
         slipFaceParts: {
           brow: 'smile',
-          eyes: 'down',
+          eyes: 'smile',
           mouth: 'close',
           effects: [],
         },

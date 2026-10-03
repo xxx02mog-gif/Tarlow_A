@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=WDXL+Lubrifont+JP+N&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=WDXL+Lubrifont+JP+N&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -27,10 +27,19 @@ body {
   font-family: "WDXL Lubrifont JP N", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
 
-/* ゲームの雰囲気に合わせたカスタムスクロールバー */
+/* ゲームの雰囲気に合わせたカスタムスクロールバー ＆ スマホタップ時ハイライト暗転の防止 */
 * {
   scrollbar-width: thin;
   scrollbar-color: #3f3f46 #09090c;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible {
+  outline: 1px solid #71717a;
+}
+
+button:focus:not(:focus-visible) {
+  outline: none;
 }
 
 *::-webkit-scrollbar {
@@ -52,10 +61,10 @@ body {
   background: #71717a;
 }
 
-/* 端末専用フォント（DotGothic16） */
+/* 情報端末・システムUIフォント（Zen Kaku Gothic New） */
 .font-terminal,
 .font-terminal * {
-  font-family: "DotGothic16", monospace !important;
+  font-family: "Zen Kaku Gothic New", sans-serif !important;
 }
 
 /* フローチャート確認用フォント（読みやすい標準ゴシック体・テキスト選択許可） */

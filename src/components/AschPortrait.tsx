@@ -174,8 +174,12 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
     return () => window.clearTimeout(timer);
   }, [eyeGlitchPulse]);
 
-  const imgFilterStyle =
-    blurPx > 0 ? { filter: `blur(${blurPx}px)` } : undefined;
+  const containerFilterStyle: React.CSSProperties = {
+    transform: 'translateY(8px) scale(1.045)',
+    transformOrigin: '50% 78%',
+    filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
+    willChange: blurPx > 0 ? 'filter' : undefined,
+  };
   // 実際に存在するパーツ画像のみを返す（未配置のURLへのリクエスト＆404によるチラつきを完全防止）
   const resolvePartSrc = (filename: string, fallbackFilename?: string): string | null => {
     const lower = filename.toLowerCase();
@@ -385,10 +389,7 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                 存在するファイルのみを参照するため、表情切替時の404チラつきや表示遅延が発生しません
                 ※上下に揺れた際も下端が途切れて見えないよう、全体を少し拡大して下方向へ余白を持たせて配置 */}
             <div
-              style={{
-                transform: 'translateY(8px) scale(1.045)',
-                transformOrigin: '50% 78%',
-              }}
+              style={containerFilterStyle}
               className="relative z-10 max-h-full h-full w-auto flex items-end justify-center"
             >
               {/* レイヤー1：素体（base.png または test.png） */}
@@ -396,7 +397,6 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                 src={primaryBaseSrc}
                 alt="アッシュ"
                 decoding="sync"
-                style={imgFilterStyle}
                 className="relative z-10 max-h-full w-auto object-contain block"
               />
 
@@ -429,7 +429,6 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                           alt=""
                           decoding="sync"
                           style={{
-                            ...imgFilterStyle,
                             visibility: item.id === activeMouthId ? 'visible' : 'hidden',
                           }}
                           className="absolute inset-0 w-full h-full object-contain pointer-events-none"
@@ -472,7 +471,6 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                             alt=""
                             decoding="sync"
                             style={{
-                              ...imgFilterStyle,
                               visibility: item.id === activeEyeId ? 'visible' : 'hidden',
                             }}
                             className="absolute inset-0 w-full h-full object-contain pointer-events-none"
@@ -510,7 +508,6 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                           alt=""
                           decoding="sync"
                           style={{
-                            ...imgFilterStyle,
                             visibility: item.id === activeBrowId ? 'visible' : 'hidden',
                           }}
                           className="absolute inset-0 w-full h-full object-contain pointer-events-none"
@@ -537,7 +534,6 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
                     src={eff.src}
                     alt=""
                     decoding="sync"
-                    style={imgFilterStyle}
                     className="w-full h-full object-contain pointer-events-none"
                   />
                 </div>

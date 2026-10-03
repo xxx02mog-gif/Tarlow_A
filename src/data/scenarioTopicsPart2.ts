@@ -21,7 +21,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         aschText:
           '・・・・・・でまかせじゃない。2ヶ月前にその機体が壊れてこれに移されるまで、\n俺は本当に『タルロウA』という50センチくらいの小型譜業に入っていた。\nおまえやあの眼鏡、皇帝が研究所に来た時にも、何度か顔を合わせている',
         expression: 'normal',
-        faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
         secondFaceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
         trustDelta: 1,
         replyOptions: [
@@ -33,7 +33,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・俺がこんな譜業になって生き永らえているなどと、気付かないならそれに越したことはないだろう。\n今はもうこの姿で見つかってしまったから、隠しても仕方がないがな',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: ['shadow'] },
+            faceParts: { brow: 'angry', eyes: 'down', mouth: 'grit', effects: ['sweat'] },
             secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'frown', effects: [] },
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-03',
@@ -312,7 +312,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・あいつに頭を下げろと言うのか。冗談じゃない',
             expression: 'glare',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: [] },
             moodDelta: -1,
             completesTopic: true,
           },
@@ -355,7 +355,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         badMoodResponse: {
           aschText: '・・・・・・あいつが何時間も自慢話で騒ぐのを適当にあしらっているだけだ',
           expression: 'look_away',
-          faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
+          faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: [] },
           moodDelta: 0,
         },
         replyOptions: [
@@ -415,9 +415,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           '・・・・・・まだその話をする気か',
         expression: 'look_away',
         faceParts: {
-          brow: 'angry',
+          brow: 'doubt',
           eyes: 'away',
-          mouth: 'frown',
+          mouth: 'close',
           effects: ['blush'],
         },
         capturedProtect: {
@@ -525,7 +525,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・まじまじ見るな',
             expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
+            faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: ['blush'] },
             moodDelta: 1,
             trustDelta: 1,
             naturalUnlockSectorId: 'SEC-11',
@@ -794,7 +794,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         aschText:
           '・・・・・・あいつが本当に戻ったのか、確かめただけだ。\n・・・・・・あいつが戻っているなら、俺が顔を出す必要はない',
         expression: 'look_away',
-        faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: [] },
         secondFaceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: ['shadow'] },
         moodDelta: 1,
         trustDelta: 1,
@@ -881,7 +881,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         aschText:
           '・・・・・・指先が小さくなって、勝手が違っただけだ',
         expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
+        faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: ['blush', 'sweat'] },
         moodDelta: 1,
         trustDelta: 1,
       },
@@ -1182,8 +1182,8 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
-              eyes: 'close',
-              mouth: 'frown',
+              eyes: 'wide',
+              mouth: 'smile',
               effects: [],
             },
             trustDelta: 1,
@@ -1231,7 +1231,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           '・・・・・・ない。音機関の出力を落として休止状態に入るだけだ。\n目を閉じて、次に開けた時にはただ時間が飛んでいる。夢なんてものは一度も見ない',
         expression: 'normal',
         faceParts: {
-          brow: 'sad',
+          brow: 'doubt',
           eyes: 'down',
           mouth: 'close',
           effects: [],
@@ -1263,10 +1263,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               '・・・・・・ああ。意識が戻るたびに、心臓の拍動じゃなく、胸の中で音機関が回る微かな振動だけが響く。\n・・・・・・いつまで経っても、慣れる気はしないがな',
             expression: 'look_away',
             faceParts: {
-              brow: 'sad',
+              brow: 'pain',
               eyes: 'close',
-              mouth: 'close',
-              effects: [],
+              mouth: 'grit',
+              effects: ['pale'],
             },
             secondFaceParts: {
               brow: 'sad',
@@ -1315,10 +1315,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               '・・・・・・ない。\nバチカルにも戻れん。・・・・・・こんな身体で、どこへ行けと言うんだ',
             expression: 'look_away',
             faceParts: {
-              brow: 'sad',
+              brow: 'pain',
               eyes: 'close',
-              mouth: 'close',
-              effects: [],
+              mouth: 'frown',
+              effects: ['shadow'],
             },
             secondFaceParts: {
               brow: 'sad',
@@ -1440,7 +1440,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・たまに盤面を並べるくらいだ。相手になる奴がいないからな',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+            faceParts: { brow: 'smile', eyes: 'down', mouth: 'close', effects: [] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_chess_board',
@@ -1605,7 +1605,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・一度死んだ人間が、こんな譜業の姿で母上の前に出てみろ。混乱させるだけだ',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
+            faceParts: { brow: 'pain', eyes: 'down', mouth: 'frown', effects: ['shadow'] },
             moodDelta: 1,
             trustDelta: 2,
             requireLinkTag: 'hint_manor_parents',
@@ -1705,7 +1705,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             aschText:
               '・・・・・・ふっ、そうかもしれないな',
             expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'close', mouth: 'smile', effects: [] },
+            faceParts: { brow: 'sad', eyes: 'wide', mouth: 'smile', effects: ['pale'] },
             moodDelta: -2,
             completesTopic: true,
           },
@@ -1871,7 +1871,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             expression: 'pain',
             faceParts: {
               brow: 'pain',
-              eyes: 'close',
+              eyes: 'pain',
               mouth: 'grit',
               effects: ['pale', 'sweat'],
             },
@@ -2000,7 +2000,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               brow: 'pain',
               eyes: 'wide',
               mouth: 'open',
-              effects: ['pale', 'sweat', 'noise'],
+              effects: ['pale', 'sweat', 'noise', 'tears'],
             },
             voiceEffects: ['tremble_glitch', 'shout_glitch'],
             requireLinkTag: 'sec19_unlocked',
@@ -2197,14 +2197,14 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                   brow: 'pain',
                   eyes: 'empty',
                   mouth: 'gasp',
-                  effects: ['shadow'],
+                  effects: ['shadow', 'tears'],
                 },
                 secondExpression: 'pain',
                 secondFaceParts: {
                   brow: 'sad',
                   eyes: 'close',
                   mouth: 'close',
-                  effects: ['shadow'],
+                  effects: ['shadow', 'tears'],
                 },
                 voiceEffect: 'tremble_glitch',
                 waitMs: 2700,
@@ -2496,8 +2496,8 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           '・・・・・・ハッ、あいつがそんな殊勝な理由で動くものか。どうせ貴重なサンプルを壊されたくなかっただけだろう。\n・・・・・・まあいい。思い出せないことは、今の俺には必要のないことだ',
         expression: 'look_away',
         faceParts: {
-          brow: 'doubt',
-          eyes: 'glare',
+          brow: 'sad',
+          eyes: 'wide',
           mouth: 'smile',
           effects: [],
         },

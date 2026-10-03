@@ -3778,37 +3778,32 @@ export default function App() {
 
       const occurred = phase1OccurredSlips.find((s) => s.topicId === topicId);
 
-      if (occurred) {
-        const correctId: 'REWRITE' | 'PRE_FACE' | 'CALL_NAME' =
-          topicId === 'p1_touch_shoulder'
-            ? 'CALL_NAME'
-            : occurred.variant.type === 'REWRITE'
-              ? 'REWRITE'
-              : 'PRE_FACE';
+      const correctId: 'REWRITE' | 'PRE_FACE' | 'CALL_NAME' =
+        topicId === 'p1_touch_shoulder'
+          ? 'CALL_NAME'
+          : occurred?.variant.type === 'REWRITE'
+            ? 'REWRITE'
+            : 'PRE_FACE';
 
-        const correctCandidate = ALL_CANDIDATES.find((c) => c.id === correctId)!;
-        const wrongPool = ALL_CANDIDATES.filter((c) => {
-          if (c.id === correctId) return false;
-          // 頭に手を伸ばした質問でボロが出た場合、「『ガイ』と名前を呼んだ」と「途中で言葉を言い直した」が同時に並ばないように除外
-          if (topicId === 'p1_touch_shoulder' && c.id === 'REWRITE') {
-            return false;
-          }
-          return true;
-        });
+      // 常に主要なボロ指摘候補（REWRITE、PRE_FACE、CALL_NAME）から2個とランダムなブラフ1個の合計3個に絞り、枠内に綺麗に収める
+      const coreIds = topicId === 'p1_touch_shoulder'
+        ? ['CALL_NAME', 'REWRITE']
+        : ['REWRITE', 'PRE_FACE'];
 
-        const pickedWrong = shuffle(wrongPool)
-          .slice(0, 2)
-          .map((c) => ({ ...c, isCorrect: false }));
+      const otherCandidates = ALL_CANDIDATES.filter((c) => !coreIds.includes(c.id));
+      const pickedOther = shuffle(otherCandidates).slice(0, 1);
 
-        return shuffle([
-          { ...correctCandidate, isCorrect: true },
-          ...pickedWrong,
-        ]);
-      }
+      const selectedCandidates = [
+        ...ALL_CANDIDATES.filter((c) => coreIds.includes(c.id)),
+        ...pickedOther,
+      ];
 
-      return shuffle(ALL_CANDIDATES)
-        .slice(0, 3)
-        .map((c) => ({ ...c, isCorrect: false }));
+      return shuffle(
+        selectedCandidates.map((c) => ({
+          ...c,
+          isCorrect: c.id === correctId,
+        }))
+      );
     },
     [phase1OccurredSlips]
   );
@@ -5746,7 +5741,7 @@ export default function App() {
               : `scale(${stageScale})`,
             transformOrigin: 'center center',
           }}
-          className={`relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.95)] border border-zinc-800 shrink-0 ${
+          className={`relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-2xl shrink-0 ${
             isScreenShaking ? 'screen-heavy-shake' : ''
           }`}
         >
@@ -6161,7 +6156,13 @@ export default function App() {
               {/* 左側：セリフ枠タイムライン（最大3枠） ＆ ガイの思考選択肢 */}
               <div
                 style={
-                  bgBlurPx > 0 ? { filter: `blur(${bgBlurPx}px)` } : undefined
+                  bgBlurPx > 0
+                    ? {
+                        filter: `blur(${bgBlurPx}px)`,
+                        transform: 'translateZ(0)',
+                        willChange: 'filter',
+                      }
+                    : undefined
                 }
                 className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-opacity duration-200 ${
                   isTerminalOpen ? 'pointer-events-none select-none' : ''
@@ -6424,7 +6425,7 @@ export default function App() {
                             : '何について話す？';
 
                     const choiceListClass =
-                      'relative h-[100px] flex flex-col justify-start gap-[7px]';
+                      'relative h-[100px] flex flex-col justify-start gap-[7px] overflow-hidden';
                     const choiceBtnSizeClass =
                       'w-full max-w-[448px] min-h-[28px]';
                     const choiceInnerPyClass = 'py-1';

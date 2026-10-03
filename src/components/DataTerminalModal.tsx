@@ -110,6 +110,21 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
     return () => clearInterval(interval);
   }, [holdingSectorId]);
 
+  const scrollToItemTop = (itemId: string) => {
+    // ReactのDOM反映＆アコーディオン展開完了後に確実に実行
+    // タイトルの上枠線・コードバッジ・文字が確実にすべて見える位置（余白2px）へスクロール
+    setTimeout(() => {
+      if (!infoListRef.current) return;
+      const el = document.getElementById(`terminal-item-${itemId}`);
+      if (!el) return;
+      const targetTop = Math.max(0, el.offsetTop - 2);
+      infoListRef.current.scrollTo({
+        top: targetTop,
+        behavior: 'smooth',
+      });
+    }, 40);
+  };
+
   // ゲージが100%に到達したらロック解除を完了し、解除した項目をそのまま展開・既読化する
   useEffect(() => {
     if (holdProgress >= 100 && holdingSectorId) {
@@ -121,6 +136,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
       setExpandedInfoIds((prev) => ({ ...prev, [itemKey]: true }));
       setReadInfoIds((prev) => ({ ...prev, [itemKey]: true }));
       onReadSector?.(targetId);
+      scrollToItemTop(itemKey);
     }
   }, [holdProgress, holdingSectorId, onOverrideSector, onReadSector]);
 
@@ -171,6 +187,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
       if (sectorId) {
         onReadSector?.(sectorId);
       }
+      scrollToItemTop(id);
     }
   };
 
@@ -282,13 +299,43 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
           .filter((item) => normalizeCategory(item.category) === selectedInfoFilter)
           .sort((a, b) => a.code.localeCompare(b.code));
 
+  const touchStartXRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.PointerEvent) => {
+    touchStartXRef.current = e.clientX;
+  };
+
+  const handleTouchEnd = (e: React.PointerEvent) => {
+    if (touchStartXRef.current === null) return;
+    const diffX = e.clientX - touchStartXRef.current;
+    touchStartXRef.current = null;
+    const threshold = 35;
+    if (Math.abs(diffX) > threshold) {
+      if (diffX > 0) {
+        // Swipe right -> Prev
+        if (pageIndex > 0) {
+          goPrev();
+        }
+      } else {
+        // Swipe left -> Next
+        if (pageIndex < PAGES.length - 1) {
+          goNext();
+        }
+      }
+    }
+  };
+
   const goPrev = () => {
-    soundEngine.playTerminalTab();
-    setPageIndex((prev) => (prev - 1 + PAGES.length) % PAGES.length);
+    if (pageIndex > 0) {
+      soundEngine.playTerminalTab();
+      setPageIndex((prev) => Math.max(0, prev - 1));
+    }
   };
   const goNext = () => {
-    soundEngine.playTerminalTab();
-    setPageIndex((prev) => (prev + 1) % PAGES.length);
+    if (pageIndex < PAGES.length - 1) {
+      soundEngine.playTerminalTab();
+      setPageIndex((prev) => Math.min(PAGES.length - 1, prev + 1));
+    }
   };
 
   // 基本の項目は全て白一色に統一
@@ -314,20 +361,35 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
       }`}
     >
       {/* 1. 端末の液晶画面UI領域（新しいtanmatu.pngの黒ベゼル内側の透過窓にぴったり収まり、親指の右側を安全領域として表示） */}
-      <div className="absolute left-[140px] top-[49px] w-[372px] h-[192px] z-20 bg-[#09090b] text-zinc-100 pl-[38px] pr-[6px] pt-[3px] pb-[3px] flex flex-col overflow-hidden">
+      <div
+        onPointerDown={handleTouchStart}
+        onPointerUp={handleTouchEnd}
+        onPointerCancel={handleTouchEnd}
+        className="absolute left-[140px] top-[49px] w-[372px] h-[192px] z-20 bg-[#09090b] text-zinc-100 pl-[38px] pr-[6px] pt-[3px] pb-[3px] flex flex-col overflow-hidden touch-pan-y"
+      >
         {/* 液晶上部：ページ切り替えバー */}
         <div className="px-2 py-0.5 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-1">
             <button
               onClick={goPrev}
-              className="px-1.5 py-0.5 text-[9px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
+              disabled={pageIndex === 0}
+              className={`px-1.5 py-0.5 text-[9px] border border-zinc-700 leading-none ${
+                pageIndex === 0
+                  ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer'
+              }`}
               title="前のページ"
             >
               ◀
             </button>
             <button
               onClick={goNext}
-              className="px-1.5 py-0.5 text-[9px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-pointer leading-none"
+              disabled={pageIndex === PAGES.length - 1}
+              className={`px-1.5 py-0.5 text-[9px] border border-zinc-700 leading-none ${
+                pageIndex === PAGES.length - 1
+                  ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer'
+              }`}
               title="次のページ"
             >
               ▶
@@ -469,7 +531,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
               {/* 観測ログリスト（常時スクロールバー表示） */}
               <div
                 ref={infoListRef}
-                className="flex-1 min-h-0 overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#52525b_#09090b] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-[#09090b] [&::-webkit-scrollbar-track]:border-l [&::-webkit-scrollbar-track]:border-zinc-800 [&::-webkit-scrollbar-thumb]:bg-zinc-600 hover:[&::-webkit-scrollbar-thumb]:bg-zinc-400 [&::-webkit-scrollbar-thumb]:rounded-none pr-1 space-y-1"
+                className="flex-1 min-h-0 overflow-y-scroll relative [overflow-anchor:none] [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#52525b_#09090b] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-[#09090b] [&::-webkit-scrollbar-track]:border-l [&::-webkit-scrollbar-track]:border-zinc-800 [&::-webkit-scrollbar-thumb]:bg-zinc-600 hover:[&::-webkit-scrollbar-thumb]:bg-zinc-400 [&::-webkit-scrollbar-thumb]:rounded-none pr-1 space-y-1"
               >
                 {filteredInfoItems.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-center">
@@ -482,6 +544,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                     const isExpanded = !!expandedInfoIds[item.id];
                     const isRead = !!readInfoIds[item.id];
                     const isUnread = !item.isProtected && !isRead;
+                    const isHighlight = isExpanded || isUnread;
                     const isCurrentlyHolding =
                       item.isProtected &&
                       item.sectorId &&
@@ -491,12 +554,15 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                     return (
                       <div
                         key={item.id}
+                        id={`terminal-item-${item.id}`}
                         className={`border overflow-hidden transition-colors rounded-none ${
                           isMajor
                             ? 'border-[#632f2f] bg-[#1a0f0f]'
-                            : isUnread
-                              ? 'border-[#333842] border-l-2 border-l-[#e4e4e7] bg-[#0c0d10]'
-                              : 'border-[#333842] bg-[#0c0d10]'
+                            : isExpanded
+                              ? 'border-[#52525b] border-l-2 border-l-[#e4e4e7] bg-[#0c0d10]'
+                              : isUnread
+                                ? 'border-[#333842] border-l-2 border-l-[#e4e4e7] bg-[#0c0d10]'
+                                : 'border-[#333842] bg-[#0c0d10]'
                         }`}
                       >
                         {item.isProtected ? (
@@ -573,7 +639,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                               <div className="flex items-center gap-1.5 min-w-0 flex-1">
                                 <span
                                   className={`text-[8px] font-mono px-1 py-[0.5px] border shrink-0 bg-[#18181b] rounded-none leading-tight transition-colors ${
-                                    isUnread
+                                    isHighlight
                                       ? 'border-[#6b7280] text-[#e4e4e7]'
                                       : 'border-[#3f3f46] text-[#71717a]'
                                   }`}
@@ -582,7 +648,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                 </span>
                                 <span
                                   className={`text-[9px] truncate transition-colors ${
-                                    isUnread ? 'text-[#e4e4e7]' : 'text-[#8b8b95]'
+                                    isHighlight ? 'text-[#e4e4e7]' : 'text-[#8b8b95]'
                                   }`}
                                 >
                                   {item.title}
@@ -590,7 +656,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                               </div>
                               <span
                                 className={`text-[9.5px] font-bold shrink-0 transition-colors ${
-                                  isUnread ? 'text-[#d4d4d8]' : 'text-[#71717a]'
+                                  isHighlight ? 'text-[#e4e4e7]' : 'text-[#71717a]'
                                 }`}
                               >
                                 {isExpanded ? '－' : '＋'}
@@ -599,7 +665,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
 
                             {isExpanded && (
                               <div className="px-2 py-1.5 border-t border-zinc-800/90 bg-[#070709] space-y-1">
-                                <p className="text-[9px] leading-relaxed text-zinc-300 whitespace-pre-wrap">
+                                <p className="text-[9px] leading-relaxed text-zinc-200 whitespace-pre-wrap">
                                   {formatParagraphText(item.content, 33.5)}
                                 </p>
                                 {item.subWarning && (
