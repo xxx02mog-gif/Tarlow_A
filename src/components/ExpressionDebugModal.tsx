@@ -123,19 +123,12 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
       ...activeFaceParts,
       effects: [],
     });
+    onReplayMotion();
   };
 
   const handleCopyTuningSummary = async () => {
     soundEngine.playTerminalTab();
-    const summary = JSON.stringify(
-      {
-        expression: activeExpression,
-        faceParts: activeFaceParts,
-        motionTuning,
-      },
-      null,
-      2
-    );
+    const summary = `const TUNING = ${JSON.stringify(motionTuning, null, 2)};`;
     try {
       await navigator.clipboard.writeText(summary);
       setCopiedText(true);
@@ -148,23 +141,23 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute left-3 top-[48px] bottom-[48px] w-[462px] z-40 bg-[#101116]/95 text-zinc-100 border border-zinc-600 shadow-[0_10px_35px_rgba(0,0,0,0.85)] flex flex-col justify-between px-3.5 py-2.5 select-none pointer-events-auto"
+      className="absolute left-3 top-[48px] bottom-[48px] w-[462px] z-40 bg-[#e4e5ea] text-zinc-900 border border-zinc-950 shadow-2xl flex flex-col justify-between px-4 py-3 select-none pointer-events-auto font-zen"
     >
       {/* ヘッダー */}
       <div>
-        <div className="flex items-center justify-between border-b border-zinc-700 pb-1.5">
-          <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 text-[9.5px] font-mono font-bold bg-zinc-200 text-zinc-950">
-              {showAsBonus ? 'EXTRA // VIEWER' : 'DEBUG // VIEWER'}
-            </span>
-            <h3 className="text-[12.5px] font-bold tracking-wider text-white">
+        <div className="flex items-center justify-between border-b-2 border-zinc-900 pb-2">
+          <div className="flex items-baseline gap-2.5">
+            <h3 className="text-[14px] font-bold tracking-wider text-zinc-950 font-zen">
               {showAsBonus
                 ? 'おまけ：表情鑑賞ビューワー'
-                : '表情・パーツ挙動ビューワー（調整用）'}
+                : '表情・パーツ挙動ビューワー'}
             </h3>
+            <span className="text-[9.5px] font-mono tracking-widest text-zinc-500">
+              {showAsBonus ? 'EXTRA // VIEWER' : 'DEBUG // VIEWER'}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {!isBonusMode && (
               <button
                 type="button"
@@ -174,9 +167,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   setPreviewBonusUI(next);
                   if (next) setTab('PARTS');
                 }}
-                className="px-2 py-0.5 text-[10px] border border-zinc-600 bg-zinc-900 hover:border-zinc-400 text-zinc-300 hover:text-white cursor-pointer"
+                className="px-2 py-0.5 text-[10px] border border-zinc-500 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 transition-colors cursor-pointer"
               >
-                {previewBonusUI ? '🔧 開発調整モードへ' : '🎁 ご褒美版の見た目を確認'}
+                {previewBonusUI ? '🔧 調整モード' : '🎁 ご褒美版'}
               </button>
             )}
             <button
@@ -185,19 +178,19 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                 soundEngine.playTerminalClose();
                 onClose();
               }}
-              className="text-[11px] text-zinc-400 hover:text-white px-1.5 py-0.5 cursor-pointer"
+              className="px-2.5 py-0.5 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
             >
               ✕ 閉じる
             </button>
           </div>
         </div>
 
-        {/* タブ切り替え ＆ 再再生ボタン */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pt-1.5 pb-1">
+        {/* タブ切り替え ＆ 再生ボタン */}
+        <div className="flex items-center justify-between border-b border-zinc-300/80 pt-2 pb-1.5">
           <div className="flex items-center gap-3">
             {showAsBonus ? (
-              <span className="text-[11px] text-zinc-300">
-                全パーツ自由に組み合わせて鑑賞できます（本編回収済み: {validSeenCount}/27）
+              <span className="text-[11px] text-zinc-700">
+                全パーツ自由に組み合わせて鑑賞できます（回収: <strong className="text-zinc-950">{validSeenCount}</strong>/27）
               </span>
             ) : (
               <>
@@ -207,13 +200,13 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                     soundEngine.playTerminalTab();
                     setTab('PARTS');
                   }}
-                  className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
+                  className={`text-[11.5px] pb-0.5 cursor-pointer transition-colors ${
                     tab === 'PARTS'
-                      ? 'text-white font-bold border-b-2 border-zinc-200'
-                      : 'text-zinc-400 hover:text-zinc-200'
+                      ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
+                      : 'text-zinc-500 hover:text-zinc-800'
                   }`}
                 >
-                  ① パーツ組み換え ({validSeenCount}/27)
+                  パーツ組み換え ({validSeenCount}/27)
                 </button>
                 <button
                   type="button"
@@ -221,13 +214,13 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                     soundEngine.playTerminalTab();
                     setTab('MOTION');
                   }}
-                  className={`text-[11px] pb-0.5 cursor-pointer transition-colors ${
+                  className={`text-[11.5px] pb-0.5 cursor-pointer transition-colors ${
                     tab === 'MOTION'
-                      ? 'text-white font-bold border-b-2 border-zinc-200'
-                      : 'text-zinc-400 hover:text-zinc-200'
+                      ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
+                      : 'text-zinc-500 hover:text-zinc-800'
                   }`}
                 >
-                  ② 動き・拡縮の調整（開発用）
+                  動き・拡縮調整
                 </button>
               </>
             )}
@@ -240,7 +233,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                 soundEngine.playTerminalTab();
                 onReplayMotion();
               }}
-              className="px-2 py-0.5 text-[10.5px] bg-zinc-200 hover:bg-white text-zinc-950 font-bold cursor-pointer"
+              className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-950 cursor-pointer transition-colors"
             >
               ▶ モーション再生
             </button>
@@ -251,9 +244,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   soundEngine.playTerminalTab();
                   onClearPreviewOverride();
                 }}
-                className="px-2 py-0.5 text-[10px] border border-zinc-600 text-zinc-300 hover:text-white hover:border-zinc-400 cursor-pointer"
+                className="px-2 py-0.5 text-[10px] border border-zinc-500 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 cursor-pointer transition-colors"
               >
-                元の表情に戻す
+                元に戻す
               </button>
             )}
           </div>
@@ -261,13 +254,13 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
       </div>
 
       {/* メインボディ */}
-      <div className="flex-1 overflow-y-auto py-1.5 pr-1 space-y-2">
+      <div className="flex-1 overflow-y-auto py-2 pr-1 space-y-2.5">
         {tab === 'PARTS' && (
           <>
             {/* ベースプリセット */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-zinc-400 font-mono">
+                <span className="text-[10px] text-zinc-600 font-mono font-bold">
                   PRESET // 基本プリセット
                 </span>
                 <span className="text-[9.5px] text-zinc-500">
@@ -284,8 +277,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       onClick={() => handleSelectPreset(p.id)}
                       className={`py-1 text-[11px] border text-center cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                          : 'bg-zinc-200/80 text-zinc-800 border-zinc-400 hover:border-zinc-600 hover:bg-zinc-300'
                       }`}
                     >
                       {p.label}
@@ -297,7 +290,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
 
             {/* 眉パーツ (6種) */}
             <div className="space-y-1">
-              <span className="text-[10px] text-zinc-400 font-mono block">
+              <span className="text-[10px] text-zinc-600 font-mono font-bold block">
                 BROW // 眉パーツ (6種)
               </span>
               <div className="grid grid-cols-6 gap-1">
@@ -311,14 +304,14 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       onClick={() => handleSelectBrow(b.id)}
                       className={`py-1 px-1 text-[10.5px] border flex items-center justify-center gap-0.5 cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                          : 'bg-zinc-200/80 text-zinc-800 border-zinc-400 hover:border-zinc-600 hover:bg-zinc-300'
                       }`}
                     >
                       {isSeen && (
                         <span
                           className={`text-[8px] ${
-                            isCurrent ? 'text-zinc-800' : 'text-zinc-400'
+                            isCurrent ? 'text-zinc-300' : 'text-zinc-600'
                           }`}
                         >
                           ●
@@ -333,7 +326,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
 
             {/* 目パーツ (9種) */}
             <div className="space-y-1">
-              <span className="text-[10px] text-zinc-400 font-mono block">
+              <span className="text-[10px] text-zinc-600 font-mono font-bold block">
                 EYES // 目パーツ (9種)
               </span>
               <div className="grid grid-cols-5 gap-1">
@@ -347,14 +340,14 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       onClick={() => handleSelectEye(e.id)}
                       className={`py-1 px-1 text-[10.5px] border flex items-center justify-center gap-0.5 cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                          : 'bg-zinc-200/80 text-zinc-800 border-zinc-400 hover:border-zinc-600 hover:bg-zinc-300'
                       }`}
                     >
                       {isSeen && (
                         <span
                           className={`text-[8px] ${
-                            isCurrent ? 'text-zinc-800' : 'text-zinc-400'
+                            isCurrent ? 'text-zinc-300' : 'text-zinc-600'
                           }`}
                         >
                           ●
@@ -369,7 +362,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
 
             {/* 口パーツ (7種) */}
             <div className="space-y-1">
-              <span className="text-[10px] text-zinc-400 font-mono block">
+              <span className="text-[10px] text-zinc-600 font-mono font-bold block">
                 MOUTH // 口パーツ (7種)
               </span>
               <div className="grid grid-cols-4 gap-1">
@@ -383,14 +376,14 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       onClick={() => handleSelectMouth(m.id)}
                       className={`py-1 px-1 text-[10.5px] border flex items-center justify-center gap-0.5 cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                          : 'bg-zinc-200/80 text-zinc-800 border-zinc-400 hover:border-zinc-600 hover:bg-zinc-300'
                       }`}
                     >
                       {isSeen && (
                         <span
                           className={`text-[8px] ${
-                            isCurrent ? 'text-zinc-800' : 'text-zinc-400'
+                            isCurrent ? 'text-zinc-300' : 'text-zinc-600'
                           }`}
                         >
                           ●
@@ -406,14 +399,14 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
             {/* エフェクト (5種) */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-zinc-400 font-mono">
+                <span className="text-[10px] text-zinc-600 font-mono font-bold">
                   EFFECTS // 感情エフェクト（5種・複数重ね可）
                 </span>
                 {activeFaceParts.effects.length > 0 && (
                   <button
                     type="button"
                     onClick={handleClearEffects}
-                    className="text-[9.5px] text-zinc-400 hover:text-white underline cursor-pointer"
+                    className="text-[9.5px] text-zinc-600 hover:text-zinc-950 underline cursor-pointer"
                   >
                     すべて外す
                   </button>
@@ -430,14 +423,14 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       onClick={() => handleToggleEffect(eff.id)}
                       className={`py-1 px-1 text-[10.5px] border flex items-center justify-center gap-0.5 cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                          : 'bg-zinc-200/80 text-zinc-800 border-zinc-400 hover:border-zinc-600 hover:bg-zinc-300'
                       }`}
                     >
                       {isSeen && (
                         <span
                           className={`text-[8px] ${
-                            isCurrent ? 'text-zinc-800' : 'text-zinc-400'
+                            isCurrent ? 'text-zinc-300' : 'text-zinc-600'
                           }`}
                         >
                           ●
@@ -455,9 +448,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
         {!showAsBonus && tab === 'MOTION' && (
           <div className="space-y-2.5 text-[11px]">
             {/* 1. 全体モーション強さ＆呼吸 */}
-            <div className="p-2 bg-zinc-900/90 border border-zinc-800 space-y-2">
+            <div className="p-2 bg-zinc-200/90 border border-zinc-400 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-300 font-bold">
+                <span className="text-zinc-900 font-bold">
                   全体の動きの大きさ（倍率）
                 </span>
                 <div className="flex items-center gap-1">
@@ -481,8 +474,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                       }}
                       className={`px-1.5 py-0.5 text-[10px] border cursor-pointer ${
                         Math.abs(motionTuning.motionScale - item.val) < 0.05
-                          ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                          : 'bg-zinc-950 text-zinc-400 border-zinc-700 hover:text-white'
+                          ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold'
+                          : 'bg-zinc-100 text-zinc-800 border-zinc-400 hover:bg-zinc-300'
                       }`}
                     >
                       {item.label}
@@ -491,8 +484,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-1 border-t border-zinc-800/80">
-                <span className="text-zinc-300">待機中の微細な呼吸（上下）</span>
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-300">
+                <span className="text-zinc-800">待機中の微細な呼吸（上下）</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -504,8 +497,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   }}
                   className={`px-2.5 py-0.5 text-[10.5px] border cursor-pointer ${
                     motionTuning.breathingEnabled
-                      ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                      : 'bg-zinc-950 text-zinc-400 border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-400'
                   }`}
                 >
                   {motionTuning.breathingEnabled ? 'ON' : 'OFF'}
@@ -514,9 +507,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
             </div>
 
             {/* 2. 身体リアクション＆微震動テスト */}
-            <div className="p-2 bg-zinc-900/90 border border-zinc-800 space-y-1.5">
+            <div className="p-2 bg-zinc-200/90 border border-zinc-400 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-300 font-bold">
+                <span className="text-zinc-900 font-bold">
                   身体リアクションのテスト再生
                 </span>
                 <button
@@ -531,8 +524,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   }}
                   className={`px-2 py-0.5 text-[10px] border cursor-pointer ${
                     motionTuning.forceTremor
-                      ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                      : 'bg-zinc-950 text-zinc-400 border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-400'
                   }`}
                 >
                   パーツ微震動(1回): {motionTuning.forceTremor ? '強制ON' : '自動'}
@@ -563,8 +556,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                     }}
                     className={`py-1 text-[10px] border text-center cursor-pointer ${
                       motionTuning.bodyReactionOverride === item.id
-                        ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                        : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:border-zinc-500'
+                        ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold'
+                        : 'bg-zinc-100 text-zinc-800 border-zinc-400 hover:bg-zinc-300'
                     }`}
                   >
                     {item.label}
@@ -574,9 +567,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
             </div>
 
             {/* 3. 個別パーツ手動スライダー調整 */}
-            <div className="p-2 bg-zinc-900/90 border border-zinc-800 space-y-1.5">
+            <div className="p-2 bg-zinc-200/90 border border-zinc-400 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-300 font-bold">
+                <span className="text-zinc-900 font-bold">
                   パーツ位置・拡縮の手動スライダー調整
                 </span>
                 <button
@@ -590,8 +583,8 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   }}
                   className={`px-2 py-0.5 text-[10px] border cursor-pointer ${
                     motionTuning.customOffsetsEnabled
-                      ? 'bg-zinc-200 text-zinc-950 border-white font-bold'
-                      : 'bg-zinc-950 text-zinc-400 border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-400'
                   }`}
                 >
                   {motionTuning.customOffsetsEnabled
@@ -607,7 +600,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
               >
                 {/* 眉の上下 */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="w-[105px] text-[10.5px] text-zinc-300">
+                  <span className="w-[105px] text-[10.5px] text-zinc-800">
                     眉の上下 (Y)
                   </span>
                   <input
@@ -623,16 +616,16 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                         browY: parseFloat(e.target.value),
                       })
                     }
-                    className="flex-1 accent-zinc-200 cursor-pointer"
+                    className="flex-1 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-200">
+                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-900 font-bold">
                     {motionTuning.browY > 0 ? `+${motionTuning.browY}` : motionTuning.browY}px
                   </span>
                 </div>
 
                 {/* 目の上下・縦拡縮 */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="w-[105px] text-[10.5px] text-zinc-300">
+                  <span className="w-[105px] text-[10.5px] text-zinc-800">
                     目の上下 (Y)
                   </span>
                   <input
@@ -648,15 +641,15 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                         eyeY: parseFloat(e.target.value),
                       })
                     }
-                    className="flex-1 accent-zinc-200 cursor-pointer"
+                    className="flex-1 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-200">
+                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-900 font-bold">
                     {motionTuning.eyeY > 0 ? `+${motionTuning.eyeY}` : motionTuning.eyeY}px
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="w-[105px] text-[10.5px] text-zinc-300">
+                  <span className="w-[105px] text-[10.5px] text-zinc-800">
                     目の見開き (縦)
                   </span>
                   <input
@@ -672,16 +665,16 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                         eyeScaleY: parseFloat(e.target.value),
                       })
                     }
-                    className="flex-1 accent-zinc-200 cursor-pointer"
+                    className="flex-1 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-200">
+                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-900 font-bold">
                     {Math.round(motionTuning.eyeScaleY * 100)}%
                   </span>
                 </div>
 
                 {/* 口の上下・縦拡縮 */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="w-[105px] text-[10.5px] text-zinc-300">
+                  <span className="w-[105px] text-[10.5px] text-zinc-800">
                     口の縦拡縮
                   </span>
                   <input
@@ -697,9 +690,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                         mouthScaleY: parseFloat(e.target.value),
                       })
                     }
-                    className="flex-1 accent-zinc-200 cursor-pointer"
+                    className="flex-1 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-200">
+                  <span className="w-[46px] text-right font-mono text-[10px] text-zinc-900 font-bold">
                     {Math.round(motionTuning.mouthScaleY * 100)}%
                   </span>
                 </div>
@@ -710,9 +703,9 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
       </div>
 
       {/* フッター */}
-      <div className="flex items-center justify-between border-t border-zinc-800 pt-1.5 text-[10px] text-zinc-400">
+      <div className="flex items-center justify-between border-t border-zinc-400 pt-2 text-[10px] text-zinc-600">
         {showAsBonus ? (
-          <span className="text-zinc-400">
+          <span className="text-zinc-600">
             ※お好みの眉・目・口・エフェクトを組み合わせてアッシュの表情を鑑賞できます
           </span>
         ) : (
@@ -733,16 +726,16 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
                   onChangeMotionTuning(DEFAULT_MOTION_TUNING);
                   onReplayMotion();
                 }}
-                className="px-2 py-0.5 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white cursor-pointer"
+                className="px-2 py-0.5 border border-zinc-400 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 cursor-pointer transition-colors"
               >
-                動き設定初期化
+                初期化
               </button>
               <button
                 type="button"
                 onClick={handleCopyTuningSummary}
-                className="px-2 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-600 cursor-pointer"
+                className="px-2.5 py-0.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-950 font-bold cursor-pointer transition-colors"
               >
-                {copiedText ? 'コピー完了!' : '設定値をコピー'}
+                {copiedText ? 'コピー完了!' : '設定値コピー'}
               </button>
             </div>
           </>

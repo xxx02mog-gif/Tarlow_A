@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+.font-zen {
+  font-family: "Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}

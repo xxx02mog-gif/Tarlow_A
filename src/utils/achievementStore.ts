@@ -80,7 +80,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_10',
     numberLabel: '10',
     title: '目と目が合う',
-    description: '怒っているアッシュと沈黙中に目が合った瞬間、話しかけて機嫌を直してもらった',
+    description: '機嫌が悪いアッシュに目が合った瞬間話しかけた',
   },
   {
     id: 'ach_11',
@@ -142,52 +142,52 @@ export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
   {
     key: 'END_PHASE1_TARLOW',
     numberLabel: 'END 01',
-    hint: '演技を見抜けず、タルロウAのまま研究所へ帰す（ゲームオーバー）',
+    hint: '拙い嘘に騙されてあげよう',
   },
   {
     key: 'END_PHASE2_INCOMPLETE',
     numberLabel: 'END 02',
-    hint: '正体は見破ったものの、怒らせて帰られる（ゲームオーバー）',
+    hint: '機嫌を損ねるムーブを繰り返したら・・・',
   },
   {
     key: 'END_PHASE2_NORMAL_RETURN',
     numberLabel: 'END 03',
-    hint: '深く話さず（核心には触れず）研究所へ帰す（雑談エンド）',
+    hint: '詮索せずに、軽く雑談をしてから帰すと・・・',
   },
   {
     key: 'END_PHASE2_STAY_REST',
     numberLabel: 'END 04',
-    hint: '深く話さず（核心には触れず）家に残して休ませる（雑談エンド）',
+    hint: 'もう少し休んでいかないかと聞いてみよう',
   },
   {
     key: 'END_PHASE2_ASCH',
     numberLabel: 'END 05',
-    hint: '最後の問いかけ（DP-002/003なし）に『アッシュだ』と答える（True）',
+    hint: '彼の問いに迷わず彼の名前を呼ぶと吉',
   },
   {
     key: 'END_PHASE3_MACHINE',
     numberLabel: 'END 06',
-    hint: '最後の問いかけ（DP-002/003なし）に『ただの譜業だ』と答える',
+    hint: '彼の問いに、あえて突き放そう',
   },
   {
     key: 'END_PHASE3_SILENCE',
     numberLabel: 'END 07',
-    hint: '最後の問いかけ（DP-002/003なし）に何も答えない',
+    hint: '彼の問いに、言葉を見つけられずにいると・・・',
   },
   {
     key: 'END_PHASE3_TOMORROW',
     numberLabel: 'END 08',
-    hint: 'DP-002/003を解放した上で、秘密を問い詰めずに肯定する',
-  },
-  {
-    key: 'END_PHASE3_SWAMPMAN',
-    numberLabel: 'END 09',
-    hint: 'DP-002/003を解放した上で秘密を問い詰め、ルークと目の前の存在の認識が崩壊する',
+    hint: '秘密を知っても、決して追及しないでおく',
   },
   {
     key: 'END_PHASE3_MERCY_DESTROY',
+    numberLabel: 'END 09',
+    hint: '■■する',
+  },
+  {
+    key: 'END_PHASE3_SWAMPMAN',
     numberLabel: 'END 10',
-    hint: 'DP-002/003を解放した上で秘密を問い詰め、『ルーク』を守るために目の前の機体を破壊する',
+    hint: '秘密を突きつけ、全てを明らかにしよう',
   },
 ];
 

@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AlertTriangle,
+  Award,
   BookOpen,
   Info,
   Scale,
@@ -521,10 +522,10 @@ export default function App() {
       const portrait = h > w;
       setIsPortraitRotated(portrait);
 
-      // インスペクターがドックモードで開いている場合、右側のパネル幅(最大540px)を差し引いてキャンバスを最適スケーリング
+      // インスペクターがドックモードで開いている場合、左側のパネル幅(約400px)を差し引いてキャンバスを最適スケーリング
       const dockWidth =
-        isScenarioInspectorOpen && inspectorViewMode === 'dock' && w >= 1050
-          ? Math.min(540, Math.floor(w * 0.42))
+        isScenarioInspectorOpen && inspectorViewMode === 'dock' && w >= 960
+          ? Math.min(410, Math.floor(w * 0.38))
           : 0;
 
       const effectiveW = portrait ? h : Math.max(380, w - dockWidth);
@@ -771,6 +772,17 @@ export default function App() {
   const [isSequencing, setIsSequencing] = useState<boolean>(false);
   const [isAschExited, setIsAschExited] = useState<boolean>(false);
   const [isAschCollapsed, setIsAschCollapsed] = useState<boolean>(false);
+  const isAschAbsent = isAschExited || isAschCollapsed;
+
+  // アッシュ退場時（立ち去り・崩壊）は開いている各種メニューやモーダルを閉じる
+  useEffect(() => {
+    if (isAschAbsent) {
+      setIsTerminalOpen(false);
+      setIsDialogueLogOpen(false);
+      setIsManualOpen(false);
+      setIsDecisionMenuOpen(false);
+    }
+  }, [isAschAbsent]);
   const [eyeGlitchPulse, setEyeGlitchPulse] = useState<number>(0);
   const [screenShakePulse, setScreenShakePulse] = useState<number>(0);
   const [isScreenShaking, setIsScreenShaking] = useState<boolean>(false);
@@ -1034,11 +1046,13 @@ export default function App() {
     debugPreviewState?.faceParts ?? computedSceneParts;
 
   const isBonusViewerUnlocked =
-    achievementSave.reachedEndingKeys.length >= ENDING_ARCHIVE_LIST.length ||
-    achievementSave.unlockedAchievementIds.includes('ach_17') ||
-    achievementSave.unlockedAchievementIds.includes('ach_18');
+    achievementSave.unlockedAchievementIds.includes('ach_17');
   const canAccessExpressionViewer =
     DEBUG_VIEWER_ALWAYS_VISIBLE || isBonusViewerUnlocked;
+
+  const canAccessScenarioInspector =
+    DEBUG_VIEWER_ALWAYS_VISIBLE ||
+    achievementSave.unlockedAchievementIds.includes('ach_18');
 
   const updateMood = useCallback(
     (delta: number) => {
@@ -1470,7 +1484,7 @@ export default function App() {
 
           if (onComplete) {
             steps.push({
-              delayMs: Math.max(1000, trans.waitAfterDoorMs ?? 1000),
+              delayMs: Math.max(2600, (trans.waitAfterDoorMs ?? 1000) + 1600),
               action: () => {
                 onComplete();
               },
@@ -1481,7 +1495,7 @@ export default function App() {
           // ドア音なし：足音終了後に静寂余韻を経て完了
           if (onComplete) {
             steps.push({
-              delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+              delayMs: footstepsTotalMs + Math.max(2600, (trans.waitAfterDoorMs ?? 1200) + 1400),
               action: () => {
                 onComplete();
               },
@@ -1569,6 +1583,8 @@ export default function App() {
     soundEngine.playTerminalClose();
     clearPendingSequence();
     setVisibleBubbles([]);
+    setIsAschExited(false);
+    setIsAschCollapsed(false);
     setOverrideExpression(null);
     setOverrideFaceParts(null);
     setIsScenarioInspectorOpen(false);
@@ -1896,9 +1912,9 @@ export default function App() {
             },
             isBubble: false,
           },
-          // ED画面へ移行
+          // ED画面へ移行（アッシュが去った後の余韻と間をしっかり置いてから）
           {
-            delayMs: 3 * 440 + 1400,
+            delayMs: 3 * 440 + 2600,
             action: () => {
               setCustomEndingKey('END_PHASE3_SILENCE');
               setStats((prev) => ({
@@ -2474,7 +2490,7 @@ export default function App() {
       });
 
       steps.push({
-        delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+        delayMs: footstepsTotalMs + Math.max(2600, (trans.waitAfterDoorMs ?? 1200) + 1400),
         action: () => {
           setStats((prev) => ({
             ...prev,
@@ -2487,7 +2503,7 @@ export default function App() {
       });
     } else {
       steps.push({
-        delayMs: 1300,
+        delayMs: 2600,
         action: () => {
           setStats((prev) => ({
             ...prev,
@@ -4352,7 +4368,7 @@ export default function App() {
         isBubble: false,
       },
       {
-        delayMs: 4 * 210 + 1000,
+        delayMs: 4 * 210 + 2600,
         action: () => {
           setCustomEndingKey('END_PHASE2_INCOMPLETE');
           setStats((prev) => ({
@@ -4864,9 +4880,9 @@ export default function App() {
           isBubble: false,
         });
 
-        // 閉扉後の余韻を経てエンディング画面へ
+        // 閉扉後の余韻（間）を経てエンディング画面へ
         steps.push({
-          delayMs: Math.max(1000, trans.waitAfterDoorMs ?? 1000),
+          delayMs: Math.max(2600, (trans.waitAfterDoorMs ?? 1000) + 1600),
           action: () => {
             if (option.triggersEndingKey) {
               setCustomEndingKey(option.triggersEndingKey);
@@ -4886,9 +4902,9 @@ export default function App() {
           isTerminal: true,
         });
       } else {
-        // ドア音なし：足音終了後に静寂余韻を経てエンディング画面へ
+        // ドア音なし：足音終了後に静寂余韻（間）を経てエンディング画面へ
         steps.push({
-          delayMs: footstepsTotalMs + (trans.waitAfterDoorMs ?? 1200),
+          delayMs: footstepsTotalMs + Math.max(2600, (trans.waitAfterDoorMs ?? 1200) + 1400),
           action: () => {
             if (option.triggersEndingKey) {
               setCustomEndingKey(option.triggersEndingKey);
@@ -4911,7 +4927,7 @@ export default function App() {
     } else {
       steps.push({
         delayMs:
-          option.triggersEnding || option.triggersEndingKey ? 1600 : 480,
+          option.triggersEnding || option.triggersEndingKey ? 2600 : 480,
         action: () => {
           if (option.triggersEndingKey) {
             setCustomEndingKey(option.triggersEndingKey);
@@ -5723,11 +5739,11 @@ export default function App() {
           : 'items-center justify-center'
       } overflow-hidden select-none`}
     >
-      {/* 画面連動ドック時は左側領域にキャンバスを綺麗に中央配置 */}
+      {/* 画面連動ドック時は左側パネル分オフセットしてキャンバスを右側領域に綺麗に中央配置 */}
       <div
         className={`${
           isDockActive
-            ? 'flex-1 h-full flex items-center justify-center p-2 overflow-hidden'
+            ? 'flex-1 h-full flex items-center justify-center p-2 pl-[415px] overflow-hidden'
             : 'contents'
         }`}
       >
@@ -5827,9 +5843,27 @@ export default function App() {
                 </h1>
               </div>
 
-              <span className="text-[12px] tracking-[0.25em] text-zinc-400 hover:text-zinc-100 transition-colors">
-                ― CLICK TO START ―
-              </span>
+              <div className="flex flex-col items-center gap-2.5">
+                <span className="text-[12px] tracking-[0.25em] text-zinc-400 hover:text-zinc-100 transition-colors">
+                  ― CLICK TO START ―
+                </span>
+
+                {(achievementSave.reachedEndingKeys.length > 0 ||
+                  achievementSave.unlockedAchievementIds.length > 0 ||
+                  achievementSave.seenLines.length > 0) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      soundEngine.unlockOnUserInteraction();
+                      soundEngine.playTerminalTab();
+                      setIsAchievementModalOpen(true);
+                    }}
+                    className="mt-1 px-4 py-1 text-[11.5px] tracking-[0.15em] border border-zinc-700 hover:border-zinc-400 bg-zinc-900/70 hover:bg-zinc-800 text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer font-zen"
+                  >
+                    実績・記録 ({achievementSave.reachedEndingKeys.length}/10)
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="w-full relative flex items-end justify-center">
@@ -5874,12 +5908,66 @@ export default function App() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    soundEngine.unlockOnUserInteraction();
+                    soundEngine.playTerminalTab();
+                    if (!canAccessExpressionViewer) {
+                      setToastAchievements((prev) => [
+                        ...prev,
+                        {
+                          id: 'notice_17',
+                          numberLabel: '17',
+                          title: '表情ビューワー（未解放）',
+                          description: '実績17（百面相）を達成すると解放されます。',
+                        },
+                      ]);
+                      return;
+                    }
+                    if (gamePhase !== 'PLAYING') {
+                      startPlayingPhase();
+                    }
+                    setIsDebugViewerOpen(true);
+                  }}
+                  className={`px-3 py-1.5 text-[11.5px] tracking-wider border font-zen transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    canAccessExpressionViewer
+                      ? 'border-zinc-700 bg-zinc-950/90 hover:bg-zinc-800 text-zinc-300 hover:text-white'
+                      : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
+                  }`}
+                >
+                  <span>★ 表情ビューワー</span>
+                  {!canAccessExpressionViewer && (
+                    <span className="text-[9.5px] text-zinc-500 font-mono">(実績17)</span>
+                  )}
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundEngine.unlockOnUserInteraction();
+                    soundEngine.playTerminalTab();
+                    if (!canAccessScenarioInspector) {
+                      setToastAchievements((prev) => [
+                        ...prev,
+                        {
+                          id: 'notice_18',
+                          numberLabel: '18',
+                          title: '演出インスペクター（未解放）',
+                          description: '実績18（もう寝よう）を達成すると解放されます。',
+                        },
+                      ]);
+                      return;
+                    }
                     handleOpenScenarioInspector();
                   }}
-                  className="px-3 py-1.5 text-[11.5px] tracking-wider border border-emerald-700/80 bg-zinc-950 hover:bg-emerald-950/60 text-emerald-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className={`px-3 py-1.5 text-[11.5px] tracking-wider border font-zen transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    canAccessScenarioInspector
+                      ? 'border-zinc-700 bg-zinc-950/90 hover:bg-zinc-800 text-zinc-300 hover:text-white'
+                      : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
+                  }`}
                 >
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>全シナリオ・演出確認</span>
+                  <span>★ 演出インスペクター</span>
+                  {!canAccessScenarioInspector && (
+                    <span className="text-[9.5px] text-zinc-500 font-mono">(実績18)</span>
+                  )}
                 </button>
 
                 {achievementSave.reachedEndingKeys.length > 0 && (
@@ -5890,7 +5978,7 @@ export default function App() {
                       soundEngine.playTerminalTab();
                       setIsAchievementModalOpen(true);
                     }}
-                    className="px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                    className="px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer font-zen"
                   >
                     実績・記録
                   </button>
@@ -5984,6 +6072,7 @@ export default function App() {
             customEndingKey={customEndingKey}
             stats={stats}
             sectors={sectors}
+            achievementSave={achievementSave}
             onResetSession={handleResetSession}
             onOpenAchievements={() => setIsAchievementModalOpen(true)}
           />
@@ -6002,6 +6091,11 @@ export default function App() {
               startPlayingPhase();
             }
             setIsDebugViewerOpen(true);
+          }}
+          canOpenScenarioInspector={canAccessScenarioInspector}
+          onOpenScenarioInspector={() => {
+            setIsAchievementModalOpen(false);
+            handleOpenScenarioInspector();
           }}
         />
 
@@ -6037,24 +6131,26 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    if (isScenarioInspectorOpen) {
-                      handleCloseScenarioInspector();
-                    } else {
-                      handleOpenScenarioInspector();
-                    }
-                  }}
-                  title="全シナリオ・演出インスペクター（確認モード）"
-                  className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
-                    isScenarioInspectorOpen
-                      ? 'bg-emerald-400 text-zinc-950 border-emerald-300 font-bold'
-                      : 'text-emerald-300 hover:text-white border-emerald-800 hover:border-emerald-600 bg-emerald-950/40'
-                  }`}
-                >
-                  <span>▶</span>
-                  <span>演出確認</span>
-                </button>
+                {canAccessScenarioInspector && (
+                  <button
+                    onClick={() => {
+                      if (isScenarioInspectorOpen) {
+                        handleCloseScenarioInspector();
+                      } else {
+                        handleOpenScenarioInspector();
+                      }
+                    }}
+                    title="全シナリオ・演出インスペクター"
+                    className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border font-zen transition-colors cursor-pointer ${
+                      isScenarioInspectorOpen
+                        ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
+                        : 'text-zinc-300 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/60'
+                    }`}
+                  >
+                    <span>▶</span>
+                    <span>演出確認</span>
+                  </button>
+                )}
 
                 {canAccessExpressionViewer && (
                   <button
@@ -6164,8 +6260,10 @@ export default function App() {
                       }
                     : undefined
                 }
-                className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-opacity duration-200 ${
+                className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-all duration-[130ms] ease-out ${
                   isTerminalOpen ? 'pointer-events-none select-none' : ''
+                } ${
+                  isAschAbsent ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}
               >
                 {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限200pxで下の選択肢と絶対に重ならない） */}
@@ -6924,7 +7022,7 @@ export default function App() {
 
               {/* 右側：アッシュの立ち絵 */}
               <div
-                className={`relative z-20 w-[42%] h-full flex items-end justify-center pointer-events-none transition-all duration-700 ease-in ${
+                className={`relative z-20 w-[42%] h-full flex items-end justify-center pointer-events-none transition-all duration-500 ease-in ${
                   isAschCollapsed
                     ? 'opacity-0 translate-y-28 scale-95'
                     : isAschExited

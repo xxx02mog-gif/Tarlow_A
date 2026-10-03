@@ -21,24 +21,22 @@ interface AchievementArchiveModalProps {
   onUpdateSaveData: (next: AchievementSaveData) => void;
   canOpenBonusViewer?: boolean;
   onOpenBonusViewer?: () => void;
+  canOpenScenarioInspector?: boolean;
+  onOpenScenarioInspector?: () => void;
 }
 
-export const AchievementArchiveModal: React.FC<
-  AchievementArchiveModalProps
-> = ({
+export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = ({
   isOpen,
   onClose,
   saveData,
   onUpdateSaveData,
   canOpenBonusViewer = false,
   onOpenBonusViewer,
+  canOpenScenarioInspector = false,
+  onOpenScenarioInspector,
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    'ENDINGS' | 'ACHIEVEMENTS' | 'DATA'
-  >('ENDINGS');
-  // クリックしてタイトル⇔ヒントを切り替えているエンディングキー
-  const [flippedEndingKeys, setFlippedEndingKeys] = useState<string[]>([]);
-  // クリックして文字の上にヒントを出している実績ID
+  const [activeTab, setActiveTab] = useState<'ENDINGS' | 'ACHIEVEMENTS' | 'DATA'>('ENDINGS');
+  const [selectedEndingKey, setSelectedEndingKey] = useState<string | null>(null);
   const [selectedAchId, setSelectedAchId] = useState<string | null>(null);
 
   const [importInput, setImportInput] = useState<string>('');
@@ -66,20 +64,9 @@ export const AchievementArchiveModal: React.FC<
 
   const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
   const reachedEndingsCount = saveData.reachedEndingKeys.length;
-  const reachedEndingsPct = Math.min(
-    100,
-    Math.round((reachedEndingsCount / totalEndingsCount) * 100)
-  );
 
   const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
   const unlockedAchievementsCount = saveData.unlockedAchievementIds.length;
-
-  const handleFlipSingleEnding = (key: string) => {
-    soundEngine.playTerminalTab();
-    setFlippedEndingKeys((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
-  };
 
   const handleCopyExportCode = async () => {
     soundEngine.playTerminalTab();
@@ -139,64 +126,79 @@ export const AchievementArchiveModal: React.FC<
   return (
     <div
       onClick={onClose}
-      className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-4 select-none"
+      className="absolute inset-0 z-50 bg-black/75 flex items-center justify-center p-4 select-none font-zen"
     >
       <div
         onClick={(e) => {
           e.stopPropagation();
+          setSelectedEndingKey(null);
           setSelectedAchId(null);
         }}
-        className="w-full max-w-[650px] bg-[#e4e5ea] text-zinc-900 border border-zinc-900 flex flex-col px-5 py-3.5 shadow-2xl"
+        className="w-full max-w-[700px] bg-[#e4e5ea] text-zinc-900 border border-zinc-950 p-5 shadow-2xl flex flex-col justify-between"
       >
-        {/* 上部ヘッダー ＆ セリフ・端末の達成度バー */}
-        <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
-          <div className="flex items-center gap-6">
-            <h2 className="text-[14px] font-bold tracking-wider text-zinc-950 shrink-0">
+        {/* 上部タイトルバー（リザルト画面に合わせたデザイン） */}
+        <div className="flex items-end justify-between border-b-2 border-zinc-900 pb-2 shrink-0">
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-[17px] font-bold tracking-wider text-zinc-950 font-zen">
               実績・記録
             </h2>
-            <div className="flex items-center gap-5 text-[11px] text-zinc-700">
-              <div className="flex items-center gap-2">
-                <span>セリフ</span>
-                <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-                  <div
-                    className="h-full bg-zinc-900 transition-all duration-300"
-                    style={{ width: `${seenLinesPct}%` }}
-                  />
-                </div>
-                <strong className="font-mono text-zinc-950">{seenLinesPct}%</strong>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span>管理端末</span>
-                <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-                  <div
-                    className="h-full bg-zinc-900 transition-all duration-300"
-                    style={{ width: `${unlockedSectorsPct}%` }}
-                  />
-                </div>
-                <strong className="font-mono text-zinc-950">{unlockedSectorsPct}%</strong>
-              </div>
-            </div>
+            <span className="text-[10px] tracking-[0.2em] text-zinc-500 font-mono">
+              ARCHIVE DOSSIER
+            </span>
           </div>
 
-          <button
-            onClick={() => {
-              soundEngine.playTerminalClose();
-              onClose();
-            }}
-            className="text-[11px] text-zinc-600 hover:text-zinc-950 cursor-pointer shrink-0"
-          >
-            ✕ 閉じる
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playTerminalClose();
+                onClose();
+              }}
+              className="px-3 py-0.5 text-[11.5px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
+            >
+              ✕ 閉じる
+            </button>
+          </div>
         </div>
 
-        {/* タブ切替（枠なし・下線スタイル） */}
-        <div className="flex items-center justify-between border-b border-zinc-400/80 pt-2 pb-1.5">
+        {/* 進捗バー（セリフ・管理端末） */}
+        <div className="flex items-center gap-6 border-b border-zinc-400/80 py-2 shrink-0">
+          <div className="flex items-center gap-2 text-[11px] text-zinc-700">
+            <span className="shrink-0">セリフ</span>
+            <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
+              <div
+                className="h-full bg-zinc-900 transition-all duration-300"
+                style={{ width: `${seenLinesPct}%` }}
+              />
+            </div>
+            <strong className="font-mono text-zinc-950 shrink-0">
+              {seenLinesPct}%
+            </strong>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-zinc-700">
+            <span className="shrink-0">管理端末</span>
+            <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
+              <div
+                className="h-full bg-zinc-900 transition-all duration-300"
+                style={{ width: `${unlockedSectorsPct}%` }}
+              />
+            </div>
+            <strong className="font-mono text-zinc-950 shrink-0">
+              {unlockedSectorsPct}%
+            </strong>
+          </div>
+        </div>
+
+        {/* タブ切り替え（下線スタイル） */}
+        <div className="flex items-center justify-between border-b border-zinc-300/80 pt-2 pb-1 shrink-0">
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={() => {
                 soundEngine.playTerminalTab();
                 setActiveTab('ENDINGS');
+                setSelectedEndingKey(null);
                 setSelectedAchId(null);
                 setStatusMessage(null);
               }}
@@ -210,9 +212,11 @@ export const AchievementArchiveModal: React.FC<
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 soundEngine.playTerminalTab();
                 setActiveTab('ACHIEVEMENTS');
+                setSelectedEndingKey(null);
                 setSelectedAchId(null);
                 setStatusMessage(null);
               }}
@@ -226,9 +230,11 @@ export const AchievementArchiveModal: React.FC<
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 soundEngine.playTerminalTab();
                 setActiveTab('DATA');
+                setSelectedEndingKey(null);
                 setSelectedAchId(null);
                 setStatusMessage(null);
                 setIsConfirmingReset(false);
@@ -244,6 +250,7 @@ export const AchievementArchiveModal: React.FC<
 
             {canOpenBonusViewer && onOpenBonusViewer && (
               <button
+                type="button"
                 onClick={() => {
                   soundEngine.playTerminalTab();
                   onOpenBonusViewer();
@@ -253,23 +260,40 @@ export const AchievementArchiveModal: React.FC<
                 ★ 表情ビューワー
               </button>
             )}
+
+            {canOpenScenarioInspector && onOpenScenarioInspector && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  onOpenScenarioInspector();
+                }}
+                className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
+              >
+                ★ 演出インスペクター
+              </button>
+            )}
           </div>
 
           {activeTab !== 'DATA' && (
             <span className="text-[10px] text-zinc-500">
-              ※項目クリックでヒント表示
+              ※クリックでヒント表示
             </span>
           )}
         </div>
 
-        {/* メイン領域（□枠を外したコンパクトなテキスト一覧・高さ固定でスクロールなし） */}
-        <div className="h-[210px] pt-2 flex flex-col justify-center">
+        {/* リスト領域（リザルト画面と統一されたグリッド ＆ 上段下向きツールチップ） */}
+        <div className="h-[240px] pt-3 pb-1 overflow-visible relative flex flex-col justify-center">
           {activeTab === 'ENDINGS' && (
-            <div className="w-full h-full grid grid-cols-2 grid-rows-5 gap-x-6 gap-y-1 items-center">
-              {ENDING_ARCHIVE_LIST.map((item) => {
+            <div className="w-full grid grid-cols-2 grid-rows-5 gap-x-6 gap-y-2.5 items-center">
+              {ENDING_ARCHIVE_LIST.map((item, idx) => {
                 const isReached = saveData.reachedEndingKeys.includes(item.key);
                 const scenario = ENDING_SCENARIOS[item.key];
-                const showHintNow = flippedEndingKeys.includes(item.key);
+                const isSelected = selectedEndingKey === item.key;
+                const colIndex = idx % 2;
+                const rowIndex = Math.floor(idx / 2);
+                const isFirstRow = rowIndex === 0;
+                const tooltipAlignClass = colIndex === 0 ? 'left-0' : 'right-0';
 
                 const titleText =
                   isReached && scenario
@@ -280,27 +304,41 @@ export const AchievementArchiveModal: React.FC<
                   <button
                     key={item.key}
                     type="button"
-                    onClick={() => handleFlipSingleEnding(item.key)}
-                    className="w-full text-left py-1 border-b border-zinc-300/80 hover:border-zinc-500 transition-colors cursor-pointer truncate"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      soundEngine.playTerminalTab();
+                      setSelectedEndingKey((prev) =>
+                        prev === item.key ? null : item.key
+                      );
+                      setSelectedAchId(null);
+                    }}
+                    className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-baseline gap-2 transition-colors cursor-pointer"
                   >
-                    {showHintNow ? (
-                      <span className="text-[10.5px] text-zinc-700 whitespace-nowrap">
-                        <span className="font-mono text-[10px] text-zinc-500 mr-1">
-                          {item.numberLabel} //
-                        </span>
-                        {item.hint}
-                      </span>
-                    ) : (
-                      <span
-                        className={`text-[12px] ${
-                          isReached
-                            ? 'font-bold text-zinc-950'
-                            : 'text-zinc-400'
-                        }`}
+                    {/* ヒントツールチップ（1行目は下方向、2行目以降は上方向へ展開） */}
+                    {isSelected && (
+                      <div
+                        className={`absolute ${tooltipAlignClass} ${
+                          isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
+                        } w-max max-w-[280px] whitespace-normal bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                       >
-                        {titleText}
-                      </span>
+                        {item.hint}
+                      </div>
                     )}
+
+                    <span
+                      className={`text-[10px] font-mono shrink-0 ${
+                        isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
+                      }`}
+                    >
+                      {isReached ? '●' : item.numberLabel}
+                    </span>
+                    <span
+                      className={`text-[11.5px] truncate ${
+                        isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
+                      }`}
+                    >
+                      {titleText}
+                    </span>
                   </button>
                 );
               })}
@@ -308,13 +346,13 @@ export const AchievementArchiveModal: React.FC<
           )}
 
           {activeTab === 'ACHIEVEMENTS' && (
-            <div className="w-full h-full grid grid-cols-3 grid-rows-6 gap-x-4 gap-y-0.5 items-center">
+            <div className="w-full grid grid-cols-3 grid-rows-6 gap-x-4 gap-y-2 items-center">
               {ACHIEVEMENT_DEFINITIONS.map((ach, idx) => {
-                const isUnlocked = saveData.unlockedAchievementIds.includes(
-                  ach.id
-                );
+                const isUnlocked = saveData.unlockedAchievementIds.includes(ach.id);
                 const isSelected = selectedAchId === ach.id;
                 const colIndex = idx % 3;
+                const rowIndex = Math.floor(idx / 3);
+                const isFirstRow = rowIndex === 0;
                 const tooltipAlignClass =
                   colIndex === 0
                     ? 'left-0'
@@ -332,33 +370,31 @@ export const AchievementArchiveModal: React.FC<
                       setSelectedAchId((prev) =>
                         prev === ach.id ? null : ach.id
                       );
+                      setSelectedEndingKey(null);
                     }}
-                    className="relative w-full text-left py-1 border-b border-zinc-300/70 hover:border-zinc-500 flex items-baseline gap-2 transition-colors cursor-pointer"
+                    className="relative w-full text-left py-1.5 border-b border-zinc-300/70 hover:border-zinc-500 flex items-baseline gap-1.5 transition-colors cursor-pointer"
                   >
-                    {/* 押したときに実績の文字の真上に出る1行ヒント（段落ち防止・列位置に応じて左右はみ出し防止） */}
+                    {/* ヒントツールチップ（1行目は下方向、2行目以降は上方向へ展開） */}
                     {isSelected && (
                       <div
-                        className={`absolute ${tooltipAlignClass} bottom-full mb-1 w-max whitespace-nowrap bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-lg z-40 pointer-events-none`}
+                        className={`absolute ${tooltipAlignClass} ${
+                          isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
+                        } w-max whitespace-nowrap bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                       >
                         {ach.description}
                       </div>
                     )}
 
                     <span
-                      className={`text-[10.5px] font-mono shrink-0 ${
-                        isUnlocked
-                          ? 'font-bold text-zinc-950'
-                          : 'text-zinc-400'
+                      className={`text-[10px] font-mono shrink-0 ${
+                        isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
                       {isUnlocked ? '●' : ach.numberLabel}
                     </span>
-
                     <span
-                      className={`text-[12px] truncate ${
-                        isUnlocked
-                          ? 'font-bold text-zinc-950'
-                          : 'text-zinc-500'
+                      className={`text-[11.5px] truncate ${
+                        isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
                       {ach.title}
@@ -370,10 +406,10 @@ export const AchievementArchiveModal: React.FC<
           )}
 
           {activeTab === 'DATA' && (
-            <div className="w-full h-full flex flex-col justify-between py-1">
+            <div className="w-full h-full flex flex-col justify-between py-1 text-[11.5px]">
               {statusMessage && (
                 <div
-                  className={`px-2.5 py-1 text-[11px] ${
+                  className={`px-3 py-1 text-[11px] ${
                     statusMessage.type === 'success'
                       ? 'bg-zinc-900 text-zinc-100'
                       : 'bg-red-900 text-red-100'
@@ -384,14 +420,15 @@ export const AchievementArchiveModal: React.FC<
               )}
 
               {/* エクスポート */}
-              <div className="border-b border-zinc-300 pb-2.5 space-y-1">
+              <div className="border-b border-zinc-300 pb-2 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11.5px] font-bold text-zinc-900">
+                  <span className="font-bold text-zinc-950">
                     引き継ぎコードの書き出し（エクスポート）
                   </span>
                   <button
+                    type="button"
                     onClick={handleCopyExportCode}
-                    className="px-2.5 py-0.5 text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 cursor-pointer"
+                    className="px-3 py-0.5 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
                   >
                     コピー
                   </button>
@@ -401,19 +438,20 @@ export const AchievementArchiveModal: React.FC<
                   readOnly
                   value={exportCode}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="w-full px-2 py-1 text-[10px] font-mono bg-zinc-300/70 text-zinc-800 select-all outline-none"
+                  className="w-full px-2 py-1 text-[10.5px] font-mono bg-zinc-300/70 border border-zinc-400/80 text-zinc-900 select-all outline-none"
                 />
               </div>
 
               {/* インポート */}
-              <div className="border-b border-zinc-300 pb-2.5 space-y-1">
+              <div className="border-b border-zinc-300 pb-2 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11.5px] font-bold text-zinc-900">
+                  <span className="font-bold text-zinc-950">
                     引き継ぎコードの読み込み（インポート）
                   </span>
                   <button
+                    type="button"
                     onClick={handleImportCode}
-                    className="px-2.5 py-0.5 text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 cursor-pointer"
+                    className="px-3 py-0.5 text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold transition-colors cursor-pointer"
                   >
                     読み込む
                   </button>
@@ -423,40 +461,43 @@ export const AchievementArchiveModal: React.FC<
                   value={importInput}
                   onChange={(e) => setImportInput(e.target.value)}
                   placeholder="GITM1:... のコードをここに貼り付け"
-                  className="w-full px-2 py-1 text-[10.5px] font-mono bg-white/90 text-zinc-900 select-text outline-none"
+                  className="w-full px-2 py-1 text-[10.5px] font-mono bg-white border border-zinc-400 text-zinc-900 select-text outline-none"
                 />
               </div>
 
-              {/* リセット */}
-              <div className="flex items-center justify-between pt-0.5">
-                <span className="text-[11.5px] text-zinc-700">
+              {/* 初期化 */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-zinc-600">
                   実績・回収記録の初期化
                 </span>
 
                 {!isConfirmingReset ? (
                   <button
+                    type="button"
                     onClick={() => {
                       soundEngine.playTerminalTab();
                       setIsConfirmingReset(true);
                     }}
-                    className="px-2.5 py-0.5 text-[11px] text-zinc-700 hover:text-zinc-950 underline cursor-pointer"
+                    className="text-zinc-600 hover:text-red-700 underline transition-colors cursor-pointer"
                   >
                     データをリセット
                   </button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-red-800">
+                    <span className="text-[11px] font-bold text-red-700">
                       本当に消去しますか？
                     </span>
                     <button
+                      type="button"
                       onClick={handleExecuteReset}
-                      className="px-2.5 py-0.5 text-[11px] bg-red-900 hover:bg-red-800 text-white cursor-pointer"
+                      className="px-3 py-0.5 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold transition-colors cursor-pointer"
                     >
                       消去する
                     </button>
                     <button
+                      type="button"
                       onClick={() => setIsConfirmingReset(false)}
-                      className="px-2 py-0.5 text-[11px] text-zinc-600 hover:text-zinc-900 cursor-pointer"
+                      className="px-2.5 py-0.5 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 border border-zinc-500 transition-colors cursor-pointer"
                     >
                       やめる
                     </button>
@@ -465,6 +506,16 @@ export const AchievementArchiveModal: React.FC<
               </div>
             </div>
           )}
+        </div>
+
+        {/* 下部フッター */}
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0">
+          <span className="text-[10px] text-zinc-500 font-mono">
+            Ghost in the mASCHine
+          </span>
+          <span className="text-[10px] text-zinc-500">
+            RECORD ARCHIVE SYSTEM
+          </span>
         </div>
       </div>
     </div>

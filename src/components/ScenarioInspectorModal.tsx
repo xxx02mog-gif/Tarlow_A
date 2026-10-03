@@ -172,7 +172,6 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] =
     useState<ScenarioInspectorCategory>('ALL');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   
   // 連続再生（自動送り）関連ステート
@@ -1058,29 +1057,15 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
     return list;
   }, []);
 
-  // フィルタリング
+  // フィルタリング（カテゴリのみ）
   const filteredItems = useMemo(() => {
     return allScenarioItems.filter((item) => {
       if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
         return false;
       }
-      if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase();
-      const inTitle = item.title.toLowerCase().includes(q);
-      const inSubtitle = item.subtitle?.toLowerCase().includes(q);
-      const inTags = item.tags?.some((t) => t.toLowerCase().includes(q));
-      const inLines = item.lines.some((l) =>
-        l.text.toLowerCase().includes(q)
-      );
-      const inOptions = item.extraOptions?.some(
-        (o) =>
-          o.spokenText.toLowerCase().includes(q) ||
-          o.aschText.toLowerCase().includes(q) ||
-          o.thoughtText.toLowerCase().includes(q)
-      );
-      return inTitle || inSubtitle || inTags || inLines || inOptions;
+      return true;
     });
-  }, [allScenarioItems, selectedCategory, searchQuery]);
+  }, [allScenarioItems, selectedCategory]);
 
   // 現在選択されている項目
   const activeItem = useMemo(() => {
@@ -1144,6 +1129,115 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       );
     },
     [clearAutoTimer, onPreviewSequence, filteredItems, isLoop, autoIntervalSec]
+  );
+
+  // 全分岐を一括再生する関数
+  const handlePlayAllBranches = useCallback(
+    (item: ScenarioInspectorItem) => {
+      if (!item.extraOptions || item.extraOptions.length === 0) {
+        playSceneCore(item, isAutoPlay);
+        return;
+      }
+      clearAutoTimer();
+      setIsPlayingCurrent(true);
+
+      const allLinesToPlay: ScriptLinePreview[] = [];
+
+      // 基本セリフ（親シーンのセリフ）を追加
+      if (item.lines && item.lines.length > 0) {
+        allLinesToPlay.push(...item.lines);
+      }
+
+      // 各分岐（選択肢とリアクション）を順番に追加
+      item.extraOptions.forEach((opt, oIdx) => {
+        const guyLines = opt.spokenText
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        guyLines.forEach((g, gIdx) => {
+          allLinesToPlay.push({
+            speaker: 'GUY',
+            text: g,
+            voiceEffect: 'normal',
+            note: `【分岐${oIdx + 1}】${opt.thoughtText}`,
+            waitMs: gIdx === guyLines.length - 1 ? opt.waitMs : undefined,
+          });
+        });
+
+        const aschLines = opt.aschText
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        aschLines.forEach((a, aIdx) => {
+          allLinesToPlay.push({
+            speaker: 'ASCH',
+            text: a,
+            expression:
+              aIdx === 0
+                ? opt.expression
+                : opt.secondExpression ?? opt.expression,
+            faceParts:
+              aIdx === 0
+                ? opt.faceParts
+                : opt.secondFaceParts ?? opt.faceParts,
+            secondExpression: opt.secondExpression,
+            secondFaceParts: opt.secondFaceParts,
+            voiceEffect: opt.voiceEffects?.[aIdx] ?? 'normal',
+            waitMs: opt.aschWaitMs ?? 1800,
+            specialEffect:
+              aIdx === aschLines.length - 1 && opt.specialEffect === 'destroy'
+                ? 'destroy'
+                : undefined,
+          });
+        });
+
+        if (opt.extraRallies) {
+          opt.extraRallies.forEach((r) => {
+            r.text
+              .split('\n')
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .forEach((rt, rtIdx) => {
+                allLinesToPlay.push({
+                  speaker: r.speaker,
+                  text: rt,
+                  expression:
+                    rtIdx === 0
+                      ? r.expression
+                      : r.secondExpression ?? r.expression,
+                  faceParts:
+                    rtIdx === 0
+                      ? r.faceParts
+                      : r.secondFaceParts ?? r.faceParts,
+                  voiceEffect: r.voiceEffect ?? 'normal',
+                  waitMs: r.waitMs,
+                  specialEffect: r.specialEffect,
+                });
+              });
+            if (r.silentFaceSequence) {
+              r.silentFaceSequence.forEach((s) => {
+                allLinesToPlay.push({
+                  speaker: 'ASCH',
+                  text: '・・・・・・',
+                  expression: s.expression,
+                  faceParts: s.faceParts,
+                  waitMs: s.waitMs,
+                });
+              });
+            }
+          });
+        }
+      });
+
+      onPreviewSequence(
+        allLinesToPlay,
+        () => {
+          setIsPlayingCurrent(false);
+        },
+        item.endingTransition
+      );
+    },
+    [clearAutoTimer, onPreviewSequence, playSceneCore, isAutoPlay]
   );
 
   // 現在のシーンを単発再生
@@ -1270,14 +1364,14 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
   // =========================================================================
   if (viewMode === 'minimized') {
     return (
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[94vw] max-w-[820px] bg-zinc-950/95 border-2 border-emerald-500/80 shadow-[0_12px_40px_rgba(0,0,0,0.85)] rounded-lg px-3.5 py-2.5 flex items-center justify-between gap-3 text-zinc-100 font-sans backdrop-blur-md animate-bubble-in">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[94vw] max-w-[840px] bg-[#e4e5ea] border-2 border-zinc-950 shadow-2xl rounded px-3.5 py-2 flex items-center justify-between gap-3 text-zinc-900 font-zen select-none animate-bubble-in">
         {/* 再生制御 */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
           <button
             onClick={handlePrevScene}
             disabled={currentIndex <= 0}
             title="前のシーン [←]"
-            className="px-2.5 py-1 text-[12px] bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors"
+            className="px-2.5 py-1 text-[11px] bg-zinc-200 hover:bg-zinc-300 disabled:opacity-30 disabled:pointer-events-none text-zinc-900 border border-zinc-700 font-bold cursor-pointer transition-colors"
           >
             ◀ 前
           </button>
@@ -1291,70 +1385,79 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               }
             }}
             title={isPlayingCurrent ? '停止 [Space]' : '現在のシーンを再生 [Space]'}
-            className={`px-3 py-1 text-[12px] font-bold rounded cursor-pointer transition-colors border flex items-center gap-1.5 ${
+            className={`px-3 py-1 text-[11.5px] font-bold cursor-pointer transition-colors border flex items-center gap-1.5 shadow-sm ${
               isPlayingCurrent
-                ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-400 animate-pulse'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400'
+                ? 'bg-zinc-900 text-zinc-100 border-zinc-950 animate-pulse'
+                : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border-zinc-950'
             }`}
           >
             <span>{isPlayingCurrent ? '⏸ 停止' : '▶ 再生'}</span>
           </button>
 
+          {activeItem?.extraOptions && activeItem.extraOptions.length > 0 && (
+            <button
+              onClick={() => handlePlayAllBranches(activeItem)}
+              title="このシーンの全分岐を順番に一括再生"
+              className="px-2.5 py-1 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+            >
+              <span>▶ 全分岐一括 ({activeItem.extraOptions.length})</span>
+            </button>
+          )}
+
           <button
             onClick={handleNextScene}
             disabled={currentIndex >= filteredItems.length - 1 && !isLoop}
             title="次のシーンへ進む [→]"
-            className="px-3 py-1 text-[12px] font-bold bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border border-emerald-600 rounded cursor-pointer transition-colors flex items-center gap-1"
+            className="px-2.5 py-1 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1"
           >
-            <span>次へ進む ▶|</span>
+            <span>次へ ▶|</span>
           </button>
 
           {isPlayingCurrent && onSkipAdvance && (
             <button
               onClick={onSkipAdvance}
               title="現在のセリフのタメをスキップして次のセリフへ進めます"
-              className="px-2.5 py-1 text-[11.5px] font-bold bg-amber-600 hover:bg-amber-500 text-white rounded cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+              className="px-2 py-1 text-[10.5px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1"
             >
-              <span>⏭ タップ送り</span>
+              <span>⏭ スキップ</span>
             </button>
           )}
 
           <button
             onClick={handleToggleAutoPlay}
             title="シーン完了後に自動で次のシーンへ遷移して再生"
-            className={`px-2.5 py-1 text-[11.5px] rounded border cursor-pointer transition-colors flex items-center gap-1 font-bold ${
+            className={`px-2 py-1 text-[10.5px] border cursor-pointer transition-colors flex items-center gap-1 font-bold ${
               isAutoPlay
-                ? 'bg-emerald-400 text-zinc-950 border-emerald-300'
-                : 'bg-zinc-900 text-zinc-300 hover:text-white border-zinc-700'
+                ? 'bg-zinc-900 text-zinc-100 border-zinc-950'
+                : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300 border-zinc-600'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${isAutoPlay ? 'bg-zinc-950 animate-ping' : 'bg-zinc-500'}`} />
-            <span>連続再生: {isAutoPlay ? 'ON' : 'OFF'}</span>
+            <span>連続: {isAutoPlay ? 'ON' : 'OFF'}</span>
           </button>
         </div>
 
         {/* 現在のシーン情報 */}
         <div className="flex-1 min-w-0 px-2 flex items-center gap-2">
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 shrink-0">
+          <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-zinc-300 text-zinc-900 border border-zinc-500 shrink-0">
             {currentIndex >= 0 ? `${currentIndex + 1}/${filteredItems.length}` : '-'}
           </span>
-          <span className="text-[12.5px] font-bold text-white truncate">
+          <span className="text-[12.5px] font-bold text-zinc-950 truncate font-zen">
             {activeItem?.title}
           </span>
-          <span className="text-[11px] text-zinc-400 truncate hidden sm:inline">
+          <span className="text-[11px] text-zinc-600 truncate hidden sm:inline">
             {activeItem?.subtitle}
           </span>
         </div>
 
         {/* 右側：展開・閉じる */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => {
               soundEngine.playTerminalTab();
               onChangeViewMode('dock');
             }}
             title="台本詳細・シーン一覧パネルを展開"
-            className="px-2.5 py-1 text-[11.5px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-600 rounded cursor-pointer transition-colors flex items-center gap-1"
+            className="px-2.5 py-1 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1 font-bold"
           >
             <span>📖 台本を開く</span>
           </button>
@@ -1366,7 +1469,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               onClose();
             }}
             title="インスペクターを終了してゲーム画面に戻る [Esc]"
-            className="px-2.5 py-1 text-[11.5px] bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-800 rounded cursor-pointer transition-colors font-bold"
+            className="px-2.5 py-1 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors font-bold"
           >
             ✕ 閉じる
           </button>
