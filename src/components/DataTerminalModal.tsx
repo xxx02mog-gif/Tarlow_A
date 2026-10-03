@@ -300,27 +300,33 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
           .sort((a, b) => a.code.localeCompare(b.code));
 
   const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
-  const handleTouchStart = (e: React.PointerEvent) => {
-    touchStartXRef.current = e.clientX;
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+    }
   };
 
-  const handleTouchEnd = (e: React.PointerEvent) => {
-    if (touchStartXRef.current === null) return;
-    const diffX = e.clientX - touchStartXRef.current;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const diffX = touch.clientX - touchStartXRef.current;
+    const diffY = touch.clientY - touchStartYRef.current;
     touchStartXRef.current = null;
-    const threshold = 35;
-    if (Math.abs(diffX) > threshold) {
+    touchStartYRef.current = null;
+
+    const threshold = 25;
+    // 水平方向の移動が縦方向より大きく、一定値以上ならスワイプ判定
+    if (Math.abs(diffX) > threshold && Math.abs(diffX) > Math.abs(diffY)) {
       if (diffX > 0) {
-        // Swipe right -> Prev
-        if (pageIndex > 0) {
-          goPrev();
-        }
+        // 右スワイプ -> 前のページ（INFOからMONITORへ）
+        goPrev();
       } else {
-        // Swipe left -> Next
-        if (pageIndex < PAGES.length - 1) {
-          goNext();
-        }
+        // 左スワイプ -> 次のページ（MONITORからINFOへ）
+        goNext();
       }
     }
   };
@@ -362,10 +368,9 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
     >
       {/* 1. 端末の液晶画面UI領域（新しいtanmatu.pngの黒ベゼル内側の透過窓にぴったり収まり、親指の右側を安全領域として表示） */}
       <div
-        onPointerDown={handleTouchStart}
-        onPointerUp={handleTouchEnd}
-        onPointerCancel={handleTouchEnd}
-        className="absolute left-[140px] top-[49px] w-[372px] h-[192px] z-20 bg-[#09090b] text-zinc-100 pl-[38px] pr-[6px] pt-[3px] pb-[3px] flex flex-col overflow-hidden touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="absolute left-[140px] top-[49px] w-[372px] h-[192px] z-20 bg-[#09090b] text-zinc-100 pl-[38px] pr-[6px] pt-[3px] pb-[3px] flex flex-col overflow-hidden"
       >
         {/* 液晶上部：ページ切り替えバー */}
         <div className="px-2 py-0.5 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between shrink-0">
@@ -373,26 +378,32 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
             <button
               onClick={goPrev}
               disabled={pageIndex === 0}
-              className={`px-1.5 py-0.5 text-[9px] border border-zinc-700 leading-none ${
+              className={`w-4 h-3.5 flex items-center justify-center border border-zinc-700 leading-none ${
                 pageIndex === 0
                   ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer active:bg-zinc-700'
               }`}
               title="前のページ"
+              aria-label="前のページ"
             >
-              ◀
+              <svg viewBox="0 0 10 10" className="w-2 h-2 fill-current shrink-0" aria-hidden="true">
+                <polygon points="7,1 2,5 7,9" />
+              </svg>
             </button>
             <button
               onClick={goNext}
               disabled={pageIndex === PAGES.length - 1}
-              className={`px-1.5 py-0.5 text-[9px] border border-zinc-700 leading-none ${
+              className={`w-4 h-3.5 flex items-center justify-center border border-zinc-700 leading-none ${
                 pageIndex === PAGES.length - 1
                   ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer active:bg-zinc-700'
               }`}
               title="次のページ"
+              aria-label="次のページ"
             >
-              ▶
+              <svg viewBox="0 0 10 10" className="w-2 h-2 fill-current shrink-0" aria-hidden="true">
+                <polygon points="3,1 8,5 3,9" />
+              </svg>
             </button>
             <span className="text-[9px] tracking-widest text-zinc-200 ml-1">
               {pageIndex + 1}/{PAGES.length} : {PAGES[pageIndex].label}
