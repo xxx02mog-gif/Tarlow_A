@@ -2531,7 +2531,7 @@ export default function App() {
         isPhase2Now && disposition === 'KEEP' && isNotWarmEnoughYet;
 
       forcedCustomEndingKey = isStayRefused
-        ? 'END_PHASE2_STAY_REFUSED'
+        ? 'END_PHASE2_INCOMPLETE'
         : isPhase2Now && disposition === 'RETURN' && isNotWarmEnoughYet
           ? 'END_PHASE2_INCOMPLETE'
           : null;
@@ -2668,6 +2668,29 @@ export default function App() {
           steps.push({
             delayMs: delay,
             action: () => {
+              if (rIdx === 0 && rally.specialEffect === 'shout_shock') {
+                soundEngine.playHeavyShoutThud();
+                setReplayPulse((p) => p + 1);
+                setIsScreenShaking(true);
+                setTimeout(() => setIsScreenShaking(false), 240);
+              }
+              if (rIdx === 0 && rally.silentFaceSequence && rally.silentFaceSequence.length > 0) {
+                let accumSilentDelay = 0;
+                rally.silentFaceSequence.forEach((sStep) => {
+                  accumSilentDelay += sStep.delayMs;
+                  window.setTimeout(() => {
+                    if (sStep.expression) {
+                      setOverrideExpression(sStep.expression);
+                    }
+                    if (sStep.faceParts) {
+                      setOverrideFaceParts((prev) => ({
+                        ...(prev ?? DEFAULT_EXPRESSION_PARTS[sStep.expression ?? 'normal']),
+                        ...sStep.faceParts,
+                      }));
+                    }
+                  }, accumSilentDelay);
+                });
+              }
               if (rally.speaker === 'ASCH') {
                 if (rIdx === 0 && rally.expression) {
                   setOverrideExpression(rally.expression);
@@ -6721,7 +6744,12 @@ export default function App() {
                             })
                             .sort((a, b) => {
                               const getPrio = (t: ConversationTopic) => {
-                                if (t.id === 'p2_deep_truth_dilemma') return 100;
+                                if (
+                                  t.id === 'p2_deep_truth_dilemma' ||
+                                  t.id === 'p2_deep_truth_confront'
+                                ) {
+                                  return 100;
+                                }
                                 if (t.id === 'p2_irritated_clash') {
                                   return 90;
                                 }

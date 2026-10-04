@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "アッシュ観察・対話ターミナル",
+  "description": "アッシュ（機体ログ・感情波形・対話セッション）情報端末シミュレーション",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

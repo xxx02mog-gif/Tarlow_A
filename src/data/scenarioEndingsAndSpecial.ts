@@ -16,6 +16,12 @@ export interface ExtraEndingRally {
   secondExpression?: ExpressionId;
   secondFaceParts?: Partial<FaceParts>;
   voiceEffect?: BubbleVoiceEffect;
+  specialEffect?: 'destroy' | 'collapse' | 'shout_shock';
+  silentFaceSequence?: {
+    delayMs: number;
+    expression?: ExpressionId;
+    faceParts?: Partial<FaceParts>;
+  }[];
   waitMs?: number;
 }
 
@@ -1050,17 +1056,215 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   },
   END_PHASE3_SWAMPMAN: {
     spokenText:
-      '・・・・・・開けられるからって、全部開けて見るんじゃなかったな・・・・・・',
-    aschText:
-      '・・・・・・道理で、目が覚めた時からずっと空っぽなわけだ・・・・・・',
-    expression: 'empty',
+      '・・・・・・おまえ、本当に知らないのか？\n２ヶ月前に、自分が何で壊れたのかも・・・・・・',
+    aschText: '・・・・・・っ、何の話だ。さっきから・・・・・・',
+    expression: 'look_away',
     faceParts: {
-      brow: 'sad',
-      eyes: 'empty',
+      brow: 'doubt',
+      eyes: 'away',
       mouth: 'close',
-      effects: ['pale', 'shadow'],
+      effects: ['sweat'],
     },
-    voiceEffects: ['tremble_glitch'],
+    guyWaitMs: 2000,
+    aschWaitMs: 2000,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: '・・・・・・見てくれ。嘘だって言ってくれよ、こんなの・・・・・・！',
+        voiceEffect: 'tremble',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・？\n・・・・・・っ！？ こ、れは・・・・・・',
+        expression: 'shock',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'wide',
+          mouth: 'gasp',
+          effects: ['sweat', 'pale'],
+        },
+        waitMs: 2200,
+      },
+      {
+        speaker: 'GUY',
+        text: '本当なのか？ ここに書いてあることは、本当に・・・・・・！',
+        voiceEffect: 'tremble',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'し、らない・・・・・・\n俺の記憶には、何も・・・・・・',
+        expression: 'shock',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'wide',
+          mouth: 'gasp',
+          effects: ['sweat', 'pale'],
+        },
+        voiceEffect: 'tremble',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・大爆発、・・・・・・そうだ、それで俺は、ディストに・・・・・・',
+        expression: 'pain',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'pain',
+          mouth: 'grit',
+          effects: ['sweat', 'shadow'],
+        },
+        voiceEffect: 'tremble_glitch',
+        waitMs: 2600,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・俺の身体に、ルークの記憶を・・・・・・',
+        expression: 'pain',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'close',
+          mouth: 'grit',
+          effects: ['sweat', 'shadow'],
+        },
+        voiceEffect: 'tremble_glitch',
+        waitMs: 2800,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'そうだ、だから俺は、・・・・・・！',
+        expression: 'shock',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'close',
+          mouth: 'gasp',
+          effects: ['sweat', 'pale', 'shadow'],
+        },
+        voiceEffect: 'tremble_glitch',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・アッシュ！',
+        voiceEffect: 'tremble',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'っ、ガイ・・・・・・',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'away',
+          mouth: 'gasp',
+          effects: ['sweat'],
+        },
+        voiceEffect: 'tremble',
+        waitMs: 1800,
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・っ、',
+        voiceEffect: 'tremble',
+        waitMs: 1200,
+      },
+      {
+        speaker: 'GUY',
+        text: 'やめろ・・・・・・っ、そんな顔すんなよ・・・・・・！',
+        voiceEffect: 'tremble',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'GUY',
+        text: '言えよ・・・・・・！',
+        voiceEffect: 'shout',
+        waitMs: 1400,
+      },
+      {
+        speaker: 'GUY',
+        text: '自分は紛れもなく、アッシュだって・・・・・・言え！！！！',
+        voiceEffect: 'shout',
+        specialEffect: 'shout_shock',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・頼むから、',
+        voiceEffect: 'tremble',
+        waitMs: 1400,
+      },
+      {
+        speaker: 'GUY',
+        text: '言ってくれ・・・・・・っ',
+        voiceEffect: 'tremble',
+        silentFaceSequence: [
+          {
+            delayMs: 1400,
+            expression: 'glare',
+            faceParts: {
+              brow: 'angry',
+              eyes: 'glare',
+              mouth: 'close',
+              effects: [],
+            },
+          },
+          {
+            delayMs: 1600,
+            expression: 'look_away',
+            faceParts: {
+              brow: 'sad',
+              eyes: 'down',
+              mouth: 'close',
+              effects: [],
+            },
+          },
+          {
+            delayMs: 1600,
+            expression: 'look_away',
+            faceParts: {
+              brow: 'sad',
+              eyes: 'close',
+              mouth: 'close',
+              effects: [],
+            },
+          },
+        ],
+        waitMs: 800,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・そうだ。俺が、アッシュだ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
+          effects: [],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '俺が――・・・・・・',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: [],
+        },
+        voiceEffect: 'normal',
+        waitMs: 3200,
+      },
+    ],
+    endingTransition: {
+      waitBeforeExitMs: 2400,
+      aschAction: 'none',
+      doorAction: 'none',
+      waitAfterDoorMs: 1800,
+    },
   },
 };
 
@@ -1102,6 +1306,25 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
 
   // END 02：怒って帰られる（ゲームオーバー扱い）
   END_PHASE2_INCOMPLETE: {
+    id: 'END_PHASE2_INCOMPLETE',
+    title: 'END 02 // 怒って帰っちゃった',
+    subtitle: 'GAME OVER // SLAMMED DOOR',
+    dialogues: [
+      {
+        speaker: 'GUY',
+        text: 'まいったな、すっかり臍を曲げられたまま帰られちまった',
+      },
+      {
+        speaker: 'GUY',
+        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・もう少し落ち着いて話せばよかったな',
+      },
+    ],
+    summaryText:
+      'タルロウAの偽装を暴き、中身がアッシュ本人であることは確かめられたものの、怒らせて帰られてしまった',
+  },
+
+  // END_PHASE2_STAY_REFUSED：引き留め拒絶時（END 02扱い安全フォールバック）
+  END_PHASE2_STAY_REFUSED: {
     id: 'END_PHASE2_INCOMPLETE',
     title: 'END 02 // 怒って帰っちゃった',
     subtitle: 'GAME OVER // SLAMMED DOOR',

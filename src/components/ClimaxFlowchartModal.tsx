@@ -352,7 +352,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
       : '',
     '',
     '====================================',
-    '【パターンC（DP-002解除で『端末』タブに出現：秘密を問い詰める ➔ END 09 / END 10）】',
+    '【パターンC（DP-002・DP-003解除で出現：秘密を問い詰める ➔ END 10）】',
     '====================================',
     climaxTopicC && stageC
       ? [
@@ -638,12 +638,12 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 {
                   sec: dp003,
                   unlockNote:
-                    '▼ 解除すると『端末』タブに【パターンA（秘めて肯定）】の話題選択肢が出現',
+                    '▼ 解除すると話題選択肢に【パターンA（秘めて肯定）】が出現',
                 },
                 {
                   sec: dp002,
                   unlockNote:
-                    '▼ 解除すると『端末』タブに【パターンC（記録を突きつける）】の話題選択肢が出現',
+                    '▼ 解除すると話題選択肢に【パターンC（記録を突きつける）】が出現',
                 },
               ].map(({ sec, unlockNote }) =>
                 sec ? (
