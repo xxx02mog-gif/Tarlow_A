@@ -95,7 +95,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'そうだな。・・・・・・こうして向かい合っていると、本当にあの頃に戻ったみたいだよ',
             aschText:
-              '・・・・・・そうだな・・・・・・',
+              '・・・・・・',
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
@@ -108,24 +108,6 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             hideWhenBadMoodOrCold: true,
             naturalUnlockSectorId: 'SEC-04',
             grantsLinkTags: ['hint_human_limbs'],
-            completesTopic: true,
-          },
-          {
-            id: 'p2_height_reply_calm',
-            thoughtText: '「・・・・・・まあ、今は無事に話せているだけで十分だよ」と穏やかに微笑む',
-            spokenText:
-              '・・・・・・まあ、今はこうして無事に話せているだけで十分だよ',
-            aschText:
-              '・・・・・・ふん。勝手に昔と比べるな',
-            expression: 'look_away',
-            faceParts: {
-              brow: 'normal',
-              eyes: 'away',
-              mouth: 'close',
-              effects: [],
-            },
-            moodDelta: 0,
-            trustDelta: 1,
             completesTopic: true,
           },
           {
@@ -504,9 +486,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_clothes_reply_suits_you',
-            thoughtText: '「その服、よく似合ってるぜ。昔を思い出すよ」と微笑む',
+            thoughtText: '「似合ってるじゃないか」と微笑む',
             spokenText:
-              'その服、よく似合ってるぜ。昔を思い出すよ',
+              '似合ってるじゃないか',
             aschText:
               '・・・・・・まじまじ見るな',
             expression: 'look_away',
@@ -803,7 +785,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec09_rejected_names',
-    thoughtText: '【EM-005】却下した機体名の記録',
+    thoughtText: '【EM-005】機体名のボツ案リスト',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -812,11 +794,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'ディストが提案した機体名の候補、おまえが片っ端から却下したっていう記録が残っているぞ',
+          '端末に、ディストが登録しようとした機体名のボツ案リストが残ってるぞ。えーと、どれどれ・・・・・・',
         aschText:
-          '当たり前だろうが！　どれもこれも正気を疑うような名前ばかり並べやがって・・・・・・！\n・・・・・・思い出すだけでも頭痛がしてくる',
+          'よ、読み上げるんじゃねぇ！\nどれもこれも正気を疑うような名前ばかり並べやがって・・・・・・！',
         expression: 'glare',
-        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush', 'sweat'] },
         secondExpression: 'look_away',
         secondFaceParts: { brow: 'pain', eyes: 'close', mouth: 'frown', effects: ['sweat'] },
         moodDelta: 0,
@@ -963,7 +945,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '3ヶ月前に大佐が研究所へ来た時、おまえを無言でじっと見ていったんだってな。あれ、気づかれていたのか？',
+          '3ヶ月前に大佐が研究所へ来た時、おまえを無言でじっと見ていったんだってな。',
         aschText:
           '・・・・・・知るか。だから余計に気味が悪いんだろうが・・・・・・',
         expression: 'glare',
@@ -1018,7 +1000,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・今の姿を見られるのが嫌なんじゃなくて、\n死んだはずの自分が、記憶を模倣されただけの譜業なのかアッシュ本人なのか、おまえ自身にも分からないからか？',
             aschText:
-              'ルークが戻っているんだから、それでいいだろう。\n記憶から演算されているだけの譜業なのか、俺自身なのか・・・・・・\nそんなこともわからねえままで、誰の前にでれるっていうんだ。',
+              '・・・・・・。\n記憶から演算されているだけの譜業なのか、俺自身なのか・・・・・・\nそんなこともわからねえままで、誰の前にでれるっていうんだ。',
             expression: 'look_away',
             faceParts: {
               brow: 'sad',
@@ -1451,9 +1433,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '今の声のこと（もう一度聞く）',
         spokenText:
-          '・・・・・・しかし、声まであの頃のままだと、怒鳴られてもなんだか調子が狂うよ',
+          '・・・・・・しかし、声まで子供のままだと、怒鳴られてもなんだか調子が狂うよ',
         retrySpokenText:
-          'さっきは悪かったけど・・・・・・やっぱりその声、聞いているとあの頃を思い出すな',
+          'さっきは悪かったけど・・・・・・やっぱり前とは勝手が違って喋りづらかったりするのか？',
         aschText:
           '俺だって好きでこんな声を出しているわけじゃない',
         retryAschText:

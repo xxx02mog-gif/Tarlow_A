@@ -4065,88 +4065,119 @@ export default function App() {
     setPhase1AccuseStep('NONE');
     unlockAchievements('ach_09');
 
-    const guySpoken =
-      'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。\nおまえが動揺した波形も、内部の記録も全部ここに映ってるぞ。';
-    const aschReply =
-      '・・・・・・なっ！？　おいガイ、その忌々しい板を俺に向けるな！\nディストの奴、そんなものまでおまえに渡しやがったのか・・・・・・！';
-
-    const guyLines = guySpoken.split('\n').filter(Boolean);
-    const aschLines = aschReply.split('\n').filter(Boolean);
-
-    const steps: QueuedStep[] = [];
-    guyLines.forEach((line, idx) => {
-      steps.push({
-        delayMs: idx === 0 ? 240 : 920,
+    const steps: QueuedStep[] = [
+      {
+        delayMs: 240,
         action: () => {
-          pushScreenBubble('GUY', line, 'normal');
+          pushScreenBubble(
+            'GUY',
+            'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。',
+            'normal'
+          );
         },
-      });
-    });
-
-    aschLines.forEach((line, idx) => {
-      steps.push({
-        delayMs: idx === 0 ? 1150 : 980,
+      },
+      {
+        delayMs: 1100,
         action: () => {
-          if (idx === 0) {
-            setOverrideExpression('shock');
-            setOverrideFaceParts({
-              brow: 'angry',
-              eyes: 'wide',
-              mouth: 'shout',
-              effects: ['blush', 'sweat'],
-            });
-            setMood(-3);
-          } else {
-            setOverrideExpression('glare');
-            setOverrideFaceParts({
-              brow: 'angry',
-              eyes: 'glare',
-              mouth: 'shout',
-              effects: ['blush', 'sweat'],
-            });
-          }
-          if (idx === aschLines.length - 1) {
-            setPreviewPage(0);
-            setActiveAschQuestion({
-              id: 'q_p1_final_expose',
-              promptSummary: '思わず「ガイ」と名前を呼んでしまったアッシュに確認する',
-              options: [
-                {
-                  id: 'q_p1_final_confirm',
-                  thoughtText:
-                    '「今、俺のことを『ガイ』って呼んだな。やっぱりアッシュじゃないか」と言う',
-                  spokenText:
-                    '・・・・・・今、俺のことを「ガイ」って呼んだな。\n俺を知らないはずの譜業が、どうして名前を呼べるんだ？　・・・・・・やっぱりアッシュなんだろ。',
-                  aschText:
-                    '・・・・・・っ！！\n・・・・・・チッ、分かったよ。ただの譜業だっていうのは嘘だ。だが、その名前で俺を呼ぶな。',
-                  expression: 'shock',
-                  faceParts: {
-                    brow: 'sad',
-                    eyes: 'wide',
-                    mouth: 'gasp',
-                    effects: ['sweat'],
-                  },
-                  secondExpression: 'look_away',
-                  secondFaceParts: {
-                    brow: 'sad',
-                    eyes: 'close',
-                    mouth: 'frown',
-                    effects: [],
-                  },
-                  moodDelta: 2,
-                  trustDelta: 2,
-                  grantsLinkTags: ['phase2_started', 'terminal_revealed'],
-                  naturalUnlockSectorId: 'SEC-01',
-                  systemLog:
-                    'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED',
-                },
-              ],
-            });
-          }
-          pushScreenBubble('ASCH', line, 'shout');
+          pushScreenBubble(
+            'GUY',
+            'おまえが動揺した波形も、内部の記録も全部ここに映ってるぞ。',
+            'normal'
+          );
         },
-      });
-    });
+      },
+      {
+        delayMs: 1250,
+        action: () => {
+          setOverrideExpression('shock');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'wide',
+            mouth: 'shout',
+            effects: ['blush', 'sweat'],
+          });
+          setMood(-2);
+          pushScreenBubble('ASCH', '・・・・・・っ！？', 'shout');
+        },
+      },
+      {
+        delayMs: 1100,
+        action: () => {
+          setOverrideExpression('glare');
+          setOverrideFaceParts({
+            brow: 'angry',
+            eyes: 'glare',
+            mouth: 'shout',
+            effects: ['sweat'],
+          });
+          pushScreenBubble(
+            'ASCH',
+            'ディストの奴、そんなものまでおまえに渡しやがったのか・・・・・・！',
+            'shout'
+          );
+        },
+      },
+      {
+        delayMs: 1250,
+        action: () => {
+          pushScreenBubble(
+            'GUY',
+            'おまえがいくら他人のフリをしても、この記録までは誤魔化せない。',
+            'normal'
+          );
+        },
+      },
+      {
+        delayMs: 1100,
+        action: () => {
+          pushScreenBubble('GUY', '・・・・・・アッシュ、観念しろよ。', 'normal');
+        },
+      },
+      {
+        delayMs: 1250,
+        action: () => {
+          setOverrideExpression('look_away');
+          setOverrideFaceParts({
+            brow: 'sad',
+            eyes: 'away',
+            mouth: 'frown',
+            effects: ['shadow'],
+          });
+          updateMood(2);
+          setTrustLevel((prev) => prev + 2);
+          setLinkTags((prev) =>
+            Array.from(new Set([...prev, 'phase2_started', 'terminal_revealed']))
+          );
+          setPreviewPage(0);
+          const stamp = nextOrderStamp();
+          if (
+            !readSectorIds.includes('SEC-01') ||
+            !readSectorIds.includes('SEC-02')
+          ) {
+            setHasUnreadSector(true);
+          }
+          setSectors((prev) =>
+            prev.map((s) =>
+              s.id === 'SEC-01' || s.id === 'SEC-02'
+                ? {
+                    ...s,
+                    discovered: true,
+                    discoveredAt: s.discoveredAt ?? stamp,
+                    unlocked: true,
+                    unlockedAt: s.unlockedAt ?? stamp,
+                    unlockedMethod: s.unlockedMethod ?? 'DIALOGUE',
+                  }
+                : s
+            )
+          );
+          appendLog(
+            'INFO',
+            'PHASE 2 TRANSITION // CAMOUFLAGE MODE ABORTED'
+          );
+          pushScreenBubble('ASCH', '・・・・・・チッ・・・・・・', 'normal');
+        },
+      },
+    ];
 
     enqueueSequence(steps);
   };
@@ -6264,7 +6295,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>PROTOTYPE BUILD</span>
+              <span>VERSION 1.0.0</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
