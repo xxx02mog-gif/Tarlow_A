@@ -222,15 +222,15 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
         flashText: 'なっ・・・・・・！？ なんで俺の名前が・・・・・・ッ！',
         slipFaceParts: {
           brow: 'angry',
-          eyes: 'wide',
-          mouth: 'shout',
-          effects: ['blush', 'sweat'],
+          eyes: 'glare',
+          mouth: 'grit',
+          effects: [],
         },
         correctedFaceParts: {
           brow: 'angry',
           eyes: 'away',
           mouth: 'frown',
-          effects: ['sweat'],
+          effects: [],
         },
         guyPointOutSpoken:
           'さっき、「なんで俺の名前が」って声を荒げたよな。\n自分がアッシュじゃないなら、ブウサギの名前くらいで怒るわけないだろ',

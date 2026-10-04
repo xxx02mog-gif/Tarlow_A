@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import {
   ENDING_SCENARIOS,
-  INITIAL_MEMORY_SECTORS,
 } from '../data/prototypeScenario';
 import {
   ACHIEVEMENT_DEFINITIONS,
   AchievementSaveData,
-  ALL_CANONICAL_DIALOGUE_LINES,
   createDefaultAchievementSave,
   decodeAchievementBackupCode,
   encodeAchievementBackupCode,
@@ -48,20 +46,6 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
 
   if (!isOpen) return null;
 
-  const totalCanonicalLines = Math.max(1, ALL_CANONICAL_DIALOGUE_LINES.size);
-  const seenLinesCount = saveData.seenLines.length;
-  const seenLinesPct = Math.min(
-    100,
-    Math.round((seenLinesCount / totalCanonicalLines) * 100)
-  );
-
-  const totalSectorsCount = INITIAL_MEMORY_SECTORS.length;
-  const unlockedSectorsCount = saveData.unlockedSectorIds.length;
-  const unlockedSectorsPct = Math.min(
-    100,
-    Math.round((unlockedSectorsCount / totalSectorsCount) * 100)
-  );
-
   const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
   const reachedEndingsCount = ENDING_ARCHIVE_LIST.filter((item) => {
     if (item.subKeys) {
@@ -69,9 +53,17 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     }
     return saveData.reachedEndingKeys.includes(item.key);
   }).length;
+  const reachedEndingsPct = Math.min(
+    100,
+    Math.round((reachedEndingsCount / totalEndingsCount) * 100)
+  );
 
   const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
   const unlockedAchievementsCount = saveData.unlockedAchievementIds.length;
+  const unlockedAchievementsPct = Math.min(
+    100,
+    Math.round((unlockedAchievementsCount / totalAchievementsCount) * 100)
+  );
 
   const handleCopyExportCode = async () => {
     soundEngine.playTerminalTab();
@@ -166,38 +158,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
           </div>
         </div>
 
-        {/* 進捗バー（セリフ・管理端末） */}
-        <div className="flex items-center gap-6 border-b border-zinc-400/80 py-2 shrink-0">
-          <div className="flex items-center gap-2 text-[11px] text-zinc-700">
-            <span className="shrink-0">セリフ</span>
-            <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-              <div
-                className="h-full bg-zinc-900 transition-all duration-300"
-                style={{ width: `${seenLinesPct}%` }}
-              />
-            </div>
-            <strong className="font-mono text-zinc-950 shrink-0">
-              {seenLinesPct}%
-            </strong>
-          </div>
-
-          <div className="flex items-center gap-2 text-[11px] text-zinc-700">
-            <span className="shrink-0">管理端末</span>
-            <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-              <div
-                className="h-full bg-zinc-900 transition-all duration-300"
-                style={{ width: `${unlockedSectorsPct}%` }}
-              />
-            </div>
-            <strong className="font-mono text-zinc-950 shrink-0">
-              {unlockedSectorsPct}%
-            </strong>
-          </div>
-        </div>
-
-        {/* タブ切り替え（下線スタイル） */}
-        <div className="flex items-center justify-between border-b border-zinc-300/80 pt-2 pb-1 shrink-0">
-          <div className="flex items-center gap-4">
+        {/* タブ切り替え（下線スタイル・タブ内に進捗バーを統合） */}
+        <div className="flex items-center justify-between border-b border-zinc-300/80 pt-1 pb-1 shrink-0">
+          <div className="flex items-center gap-5">
             <button
               type="button"
               onClick={() => {
@@ -207,13 +170,22 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 setSelectedAchId(null);
                 setStatusMessage(null);
               }}
-              className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
                 activeTab === 'ENDINGS'
                   ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              エンディング ({reachedEndingsCount}/{totalEndingsCount})
+              <span>エンディング</span>
+              <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
+                <div
+                  className="h-full bg-zinc-900 transition-all duration-300"
+                  style={{ width: `${reachedEndingsPct}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-zinc-600 font-normal">
+                {reachedEndingsPct}%
+              </span>
             </button>
 
             <button
@@ -225,13 +197,22 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 setSelectedAchId(null);
                 setStatusMessage(null);
               }}
-              className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
                 activeTab === 'ACHIEVEMENTS'
                   ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              実績 ({unlockedAchievementsCount}/{totalAchievementsCount})
+              <span>実績</span>
+              <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
+                <div
+                  className="h-full bg-zinc-900 transition-all duration-300"
+                  style={{ width: `${unlockedAchievementsPct}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-zinc-600 font-normal">
+                {unlockedAchievementsPct}%
+              </span>
             </button>
 
             <button
@@ -244,7 +225,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 setStatusMessage(null);
                 setIsConfirmingReset(false);
               }}
-              className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
+              className={`text-[11.5px] pb-1 transition-colors cursor-pointer ${
                 activeTab === 'DATA'
                   ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                   : 'text-zinc-500 hover:text-zinc-800'
@@ -252,34 +233,6 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
             >
               引き継ぎ・初期化
             </button>
-
-            {canOpenBonusViewer && onOpenBonusViewer && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundEngine.playTerminalTab();
-                  onOpenBonusViewer();
-                }}
-                className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
-                title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
-              >
-                表情鑑賞
-              </button>
-            )}
-
-            {canOpenScenarioInspector && onOpenScenarioInspector && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundEngine.playTerminalTab();
-                  onOpenScenarioInspector();
-                }}
-                className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
-                title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
-              >
-                シナリオ台本
-              </button>
-            )}
           </div>
 
           {activeTab !== 'DATA' && (
@@ -557,10 +510,44 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
         </div>
 
         {/* 下部フッター */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0">
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0 relative min-h-[34px]">
           <span className="text-[10px] text-zinc-500 font-mono">
             Ghost in the mASCHine
           </span>
+
+          {/* 下部中央：表情鑑賞・シナリオ台本ボタン */}
+          {(canOpenBonusViewer || canOpenScenarioInspector) && (
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+              {canOpenBonusViewer && onOpenBonusViewer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playTerminalTab();
+                    onOpenBonusViewer();
+                  }}
+                  className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
+                  title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
+                >
+                  表情鑑賞
+                </button>
+              )}
+
+              {canOpenScenarioInspector && onOpenScenarioInspector && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playTerminalTab();
+                    onOpenScenarioInspector();
+                  }}
+                  className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
+                  title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
+                >
+                  シナリオ台本
+                </button>
+              )}
+            </div>
+          )}
+
           <span className="text-[10px] text-zinc-500">
             RECORD ARCHIVE SYSTEM
           </span>

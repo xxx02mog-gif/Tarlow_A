@@ -267,6 +267,7 @@ const buildCanonicalDialogueLines = (): Set<string> => {
   });
 
   CONVERSATION_TOPICS.forEach((topic) => {
+    if (topic.id === 'p2_deep_truth_dilemma') return;
     topic.stages.forEach((stage) => {
       addRawText(stage.spokenText);
       addRawText(stage.aschText);

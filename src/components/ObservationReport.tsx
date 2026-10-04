@@ -8,13 +8,11 @@ import {
 import {
   ENDING_SCENARIOS,
   resolveEndingKey,
-  INITIAL_MEMORY_SECTORS,
 } from '../data/prototypeScenario';
 import { soundEngine } from '../utils/chiptuneAudio';
 import {
   ACHIEVEMENT_DEFINITIONS,
   AchievementSaveData,
-  ALL_CANONICAL_DIALOGUE_LINES,
   ENDING_ARCHIVE_LIST,
 } from '../utils/achievementStore';
 
@@ -73,20 +71,6 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         : '機能停止（破壊）';
 
   // 累計データの集計
-  const totalCanonicalLines = Math.max(1, ALL_CANONICAL_DIALOGUE_LINES.size);
-  const seenLinesCount = achievementSave?.seenLines.length ?? 0;
-  const seenLinesPct = Math.min(
-    100,
-    Math.round((seenLinesCount / totalCanonicalLines) * 100)
-  );
-
-  const totalSectorsCount = INITIAL_MEMORY_SECTORS.length;
-  const unlockedSectorsCount = achievementSave?.unlockedSectorIds.length ?? 0;
-  const unlockedSectorsPct = Math.min(
-    100,
-    Math.round((unlockedSectorsCount / totalSectorsCount) * 100)
-  );
-
   const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
   const reachedEndingsCount = achievementSave
     ? ENDING_ARCHIVE_LIST.filter((item) => {
@@ -98,10 +82,18 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         return achievementSave.reachedEndingKeys.includes(item.key);
       }).length
     : 0;
+  const reachedEndingsPct = Math.min(
+    100,
+    Math.round((reachedEndingsCount / totalEndingsCount) * 100)
+  );
 
   const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
   const unlockedAchievementsCount =
     achievementSave?.unlockedAchievementIds.length ?? 0;
+  const unlockedAchievementsPct = Math.min(
+    100,
+    Math.round((unlockedAchievementsCount / totalAchievementsCount) * 100)
+  );
 
   return (
     <div
@@ -216,38 +208,9 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
 
         {/* 右側：実績・記録（白黒統一・ヒントツールチップ方式） */}
         <div className="flex-1 flex flex-col justify-between border-l border-zinc-300 pl-6 min-h-0">
-          {/* 上部：進捗バー（セリフ・管理端末） */}
-          <div className="flex items-center gap-6 border-b border-zinc-400/80 pb-2 shrink-0">
-            <div className="flex items-center gap-2 text-[11px] text-zinc-700">
-              <span className="shrink-0">セリフ</span>
-              <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-                <div
-                  className="h-full bg-zinc-900 transition-all duration-300"
-                  style={{ width: `${seenLinesPct}%` }}
-                />
-              </div>
-              <strong className="font-mono text-zinc-950 shrink-0">
-                {seenLinesPct}%
-              </strong>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-zinc-700">
-              <span className="shrink-0">管理端末</span>
-              <div className="w-24 h-1.5 bg-zinc-300 overflow-hidden">
-                <div
-                  className="h-full bg-zinc-900 transition-all duration-300"
-                  style={{ width: `${unlockedSectorsPct}%` }}
-                />
-              </div>
-              <strong className="font-mono text-zinc-950 shrink-0">
-                {unlockedSectorsPct}%
-              </strong>
-            </div>
-          </div>
-
-          {/* タブ切り替え（下線スタイル） */}
-          <div className="flex items-center justify-between border-b border-zinc-300/80 pt-2 pb-1 shrink-0">
-            <div className="flex items-center gap-4">
+          {/* タブ切り替え（下線スタイル・タブ内に進捗バーを統合） */}
+          <div className="flex items-center justify-between border-b border-zinc-300/80 pt-1 pb-1 shrink-0">
+            <div className="flex items-center gap-5">
               <button
                 type="button"
                 onClick={() => {
@@ -256,13 +219,22 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   setSelectedEndingKey(null);
                   setSelectedAchId(null);
                 }}
-                className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
+                className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
                   activeTab === 'ENDINGS'
                     ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                エンディング ({reachedEndingsCount}/{totalEndingsCount})
+                <span>エンディング</span>
+                <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
+                  <div
+                    className="h-full bg-zinc-900 transition-all duration-300"
+                    style={{ width: `${reachedEndingsPct}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-mono text-zinc-600 font-normal">
+                  {reachedEndingsPct}%
+                </span>
               </button>
 
               <button
@@ -273,13 +245,22 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   setSelectedEndingKey(null);
                   setSelectedAchId(null);
                 }}
-                className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
+                className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
                   activeTab === 'ACHIEVEMENTS'
                     ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                実績 ({unlockedAchievementsCount}/{totalAchievementsCount})
+                <span>実績</span>
+                <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
+                  <div
+                    className="h-full bg-zinc-900 transition-all duration-300"
+                    style={{ width: `${unlockedAchievementsPct}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-mono text-zinc-600 font-normal">
+                  {unlockedAchievementsPct}%
+                </span>
               </button>
             </div>
 

@@ -988,7 +988,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: 'みんなの元へ戻らない理由（もう一度聞く）',
         spokenText:
-          '・・・・・・なあ。どうしてバチカルへ帰らないんだ？　ナタリアにも会わず、こんな研究所に身を置いているのはなぜだ？',
+          '・・・・・・なあ。どうしてバチカルへ帰らないんだ？',
         retrySpokenText:
           '・・・・・・さっきは引いたけど、これだけは聞かせてくれ。どうして誰にも会わずに研究所に身を隠しているんだ？',
         aschText:
@@ -1005,7 +1005,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         capturedProtect: {
           sectorId: 'SEC-12',
           capturedQuote: '「・・・・・・帰る場所などない。俺は3年前のエルドラントで、確かに死んだはずなんだ。」',
-          capturedContext: 'なぜナタリアやルークに会わず研究所に身を隠すのか尋ねた際の発言',
+          capturedContext: 'なぜバチカルへ帰らないのか尋ねた際の発言',
         },
         grantsLinkTags: ['sec12_discovered'],
         systemLog:
@@ -1015,7 +1015,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_why_hide_reply_step_in',
             thoughtText: '自分が何者か分からないからか？',
             spokenText:
-              '・・・・・・今の姿を見られるのが嫌なんじゃなくて、\n死んだはずの自分が、記憶を模倣されただけの譜業なのかアッシュ本人なのか、おまえ自身にも分からないからか？',
+              '・・・・・・自分が何なのかわからない、ってことか？',
             aschText:
               '・・・・・・。\n記憶から演算されているだけの譜業なのか、俺自身なのか・・・・・・\nそんなこともわからねえままで、誰の前にでれるっていうんだ',
             expression: 'look_away',
@@ -1139,7 +1139,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '11年前の予備機体・・・・・・ね',
             aschText:
-              '・・・・・・手足があって剣を握れるだけ、あの鉄くずよりはマシだ',
+              '・・・・・・まともに握れやしねえが、手足があるだけあの鉄くずよりはマシだ',
             expression: 'normal',
             faceParts: {
               brow: 'normal',
