@@ -47,11 +47,12 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   const naturalUnlockedCount = sectors.filter(
     (s) => s.unlocked && s.unlockedMethod === 'DIALOGUE'
   ).length;
-  const forcedUnlockedCount = sectors.filter(
-    (s) => s.unlocked && s.unlockedMethod === 'OVERRIDE'
-  ).length;
-  const remainingLockedCount =
-    totalSectors - naturalUnlockedCount - forcedUnlockedCount;
+  const forcedUnlockedCount =
+    stats?.overrideCount ??
+    sectors.filter(
+      (s) => s.id !== 'SEC-00' && s.unlocked && s.unlockedMethod === 'OVERRIDE'
+    ).length;
+  const remainingLockedCount = sectors.filter((s) => !s.unlocked).length;
 
   const avgResponseSec =
     stats.totalTurns > 0

@@ -44,7 +44,6 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     discoveredAt: 0,
     unlocked: true,
     unlockedAt: 1,
-    unlockedMethod: 'OVERRIDE',
   },
   // ==========================================
   // 【フェーズ1：タルロウAの嘘を暴く初期ロック（SEC-01〜SEC-03）】

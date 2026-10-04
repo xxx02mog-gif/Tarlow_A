@@ -12,6 +12,7 @@ import { formatParagraphText } from '../utils/japaneseLineWrap';
 interface DataTerminalModalProps {
   isOpen: boolean;
   isCompactViewport?: boolean;
+  isPortraitRotated?: boolean;
   mood: number;
   sectors: MemorySector[];
   oralInfos: OralInfoEntry[];
@@ -37,6 +38,7 @@ const INFO_FILTERS: { id: 'ALL' | '機体ログ' | '情動反応' | '深層記�
 export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
   isOpen,
   isCompactViewport = false,
+  isPortraitRotated = false,
   mood,
   sectors,
   oralInfos,
@@ -318,10 +320,14 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
     touchStartXRef.current = null;
     touchStartYRef.current = null;
 
+    // スマホ等の90度回転表示時(isPortraitRotated)は、視覚上の左右がブラウザ物理Y軸、視覚上の上下がブラウザ物理X軸となる
+    const visualDiffX = isPortraitRotated ? diffY : diffX;
+    const visualDiffY = isPortraitRotated ? -diffX : diffY;
+
     const threshold = 35;
     // 水平方向のスワイプ判定（縦スクロール誤作動防止のため水平移動が縦移動の1.4倍以上かつ35px以上）
-    if (Math.abs(diffX) > threshold && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
-      if (diffX > 0) {
+    if (Math.abs(visualDiffX) > threshold && Math.abs(visualDiffX) > Math.abs(visualDiffY) * 1.4) {
+      if (visualDiffX > 0) {
         // 右スワイプ -> 前のページ（INFOからMONITORへ）
         goPrev();
       } else {

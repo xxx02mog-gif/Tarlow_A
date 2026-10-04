@@ -95,9 +95,8 @@ import { getAssetUrl } from './utils/assetPath';
 import { formatBubbleText, formatParagraphText } from './utils/japaneseLineWrap';
 import './game.css';
 
-// 制作・調整中は true（上部バー＆実績画面に『表情ビューワー』を常時表示）
-// 本番公開時に false にすると、全10種ED達成または実績『百面相』(ach_17)解除時のみご褒美として解放されます
-const DEBUG_VIEWER_ALWAYS_VISIBLE = true;
+// 実績17（百面相）で表情鑑賞、実績18（もう寝よう）でシナリオ台本が解放されます
+const DEBUG_VIEWER_ALWAYS_VISIBLE = false;
 
 const STAGE_WIDTH = 800;
 const STAGE_HEIGHT = 450;
@@ -760,6 +759,8 @@ export default function App() {
     topicId: string;
     options: AschQuestionReplyOption[];
   } | null>(null);
+  const activeTopicReplyRef = useRef(activeTopicReply);
+  activeTopicReplyRef.current = activeTopicReply;
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<string[]>([]);
   const [aschQuestionsDisabled, setAschQuestionsDisabled] =
     useState<boolean>(false);
@@ -1257,7 +1258,7 @@ export default function App() {
     [recordSeenLine]
   );
 
-  // === 全シナリオ・演出インスペクター用の実機プレビュー実行（本番の演出・タメ・分割・積み重ねと完全同期） ===
+  // === 全シナリオ台本用の実機プレビュー実行（本番の演出・タメ・分割・積み重ねと完全同期） ===
   const handlePreviewInspectorSequence = useCallback(
     (
       lines: ScriptLinePreview[],
@@ -1751,18 +1752,59 @@ export default function App() {
           const idx = awayReactionCountRef.current;
           awayReactionCountRef.current += 1;
 
-          // DP-002の追及後などパニック・発作未解決時は復帰セリフを完全抑制し息を整えている状態を維持
-          const isPanicking =
-            linkTags.includes('asked_about_dp002') &&
-            !linkTags.includes('talked_tarlow_broken');
-          if (isPanicking) {
-            setOverrideExpression('pain');
+          // Phase 3（終幕の問いかけ待機中）は復帰セリフを完全抑制し沈黙を維持
+          if (activeTopicReplyRef.current?.topicId === 'p3_final_who_am_i') {
+            setOverrideExpression('look_away');
             setOverrideFaceParts({
-              brow: 'pain',
-              eyes: 'away',
-              mouth: 'grit',
-              effects: ['sweat'],
+              brow: 'sad',
+              eyes: 'down',
+              mouth: 'close',
+              effects: ['shadow'],
             });
+            appendLog(
+              'INFO',
+              'VISUAL CONTACT RESTORED // PHASE 3 SILENCE MAINTAINED'
+            );
+            return;
+          }
+
+          // 深層記憶（DP-002/003）解放後・緊迫時は復帰セリフを完全抑制し、緊張感のある表情を維持
+          const isDeepTruthActive =
+            linkTags.includes('asked_about_dp002') ||
+            linkTags.includes('climax_ready') ||
+            linkTags.includes('sec19_unlocked') ||
+            linkTags.includes('sec20_unlocked') ||
+            sectors.some(
+              (s) =>
+                (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
+                s.unlocked
+            );
+
+          if (isDeepTruthActive) {
+            const isPanicking =
+              linkTags.includes('asked_about_dp002') &&
+              !linkTags.includes('talked_tarlow_broken');
+            if (isPanicking) {
+              setOverrideExpression('pain');
+              setOverrideFaceParts({
+                brow: 'pain',
+                eyes: 'away',
+                mouth: 'grit',
+                effects: ['sweat'],
+              });
+            } else {
+              setOverrideExpression('look_away');
+              setOverrideFaceParts({
+                brow: 'sad',
+                eyes: 'down',
+                mouth: 'close',
+                effects: [],
+              });
+            }
+            appendLog(
+              'INFO',
+              'VISUAL CONTACT RESTORED // DEEP TRUTH TENSION MAINTAINED'
+            );
             return;
           }
 
@@ -1826,6 +1868,7 @@ export default function App() {
     isSequencing,
     isHatredMode,
     linkTags,
+    sectors,
     mood,
     appendLog,
     playAschReactionLines,
@@ -1849,107 +1892,107 @@ export default function App() {
       const currentWaitSec = Math.floor(idleMs / 1000);
       setIdleWaitSec(currentWaitSec);
 
-      // Phase 3（終幕の問いかけ：「おまえから見て、今の俺は誰に見える？」）で30秒間無言だった場合 → 無言タイムアウト（END 07）へ分岐
-      if (
-        activeTopicReply?.topicId === 'p3_final_who_am_i' &&
-        idleMs > 30000
-      ) {
-        idleStageRef.current = 1;
-        setActiveTopicReply(null);
-        soundEngine.stopBgm();
-        soundEngine.setPlayingPhase(false);
-        setStats((prev) => ({
-          ...prev,
-          idleTimeoutCount: prev.idleTimeoutCount + 1,
-        }));
-        appendLog(
-          'INFO',
-          'RESPONSE TIMEOUT // QUERY WITHDRAWN'
-        );
-        const timeoutSteps: QueuedStep[] = [
-          // ガイの沈黙（タメ 2.4秒）
-          {
-            delayMs: 260,
-            action: () => {
-              pushScreenBubble('GUY', '・・・・・・。', 'normal');
+      // Phase 3（終幕の問いかけ：「おまえから見て、今の俺は誰に見える？」）待機中：
+      // 日常の放置・催促リアクションは完全停止し、30秒無言タイムアウト（END 07）のみを静かに待機する
+      if (activeTopicReply?.topicId === 'p3_final_who_am_i') {
+        if (idleMs > 30000 && idleStageRef.current === 0) {
+          idleStageRef.current = 1;
+          setActiveTopicReply(null);
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
+          setStats((prev) => ({
+            ...prev,
+            idleTimeoutCount: prev.idleTimeoutCount + 1,
+          }));
+          appendLog(
+            'INFO',
+            'RESPONSE TIMEOUT // QUERY WITHDRAWN'
+          );
+          const timeoutSteps: QueuedStep[] = [
+            // ガイの沈黙（タメ 2.4秒）
+            {
+              delayMs: 260,
+              action: () => {
+                pushScreenBubble('GUY', '・・・・・・。', 'normal');
+              },
+              isBubble: true,
             },
-            isBubble: true,
-          },
-          // アッシュの息を呑む沈黙（伏し目でタメ 2.0秒）
-          {
-            delayMs: 2400,
-            action: () => {
-              setOverrideExpression('look_away');
-              setOverrideFaceParts({
-                brow: 'sad',
-                eyes: 'down',
-                mouth: 'close',
-                effects: ['shadow'],
-              });
-              pushScreenBubble('ASCH', '・・・・・・', 'normal');
+            // アッシュの息を呑む沈黙（伏し目でタメ 2.0秒）
+            {
+              delayMs: 2400,
+              action: () => {
+                setOverrideExpression('look_away');
+                setOverrideFaceParts({
+                  brow: 'sad',
+                  eyes: 'down',
+                  mouth: 'close',
+                  effects: ['shadow'],
+                });
+                pushScreenBubble('ASCH', '・・・・・・', 'normal');
+              },
+              isBubble: true,
             },
-            isBubble: true,
-          },
-          // 問いの取り下げ（伏し目のまま呟く・タメ 2.0秒）
-          {
-            delayMs: 2000,
-            action: () => {
-              setOverrideExpression('look_away');
-              setOverrideFaceParts({
-                brow: 'sad',
-                eyes: 'down',
-                mouth: 'close',
-                effects: ['shadow'],
-              });
-              pushScreenBubble(
-                'ASCH',
-                '・・・・・・、いや。いい。なんでもない。',
-                'normal'
-              );
+            // 問いの取り下げ（伏し目のまま呟く・タメ 2.0秒）
+            {
+              delayMs: 2000,
+              action: () => {
+                setOverrideExpression('look_away');
+                setOverrideFaceParts({
+                  brow: 'sad',
+                  eyes: 'down',
+                  mouth: 'close',
+                  effects: ['shadow'],
+                });
+                pushScreenBubble(
+                  'ASCH',
+                  '・・・・・・、いや。いい。なんでもない。',
+                  'normal'
+                );
+              },
+              isBubble: true,
             },
-            isBubble: true,
-          },
-          // 去り際の一言（目を逸らす・タメ 2.4秒）
-          {
-            delayMs: 2000,
-            action: () => {
-              setOverrideExpression('look_away');
-              setOverrideFaceParts({
-                brow: 'sad',
-                eyes: 'away',
-                mouth: 'close',
-                effects: ['shadow'],
-              });
-              pushScreenBubble('ASCH', '変なことを聞いた。忘れてくれ。', 'normal');
+            // 去り際の一言（目を逸らす・タメ 2.4秒）
+            {
+              delayMs: 2000,
+              action: () => {
+                setOverrideExpression('look_away');
+                setOverrideFaceParts({
+                  brow: 'sad',
+                  eyes: 'away',
+                  mouth: 'close',
+                  effects: ['shadow'],
+                });
+                pushScreenBubble('ASCH', '変なことを聞いた。忘れてくれ。', 'normal');
+              },
+              isBubble: true,
             },
-            isBubble: true,
-          },
-          // 重く静かな足音で退場（slow 3歩）
-          {
-            delayMs: 2400,
-            action: () => {
-              setIsAschExited(true);
-              setVisibleBubbles([]);
-              soundEngine.playFootsteps('slow', 3);
+            // 重く静かな足音で退場（slow 3歩）
+            {
+              delayMs: 2400,
+              action: () => {
+                setIsAschExited(true);
+                setVisibleBubbles([]);
+                soundEngine.playFootsteps('slow', 3);
+              },
+              isBubble: false,
             },
-            isBubble: false,
-          },
-          // ED画面へ移行（アッシュが去った後の余韻と間をしっかり置いてから）
-          {
-            delayMs: 3 * 440 + 2600,
-            action: () => {
-              setCustomEndingKey('END_PHASE3_SILENCE');
-              setStats((prev) => ({
-                ...prev,
-                endTime: Date.now(),
-              }));
-              setEndingStep(0);
-              setGamePhase('ENDING');
+            // ED画面へ移行（アッシュが去った後の余韻と間をしっかり置いてから）
+            {
+              delayMs: 3 * 440 + 2600,
+              action: () => {
+                setCustomEndingKey('END_PHASE3_SILENCE');
+                setStats((prev) => ({
+                  ...prev,
+                  endTime: Date.now(),
+                }));
+                setEndingStep(0);
+                setGamePhase('ENDING');
+              },
+              isBubble: false,
             },
-            isBubble: false,
-          },
-        ];
-        enqueueSequence(timeoutSteps);
+          ];
+          enqueueSequence(timeoutSteps);
+        }
         return;
       }
 
@@ -2108,25 +2151,48 @@ export default function App() {
         }
       }
 
-      // DP-002後の緊迫・混乱時の放置リアクション：
-      if (
-        linkTags.includes('asked_about_dp002') &&
-        !linkTags.includes('p2_dilemma_resolved')
-      ) {
+      // 深層記憶（DP-002/003）解放後・緊迫・混乱時の放置リアクション：
+      const isDeepTruthActive =
+        linkTags.includes('asked_about_dp002') ||
+        linkTags.includes('climax_ready') ||
+        linkTags.includes('sec19_unlocked') ||
+        linkTags.includes('sec20_unlocked') ||
+        sectors.some(
+          (s) =>
+            (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
+            s.unlocked
+        );
+
+      if (isDeepTruthActive && !linkTags.includes('p2_dilemma_resolved')) {
         if (idleMs > 18000 && idleStageRef.current === 0) {
           idleStageRef.current = 1;
-          setOverrideExpression('pain');
-          setOverrideFaceParts({
-            brow: 'pain',
-            eyes: 'close',
-            mouth: 'grit',
-            effects: ['pale', 'sweat', 'noise'],
-          });
-          pushScreenBubble(
-            'ASCH',
-            '・・・・・・っ、くそ・・・・・・頭が・・・・・・ッ',
-            'tremble_glitch'
-          );
+          if (linkTags.includes('asked_about_dp002')) {
+            setOverrideExpression('pain');
+            setOverrideFaceParts({
+              brow: 'pain',
+              eyes: 'close',
+              mouth: 'grit',
+              effects: ['pale', 'sweat', 'noise'],
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・っ、くそ・・・・・・頭が・・・・・・ッ',
+              'tremble_glitch'
+            );
+          } else {
+            setOverrideExpression('look_away');
+            setOverrideFaceParts({
+              brow: 'sad',
+              eyes: 'down',
+              mouth: 'close',
+              effects: ['shadow'],
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・何か言いたいことでもあるのか',
+              'tremble'
+            );
+          }
         }
         return;
       }
@@ -2281,11 +2347,25 @@ export default function App() {
           setPreviewPage(0);
         }
 
-        // DP-002後の緊迫・混乱時（端末を見た後の反応）：
-        if (
-          linkTags.includes('asked_about_dp002') &&
-          !linkTags.includes('p2_dilemma_resolved')
-        ) {
+        // Phase 3（終幕の問いかけ待機中）は端末確認リアクションを完全抑制し、沈黙タイマーもリセットしない
+        if (activeTopicReplyRef.current?.topicId === 'p3_final_who_am_i') {
+          terminalOpenedAtRef.current = null;
+          return;
+        }
+
+        // 深層記憶（DP-002/003）解放後・緊迫・混乱時（端末を見た後の反応）：
+        const isDeepTruthActive =
+          linkTags.includes('asked_about_dp002') ||
+          linkTags.includes('climax_ready') ||
+          linkTags.includes('sec19_unlocked') ||
+          linkTags.includes('sec20_unlocked') ||
+          sectors.some(
+            (s) =>
+              (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
+              s.unlocked
+          );
+
+        if (isDeepTruthActive && !linkTags.includes('p2_dilemma_resolved')) {
           if (
             !isSequencing &&
             !isSequencingRef.current &&
@@ -2294,18 +2374,33 @@ export default function App() {
             sinceLastGaze >= 5000
           ) {
             lastTerminalGazeAtRef.current = Date.now();
-            setOverrideExpression('pain');
-            setOverrideFaceParts({
-              brow: 'pain',
-              eyes: 'away',
-              mouth: 'grit',
-              effects: ['sweat', 'noise'],
-            });
-            pushScreenBubble(
-              'ASCH',
-              '・・・・・・っ、ハァ・・・・・・ハァ・・・・・・ッ。・・・・・・見るな・・・・・・っ',
-              'tremble_glitch'
-            );
+            if (linkTags.includes('asked_about_dp002')) {
+              setOverrideExpression('pain');
+              setOverrideFaceParts({
+                brow: 'pain',
+                eyes: 'away',
+                mouth: 'grit',
+                effects: ['sweat', 'noise'],
+              });
+              pushScreenBubble(
+                'ASCH',
+                '・・・・・・っ、ハァ・・・・・・ハァ・・・・・・ッ。・・・・・・見るな・・・・・・っ',
+                'tremble_glitch'
+              );
+            } else {
+              setOverrideExpression('look_away');
+              setOverrideFaceParts({
+                brow: 'sad',
+                eyes: 'down',
+                mouth: 'close',
+                effects: ['shadow'],
+              });
+              pushScreenBubble(
+                'ASCH',
+                '・・・・・・その端末に、何が映っているんだ',
+                'tremble'
+              );
+            }
           }
           terminalOpenedAtRef.current = null;
           choiceShownAtRef.current = Date.now();
@@ -5653,8 +5748,8 @@ export default function App() {
     hasEnoughDeepTalkForPhase3 ||
     linkTags.includes('p2_heard_true_reason') ||
     (!linkTags.includes('phase2_started') &&
-      (phase1QuestionsCount >= 3 || hasPhase1LockUnlocked)) ||
-    (linkTags.includes('phase2_started') && stats.totalTurns >= 8);
+      (phase1QuestionsCount >= 1 || hasPhase1LockUnlocked)) ||
+    (linkTags.includes('phase2_started') && stats.totalTurns >= 1);
 
   const isPhase2TopicUnlocked = useCallback(
     (t: ConversationTopic): boolean => {
@@ -5690,12 +5785,25 @@ export default function App() {
       if (t.requireTrust !== undefined && trustLevel < t.requireTrust) {
         return false;
       }
-      // DP-002の真実追究後（緊迫・真相解明フェーズ）：日常雑談を抑止し、真相追求・状況整理・端末に絞る
-      if (linkTags.includes('asked_about_dp002') && !linkTags.includes('p2_dilemma_resolved')) {
-        const isAllowedAfterDp002 =
+      // 深層記憶（DP-002/003）解放後・緊迫・真相解明フェーズ：日常雑談や初期端末話題（MC-001等）を抑止し、真相追求・状況整理に絞る
+      const isDeepTruthPhase =
+        (linkTags.includes('asked_about_dp002') ||
+          linkTags.includes('climax_ready') ||
+          linkTags.includes('sec19_unlocked') ||
+          linkTags.includes('sec20_unlocked') ||
+          sectors.some(
+            (s) =>
+              (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
+              s.unlocked
+          )) &&
+        !linkTags.includes('p2_dilemma_resolved');
+
+      if (isDeepTruthPhase) {
+        const isAllowedInDeepTruth =
           t.id === 'p2_tarlow_broken_reason' ||
           t.id === 'p2_soothe_after_broken' ||
           t.id === 'p2_examine_terminal_clue' ||
+          t.id === 'p2_ask_about_dp002' ||
           t.id === 'p2_dp002_apologize' ||
           t.id === 'p2_dp002_headache_worry' ||
           t.id === 'p2_dp002_dist_inquiry' ||
@@ -5703,8 +5811,12 @@ export default function App() {
           t.id === 'p2_deep_truth_confront' ||
           t.id === 'topic_41_apologize' ||
           t.id === 'p2_irritated_clash' ||
-          t.phase2Tab === '端末';
-        if (!isAllowedAfterDp002) {
+          (t.phase2Tab === '端末' &&
+            t.requireSectorUnlocked &&
+            (t.requireSectorUnlocked === 'SEC-19' ||
+              t.requireSectorUnlocked === 'SEC-20' ||
+              t.requireSectorUnlocked === 'SEC-18'));
+        if (!isAllowedInDeepTruth) {
           return false;
         }
       }
@@ -6169,22 +6281,6 @@ export default function App() {
                 <span className="text-[12px] tracking-[0.25em] text-zinc-400 hover:text-zinc-100 transition-colors">
                   ― CLICK TO START ―
                 </span>
-
-                {(achievementSave.reachedEndingKeys.length > 0 ||
-                  achievementSave.unlockedAchievementIds.length > 0 ||
-                  achievementSave.seenLines.length > 0) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      soundEngine.unlockOnUserInteraction();
-                      soundEngine.playTerminalTab();
-                      setIsAchievementModalOpen(true);
-                    }}
-                    className="mt-1 px-4 py-1 text-[11.5px] tracking-[0.15em] border border-zinc-700 hover:border-zinc-400 bg-zinc-900/70 hover:bg-zinc-800 text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer font-zen"
-                  >
-                    実績・記録 ({achievementSave.reachedEndingKeys.length}/10)
-                  </button>
-                )}
               </div>
             </div>
 
@@ -6227,72 +6323,9 @@ export default function App() {
               </div>
 
               <div className="absolute right-0 bottom-0 flex items-center gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    soundEngine.unlockOnUserInteraction();
-                    soundEngine.playTerminalTab();
-                    if (!canAccessExpressionViewer) {
-                      setAchievementToasts((prev) => [
-                        ...prev,
-                        {
-                          toastId: `notice-17-${Date.now()}`,
-                          id: 'notice_17',
-                          numberLabel: '17',
-                          title: '表情ビューワー（未解放）',
-                          description: '実績17（百面相）を達成すると解放されます。',
-                        },
-                      ]);
-                      return;
-                    }
-                    startPlayingPhase();
-                    setIsDebugViewerOpen(true);
-                  }}
-                  className={`px-3 py-1.5 text-[11.5px] tracking-wider border font-zen transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    canAccessExpressionViewer
-                      ? 'border-zinc-700 bg-zinc-950/90 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                      : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
-                  }`}
-                >
-                  <span>★ 表情ビューワー</span>
-                  {!canAccessExpressionViewer && (
-                    <span className="text-[9.5px] text-zinc-500 font-mono">(実績17)</span>
-                  )}
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    soundEngine.unlockOnUserInteraction();
-                    soundEngine.playTerminalTab();
-                    if (!canAccessScenarioInspector) {
-                      setAchievementToasts((prev) => [
-                        ...prev,
-                        {
-                          toastId: `notice-18-${Date.now()}`,
-                          id: 'notice_18',
-                          numberLabel: '18',
-                          title: '演出インスペクター（未解放）',
-                          description: '実績18（もう寝よう）を達成すると解放されます。',
-                        },
-                      ]);
-                      return;
-                    }
-                    handleOpenScenarioInspector();
-                  }}
-                  className={`px-3 py-1.5 text-[11.5px] tracking-wider border font-zen transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    canAccessScenarioInspector
-                      ? 'border-zinc-700 bg-zinc-950/90 hover:bg-zinc-800 text-zinc-300 hover:text-white'
-                      : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
-                  }`}
-                >
-                  <span>★ 演出インスペクター</span>
-                  {!canAccessScenarioInspector && (
-                    <span className="text-[9.5px] text-zinc-500 font-mono">(実績18)</span>
-                  )}
-                </button>
-
-                {achievementSave.reachedEndingKeys.length > 0 && (
+                {(achievementSave.reachedEndingKeys.length > 0 ||
+                  achievementSave.unlockedAchievementIds.length > 0 ||
+                  achievementSave.seenLines.length > 0) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -6462,7 +6495,7 @@ export default function App() {
                         handleOpenScenarioInspector();
                       }
                     }}
-                    title="全シナリオ・演出インスペクター"
+                    title="シナリオ台本（全セリフ・分岐・演出確認）"
                     className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border font-zen transition-colors cursor-pointer ${
                       isScenarioInspectorOpen
                         ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
@@ -6470,28 +6503,7 @@ export default function App() {
                     }`}
                   >
                     <span>▶</span>
-                    <span>演出確認</span>
-                  </button>
-                )}
-
-                {canAccessExpressionViewer && (
-                  <button
-                    onClick={() => {
-                      soundEngine.playTerminalTab();
-                      setIsTerminalOpen(false);
-                      setIsDialogueLogOpen(false);
-                      setIsManualOpen(false);
-                      setIsDebugViewerOpen((prev) => !prev);
-                    }}
-                    title="表情・パーツ挙動ビューワー"
-                    className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
-                      isDebugViewerOpen
-                        ? 'bg-zinc-200 text-zinc-950 border-zinc-100 font-bold'
-                        : 'text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/80'
-                    }`}
-                  >
-                    <span>★</span>
-                    <span>表情</span>
+                    <span>シナリオ台本</span>
                   </button>
                 )}
 
@@ -7482,6 +7494,7 @@ export default function App() {
               <DataTerminalModal
                 isOpen={isTerminalOpen}
                 isCompactViewport={isCompactViewport}
+                isPortraitRotated={isPortraitRotated}
                 mood={mood}
                 sectors={sectors}
                 oralInfos={oralInfos}
@@ -7543,7 +7556,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* 全シナリオ・演出インスペクター（全セリフ・全表情・全演出の実機プレビュー） */}
+      {/* シナリオ台本（全セリフ・全表情・全演出の実機プレビュー） */}
       <ScenarioInspectorModal
         isOpen={isScenarioInspectorOpen}
         onClose={handleCloseScenarioInspector}

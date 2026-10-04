@@ -1349,7 +1349,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               handleStopPlayback();
               onClose();
             }}
-            title="インスペクターを終了してゲーム画面に戻る [Esc]"
+            title="シナリオ台本を終了してゲーム画面に戻る [Esc]"
             className="px-2.5 py-1 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors font-bold"
           >
             ✕ 閉じる
@@ -1385,7 +1385,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-[13.5px] sm:text-[14.5px] tracking-wide text-zinc-950 font-bold flex items-center gap-1.5 shrink-0 font-zen">
               <span className="inline-block w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
-              演出インスペクター
+              シナリオ台本
             </span>
             <span className="text-[10px] text-zinc-600 font-mono tracking-wider truncate hidden sm:inline">
               // 全{allScenarioItems.length}シーン
@@ -1422,7 +1422,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 handleStopPlayback();
                 onClose();
               }}
-              title="インスペクターを終了してゲーム画面に戻る [Esc]"
+              title="シナリオ台本を終了してゲーム画面に戻る [Esc]"
               className="px-2.5 py-0.8 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
             >
               ✕ 閉じる

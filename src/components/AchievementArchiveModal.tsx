@@ -261,8 +261,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   onOpenBonusViewer();
                 }}
                 className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
+                title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
               >
-                ★ 表情ビューワー
+                ★ 表情鑑賞
               </button>
             )}
 
@@ -274,8 +275,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   onOpenScenarioInspector();
                 }}
                 className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
+                title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
               >
-                ★ 演出インスペクター
+                ★ シナリオ台本
               </button>
             )}
           </div>

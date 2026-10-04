@@ -128,7 +128,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_18',
     numberLabel: '18',
     title: 'もう寝よう',
-    description: '全10種類のエンディングと、90%以上のセリフを回収した',
+    description: '全10種類のエンディング鑑賞と、実績17までの全解除を達成した',
   },
 ];
 
@@ -430,16 +430,19 @@ export const evaluateMilestoneAchievements = (
     achSet.add('ach_17');
   }
 
-  // 18: 全10種類のエンディング ＆ セリフ回収率90%以上
-  const totalCanonical = Math.max(1, ALL_CANONICAL_DIALOGUE_LINES.size);
-  const lineRate = data.seenLines.length / totalCanonical;
+  // 18: 全10種類のエンディング鑑賞 ＆ 実績01〜17までの全解除
   const allEndingsReached = ENDING_ARCHIVE_LIST.every((item) => {
     if (item.subKeys) {
       return item.subKeys.some((s) => data.reachedEndingKeys.includes(s.key));
     }
     return data.reachedEndingKeys.includes(item.key);
   });
-  if (allEndingsReached && lineRate >= 0.9) {
+  const allPreviousAchievementsUnlocked = Array.from(
+    { length: 17 },
+    (_, i) => `ach_${String(i + 1).padStart(2, '0')}`
+  ).every((id) => achSet.has(id));
+
+  if (allEndingsReached && allPreviousAchievementsUnlocked) {
     achSet.add('ach_18');
   }
 

@@ -487,60 +487,6 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
       waitAfterDoorMs: 2000,
     },
   },
-
-  // 【END 07ルート：何も答えない】
-  {
-    id: 'p3_ans_silence',
-    thoughtText: '「・・・・・・（何も答えられない）」',
-    spokenText: '・・・・・・',
-    waitMs: 2400,
-    aschText: '・・・・・・',
-    aschWaitMs: 2000,
-    expression: 'look_away',
-    faceParts: {
-      brow: 'sad',
-      eyes: 'down',
-      mouth: 'close',
-      effects: ['shadow'],
-    },
-    extraExchanges: [
-      {
-        speaker: 'ASCH',
-        text: '・・・・・・、いや。いい。なんでもない',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'sad',
-          eyes: 'empty',
-          mouth: 'close',
-          effects: ['shadow'],
-        },
-        voiceEffect: 'normal',
-        waitMs: 2000,
-      },
-      {
-        speaker: 'ASCH',
-        text: '変なことを聞いた。忘れてくれ',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'sad',
-          eyes: 'away',
-          mouth: 'close',
-          effects: ['shadow'],
-        },
-        waitMs: 2400,
-      },
-    ],
-    completesTopic: true,
-    triggersEndingKey: 'END_PHASE3_SILENCE',
-    endingTransition: {
-      waitBeforeExitMs: 1000,
-      aschAction: 'fade_out',
-      footsteps: 'slow',
-      footstepsCount: 3,
-      doorAction: 'none',
-      waitAfterDoorMs: 1400,
-    },
-  },
 ];
 
 // 【END 07ルート：何も答えない（一定秒数答えず待機）】
