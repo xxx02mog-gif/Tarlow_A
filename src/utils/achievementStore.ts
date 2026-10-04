@@ -44,7 +44,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_04',
     numberLabel: '04',
     title: 'プライバシー保護',
-    description: 'フェーズ2以降へ進み、強制解除を一度も使わずにエンディングを迎えた',
+    description: 'フェーズ1で端末を開かず、強制解除を一度も使わずにエンディングを迎えた',
   },
   {
     id: 'ach_05',

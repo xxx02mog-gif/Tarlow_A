@@ -1014,7 +1014,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_why_hide_reply_step_in',
-            thoughtText: '自分が機械なのか本人なのか分からないからか？',
+            thoughtText: '自分が譜業なのか本人なのか分からないからか？',
             spokenText:
               '・・・・・・今の姿を見られるのが嫌なんじゃなくて、\n死んだはずの自分が、記憶を模倣されただけの譜業なのかアッシュ本人なのか、おまえ自身にも分からないからか？',
             aschText:
@@ -1039,25 +1039,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             grantsLinkTags: ['p2_heard_true_reason'],
             systemLog:
               'DIALOGUE UNLOCK // SECTOR: [EM-007 / SEC-12]',
-            followUpOptions: [
-              {
-                id: 'p2_why_hide_reply_nod',
-                thoughtText: 'そういうことか',
-                spokenText:
-                  '・・・・・・そういうことか。\n分かったよ',
-                aschText:
-                  '・・・・・・ああ',
-                expression: 'look_away',
-                faceParts: {
-                  brow: 'normal',
-                  eyes: 'away',
-                  mouth: 'close',
-                  effects: [],
-                },
-                moodDelta: 0,
-                completesTopic: true,
-              },
-            ],
+            completesTopic: true,
           },
           {
             id: 'p2_why_hide_reply_wrong_childish',

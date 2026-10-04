@@ -2328,6 +2328,13 @@ export default function App() {
             : [...prev, 'terminal_opened_many']
         );
       }
+      if (!linkTags.includes('phase2_started')) {
+        setLinkTags((prev) =>
+          prev.includes('terminal_opened_in_phase1')
+            ? prev
+            : [...prev, 'terminal_opened_in_phase1']
+        );
+      }
       appendLog('INFO', 'DATA TERMINAL OPENED');
     } else {
       soundEngine.playTerminalClose();
@@ -2727,6 +2734,22 @@ export default function App() {
               setOverrideFaceParts(nextFace);
             }
           }
+          if (
+            idx === closingLines.length - 1 &&
+            decisionData.specialEffect === 'destroy'
+          ) {
+            window.setTimeout(() => {
+              soundEngine.playMechanicalDestroy();
+              setEyeGlitchPulse(Date.now());
+              setOverrideExpression('shock');
+              setOverrideFaceParts({
+                brow: 'angry',
+                eyes: 'wide',
+                mouth: 'shout',
+                effects: ['shadow'],
+              });
+            }, 850);
+          }
           pushScreenBubble('ASCH', line, baseEff);
         },
         isBubble: true,
@@ -2765,7 +2788,32 @@ export default function App() {
           steps.push({
             delayMs: delay,
             action: () => {
-              if (rIdx === 0 && rally.specialEffect === 'shout_shock') {
+              if (rIdx === 0 && rally.specialEffect === 'destroy') {
+                soundEngine.playMechanicalDestroy();
+                setEyeGlitchPulse(Date.now());
+              } else if (rIdx === 0 && rally.specialEffect === 'collapse') {
+                setEyeGlitchPulse(Date.now());
+                window.setTimeout(() => {
+                  if (rally.secondExpression) {
+                    setOverrideExpression(rally.secondExpression);
+                  }
+                  if (rally.secondFaceParts) {
+                    setOverrideFaceParts(rally.secondFaceParts);
+                  } else {
+                    setOverrideExpression('pain');
+                    setOverrideFaceParts({
+                      brow: 'sad',
+                      eyes: 'close',
+                      mouth: 'close',
+                      effects: ['shadow'],
+                    });
+                  }
+                }, 1100);
+                window.setTimeout(() => {
+                  setIsAschCollapsed(true);
+                  soundEngine.playBodyFall();
+                }, 1950);
+              } else if (rIdx === 0 && rally.specialEffect === 'shout_shock') {
                 soundEngine.playHeavyShoutThud();
                 setReplayPulse((p) => p + 1);
                 setIsScreenShaking(true);
@@ -2825,6 +2873,8 @@ export default function App() {
           if (trans.aschAction === 'fade_out') {
             setIsAschExited(true);
             setVisibleBubbles([]);
+          } else if (trans.aschAction === 'collapse') {
+            setIsAschCollapsed(true);
           }
           if (trans.footsteps) {
             soundEngine.playFootsteps(trans.footsteps, count);
@@ -6093,7 +6143,11 @@ export default function App() {
     if (stats.terminalOpenCount === 0) {
       bonusAch.push('ach_01');
     }
-    if (linkTags.includes('phase2_started') && stats.overrideCount === 0) {
+    if (
+      linkTags.includes('phase2_started') &&
+      !linkTags.includes('terminal_opened_in_phase1') &&
+      stats.overrideCount === 0
+    ) {
       bonusAch.push('ach_04');
     }
 
@@ -7273,10 +7327,10 @@ export default function App() {
                                     }}
                                     className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
                                   >
-                                    <div className="w-[3px] shrink-0 mr-2.5 bg-red-700 group-hover:bg-red-900 transition-colors" />
+                                    <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
-                                      <span className="text-[13px] leading-snug text-red-700 group-hover:text-red-900 font-medium">
-                                        首裏のスイッチで機能停止させる
+                                      <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
+                                        機能停止させる
                                       </span>
                                     </div>
                                   </button>

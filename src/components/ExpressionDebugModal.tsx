@@ -178,7 +178,7 @@ export const ExpressionDebugModal: React.FC<ExpressionDebugModalProps> = ({
       </div>
 
       {/* メインボディ */}
-      <div className="flex-1 flex flex-col justify-around py-1 space-y-1 overflow-hidden text-[10.5px]">
+      <div className="flex-1 min-h-0 flex flex-col py-1 space-y-2 overflow-y-auto pr-1 text-[10.5px]">
         {/* ベースプリセット */}
         <div className="space-y-0.5">
           <div className="flex items-center justify-between">

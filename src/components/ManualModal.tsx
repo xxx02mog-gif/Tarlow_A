@@ -34,7 +34,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
         <div className="px-5 py-3.5 space-y-2.5 text-[11.5px] text-zinc-300 leading-snug">
           {/* 導入 */}
           <p className="text-zinc-200 leading-relaxed whitespace-nowrap">
-            ディストの研究所で見つけた、かつての少年の姿をした機械。
+            ディストの研究所で見つけた、かつての少年の姿をした譜業。
             <br />
             言葉を交わし、手元の端末を辿りながら、彼を「何」として「どう」するか決めるゲームです。
           </p>

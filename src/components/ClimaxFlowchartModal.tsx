@@ -317,7 +317,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
     '  ・END 06 // そういうことにした ： 「譜業だ」と答える',
     '  ・END 07 // 何も言えなかった ： 何も答えない',
     '■ DP-002 / DP-003 を解放したルート',
-    '  ・END 08 // 全部がうまくいく ： 秘密を問い詰めずに肯定する',
+    '  ・END 08 // これで全部うまくいく ： 秘密を問い詰めずに肯定する',
     '  ・END 09 // これでぜんぶ元通り ： 秘密を問い詰めずに殺す',
     '  ・END 10 // 魂の容れ物 ： 秘密を問い詰める（Ghost in the mASCHine）',
     '',
@@ -429,7 +429,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
     ),
     `          [要約] ${ENDING_SCENARIOS.END_PHASE2_STAY_REST.summaryText}`,
     '',
-    '■ 4. フェーズ2で「自分は記憶を模倣されただけの機械なのか、本人なのか分からない」という核心対話（『みんなの元へ戻らない理由』）を終えて「話を切り上げる」→「研究所へ戻す」',
+    '■ 4. フェーズ2で「自分は記憶を模倣されただけの譜業なのか、本人なのか分からない」という核心対話（『みんなの元へ戻らない理由』）を終えて「話を切り上げる」→「研究所へ戻す」',
     '  ➔ 帰還前にアッシュが立ち止まり【Phase 3：終幕の問いかけ（END 05 / 06 / 07）】が発生！',
     '',
     '====================================',
@@ -615,7 +615,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 </div>
                 <div className="text-stone-200">
                   <span className="text-amber-300 font-bold">END 08：</span>
-                  秘密を問い詰めずに肯定する（全部がうまくいく）
+                  秘密を問い詰めずに肯定する（これで全部うまくいく）
                 </div>
                 <div className="text-stone-200">
                   <span className="text-rose-500 font-bold">END 09：</span>
@@ -873,7 +873,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
 
               <div className="mt-4 pt-3 border-t border-amber-500/40 text-center">
                 <span className="inline-block px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-bold">
-                  ▼ ⑤ フェーズ2で「自分は記憶を模倣された機械か本人か分からない」という核心対話（『みんなの元へ戻らない理由』または『クライマックス対話』）を終えて『研究所へ戻す』を選ぶと、下の【Phase 3：終幕の問いかけ】が発生！ ▼
+                  ▼ ⑤ フェーズ2で「自分は記憶を模倣された譜業か本人か分からない」という核心対話（『みんなの元へ戻らない理由』または『クライマックス対話』）を終えて『研究所へ戻す』を選ぶと、下の【Phase 3：終幕の問いかけ】が発生！ ▼
                 </span>
               </div>
             </div>

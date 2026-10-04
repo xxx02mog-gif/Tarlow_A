@@ -33,6 +33,7 @@ export interface DecisionDialogueStage {
   secondExpression?: ExpressionId;
   secondFaceParts?: Partial<FaceParts>;
   voiceEffects?: BubbleVoiceEffect[];
+  specialEffect?: 'destroy' | 'collapse' | 'shout_shock';
   guyWaitMs?: number;
   aschWaitMs?: number;
   endingTransition?: EndingTransitionConfig;
@@ -980,24 +981,72 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   },
   END_PHASE3_MERCY_DESTROY: {
     spokenText:
-      '・・・・・・アッシュ。首の後ろ・・・・・・埃がついてるぞ。取ってやる',
+      '・・・・・・アッシュ。\n首の後ろ・・・・・・埃がついてるぞ。取ってやる',
     aschText:
-      '？・・・・・・何だ、改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
-    expression: 'shock',
+      '？　・・・・・・何だ。改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
+    expression: 'normal',
     faceParts: {
-      brow: 'sad',
-      eyes: 'wide',
-      mouth: 'gasp',
-      effects: ['sweat'],
+      brow: 'doubt',
+      eyes: 'away',
+      mouth: 'close',
+      effects: [],
     },
-    voiceEffects: ['tremble_glitch'],
-    guyWaitMs: 2000,
+    secondExpression: 'glare',
+    secondFaceParts: {
+      brow: 'angry',
+      eyes: 'glare',
+      mouth: 'shout',
+      effects: [],
+    },
+    specialEffect: 'destroy',
+    guyWaitMs: 1900,
     aschWaitMs: 2200,
+    extraRallies: [
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・っ、が・・・・・・イ・・・・・・？',
+        expression: 'shock',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'wide',
+          mouth: 'gasp',
+          effects: ['sweat', 'pale'],
+        },
+        voiceEffect: 'tremble_glitch',
+        waitMs: 1900,
+      },
+      {
+        speaker: 'ASCH',
+        text: 'な、にを・・・・・・し、て・・・・・・',
+        expression: 'empty',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'empty',
+          mouth: 'gasp',
+          effects: ['shadow', 'tears'],
+        },
+        secondExpression: 'pain',
+        secondFaceParts: {
+          brow: 'sad',
+          eyes: 'close',
+          mouth: 'close',
+          effects: ['shadow', 'tears'],
+        },
+        voiceEffect: 'tremble_glitch',
+        waitMs: 2700,
+        specialEffect: 'collapse',
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・これで、いいんだ',
+        waitMs: 2400,
+      },
+    ],
     endingTransition: {
-      waitBeforeExitMs: 800,
-      aschAction: 'fade_out',
+      waitBeforeExitMs: 1800,
+      aschAction: 'none',
       doorAction: 'none',
-      waitAfterDoorMs: 1400,
+      waitAfterDoorMs: 1600,
     },
   },
   END_PHASE3_SWAMPMAN: {
@@ -1398,7 +1447,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   // END 08a：DP-002, DP-003を解放した上で、秘密を問い詰めず休ませる
   END_PHASE3_TOMORROW: {
     id: 'END_PHASE3_TOMORROW',
-    title: 'END 08a // 全部がうまくいく（茶会）',
+    title: 'END 08a // これで全部うまくいく',
     subtitle: 'SECRET END // LET IT BE UNSAID (TEA)',
     dialogues: [
       {
@@ -1425,7 +1474,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   // END 08b：DP-002, DP-003を解放した上で、秘密を問い詰めず見送る
   END_PHASE3_TOMORROW_RETURN: {
     id: 'END_PHASE3_TOMORROW_RETURN',
-    title: 'END 08b // 全部がうまくいく（見送り）',
+    title: 'END 08b // これで全部うまくいく',
     subtitle: 'SECRET END // LET IT BE UNSAID (FAREWELL)',
     dialogues: [
       {
