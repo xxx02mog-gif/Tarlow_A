@@ -163,7 +163,7 @@ export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
   {
     key: 'END_PHASE2_ASCH',
     numberLabel: 'END 05',
-    hint: '彼の問いに迷わず彼の名前を呼ぶと吉',
+    hint: 'どうしてここに残っているのか聞き出し、彼の名前を呼ぶ',
   },
   {
     key: 'END_PHASE3_MACHINE',

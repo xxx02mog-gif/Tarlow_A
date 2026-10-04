@@ -421,11 +421,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_why_outside_reply_correct_corner',
-            thoughtText: '部屋の隅っこに待機した？',
+            thoughtText: '体を換えたことを忘れてた？',
             spokenText:
-              '足音が聞こえたとき、前の機体のつもりで……部屋の隅っこに待機しちゃったのか？',
+              'ああ、その体になってるって忘れてたのか！\n意外と抜けてるよなあ、おまえ',
             aschText:
-              '・・・・・・っ！！\nう、うるさい！　習慣で体が勝手に動いただけだ・・・・・・！！',
+              '～～っ！！　ぬ、抜けてる・・・だと・・・！？',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush', 'sweat'] },
             moodDelta: 0,
@@ -450,13 +450,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_why_outside_reply_back_off',
-            thoughtText: '追及して悪かったよ',
-            spokenText:
-              '・・・・・・いや、なんでもない。追及して悪かったよ',
+            thoughtText: '退避して？',
+            spokenText: '退避して、どうしたんだ？',
             aschText:
-              '・・・・・・ふん、余計なことを気にするな',
-            expression: 'look_away',
-            faceParts: { brow: 'normal', eyes: 'away', mouth: 'close', effects: [] },
+              'こんな話をするために連れてきたのか？！　違うだろうが！',
+            expression: 'glare',
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
+            voiceEffects: ['shout'],
             moodDelta: 0,
             trustDelta: 1,
             completesTopic: true,
