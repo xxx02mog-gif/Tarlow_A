@@ -71,30 +71,6 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         : '機能停止（破壊）';
 
   // 累計データの集計
-  const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
-  const reachedEndingsCount = achievementSave
-    ? ENDING_ARCHIVE_LIST.filter((item) => {
-        if (item.subKeys) {
-          return item.subKeys.some((s) =>
-            achievementSave.reachedEndingKeys.includes(s.key)
-          );
-        }
-        return achievementSave.reachedEndingKeys.includes(item.key);
-      }).length
-    : 0;
-  const reachedEndingsPct = Math.min(
-    100,
-    Math.round((reachedEndingsCount / totalEndingsCount) * 100)
-  );
-
-  const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
-  const unlockedAchievementsCount =
-    achievementSave?.unlockedAchievementIds.length ?? 0;
-  const unlockedAchievementsPct = Math.min(
-    100,
-    Math.round((unlockedAchievementsCount / totalAchievementsCount) * 100)
-  );
-
   return (
     <div
       onClick={() => {
@@ -208,9 +184,9 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
 
         {/* 右側：実績・記録（白黒統一・ヒントツールチップ方式） */}
         <div className="flex-1 flex flex-col justify-between border-l border-zinc-300 pl-6 min-h-0">
-          {/* タブ切り替え（下線スタイル・タブ内に進捗バーを統合） */}
+          {/* タブ切り替え（下線スタイル） */}
           <div className="flex items-center justify-between border-b border-zinc-300/80 pt-1 pb-1 shrink-0">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={() => {
@@ -219,22 +195,13 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   setSelectedEndingKey(null);
                   setSelectedAchId(null);
                 }}
-                className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
+                className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
                   activeTab === 'ENDINGS'
                     ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                <span>エンディング</span>
-                <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
-                  <div
-                    className="h-full bg-zinc-900 transition-all duration-300"
-                    style={{ width: `${reachedEndingsPct}%` }}
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-zinc-600 font-normal">
-                  {reachedEndingsPct}%
-                </span>
+                エンディング
               </button>
 
               <button
@@ -245,22 +212,13 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   setSelectedEndingKey(null);
                   setSelectedAchId(null);
                 }}
-                className={`flex items-center gap-2 text-[11.5px] pb-1 transition-colors cursor-pointer ${
+                className={`text-[11.5px] pb-0.5 transition-colors cursor-pointer ${
                   activeTab === 'ACHIEVEMENTS'
                     ? 'text-zinc-950 font-bold border-b-2 border-zinc-950'
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                <span>実績</span>
-                <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
-                  <div
-                    className="h-full bg-zinc-900 transition-all duration-300"
-                    style={{ width: `${unlockedAchievementsPct}%` }}
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-zinc-600 font-normal">
-                  {unlockedAchievementsPct}%
-                </span>
+                実績
               </button>
             </div>
 

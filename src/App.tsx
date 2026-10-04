@@ -797,6 +797,7 @@ export default function App() {
   }, [screenShakePulse]);
   const [endingDisposition, setEndingDisposition] = useState<EndingDisposition>('KEEP');
   const [customEndingKey, setCustomEndingKey] = useState<string | null>(null);
+  const hasAutoTriggeredPhase3Ref = useRef<boolean>(false);
 
   // === 内部パラメーター・ログ・観測記録リスト ===
   const orderCounterRef = useRef<number>(10);
@@ -2569,6 +2570,29 @@ export default function App() {
     linkTags.includes('p2_dilemma_resolved') ||
     sectors.some((s) => s.id === 'SEC-12' && s.unlocked);
 
+  const isPhase2ForPhase3 = linkTags.includes('phase2_started');
+  const isDp002UnlockedForPhase3 =
+    isPhase2ForPhase3 &&
+    (linkTags.includes('sec19_unlocked') ||
+      sectors.some(
+        (s) => (s.id === 'SEC-19' || s.code === 'DP-002') && s.unlocked
+      ));
+  const hasDeepMemoryOpenedForPhase3 =
+    sectors.some(
+      (s) => (s.id === 'SEC-19' || s.id === 'SEC-20') && s.unlocked
+    ) ||
+    linkTags.includes('sec19_unlocked') ||
+    linkTags.includes('sec20_unlocked');
+
+  const canTriggerPhase3Directly =
+    isPhase2ForPhase3 &&
+    !isDp002UnlockedForPhase3 &&
+    !hasDeepMemoryOpenedForPhase3 &&
+    hasEnoughDeepTalkForPhase3 &&
+    mood >= 0 &&
+    guyMood >= 0 &&
+    !isHatredMode;
+
   // === 『話を切り上げる』からの終了処理（フェーズに応じた結末へ遷移） ===
   const handleExecuteDecision = (disposition: EndingDisposition) => {
     if (isTerminalOpen || isDialogueLogOpen || isManualOpen || isSequencing) {
@@ -2591,16 +2615,15 @@ export default function App() {
           (s) => (s.id === 'SEC-19' || s.code === 'DP-002') && s.unlocked
         ));
 
-    // フェーズ2で『ディストの研究所へ帰す』（RETURN）を選んだ際、
-    // 不機嫌・険悪ではなく、かつ深い対話条件を満たしていれば、帰る間際にアッシュから最後の問いかけ（Phase 3）が発生する
-    // ※ただし、深層記憶（DP-001: SEC-18以降）を開封している場合は裏ルート（END 08〜10）へ進むため、表の問いかけは発生させない
+    // フェーズ2で『ディストの研究所へ帰す』（RETURN）または『この部屋で休ませる』（KEEP）を選んだ際、
+    // 不機嫌・険悪ではなく、かつ深い対話条件を満たしていれば、別れ・休息の前にアッシュから最後の問いかけ（Phase 3）が発生する
+    // ※ただし、深層記憶（DP-002: SEC-19以降）を開封している場合は裏ルート（END 08〜10）へ進むため、表の問いかけは発生させない
     const hasDeepMemoryOpened =
       sectors.some(
         (s) =>
-          (s.id === 'SEC-18' || s.id === 'SEC-19' || s.id === 'SEC-20') &&
+          (s.id === 'SEC-19' || s.id === 'SEC-20') &&
           s.unlocked
       ) ||
-      linkTags.includes('sec18_unlocked') ||
       linkTags.includes('sec19_unlocked') ||
       linkTags.includes('sec20_unlocked');
 
@@ -5549,7 +5572,11 @@ export default function App() {
       });
     }
 
-    if (sectorId === 'SEC-08') {
+    if (sectorId === 'SEC-18') {
+      setLinkTags((prev) =>
+        Array.from(new Set([...prev, 'sec18_unlocked']))
+      );
+    } else if (sectorId === 'SEC-08') {
       setLinkTags((prev) =>
         Array.from(new Set([...prev, 'talked_sword_limiter', 'hint_sleep_dreams']))
       );
@@ -5792,6 +5819,7 @@ export default function App() {
     setVisibleBubbles([]);
     isSequencingRef.current = false;
     setIsSequencing(false);
+    hasAutoTriggeredPhase3Ref.current = false;
     pendingClimaxDilemmaRef.current = false;
     setEndingDisposition('KEEP');
     setCustomEndingKey(null);
@@ -5994,14 +6022,79 @@ export default function App() {
       ? activeAschQuestion.options
       : filteredAschQuestionOptions;
 
+  // ヒント話題入手済みの判定（該当するヒント話題を開封・入手しているか）
+  const isCurrentTopicHintUnlocked = (topicId: string): boolean => {
+    switch (topicId) {
+      case 'p2_sword_limiter':
+        return (
+          linkTags.includes('hint_human_limbs') ||
+          (topicAskCounts['p2_height_headpat'] ?? 0) > 0 ||
+          (topicAskCounts['p2_why_10yo_body'] ?? 0) > 0
+        );
+      case 'p2_why_outside':
+        return (
+          linkTags.includes('talked_dist_hideout') ||
+          (topicAskCounts['p2_dist_complaints'] ?? 0) > 0
+        );
+      case 'p2_friends_news':
+        return (
+          linkTags.includes('hint_lab_comms') ||
+          linkTags.includes('talked_friends_news') ||
+          sectors.some((s) => s.id === 'SEC-07' && s.unlocked)
+        );
+      case 'p2_why_hide_truth':
+        return (
+          linkTags.includes('hint_sleep_dreams') ||
+          (topicAskCounts['p2_sleep_and_dreams'] ?? 0) > 0
+        );
+      case 'p2_lab_pastime':
+        return linkTags.includes('hint_chess_board');
+      case 'p2_voice_discomfort':
+        return linkTags.includes('hint_voice_crack');
+      case 'p2_parents_thought':
+        return linkTags.includes('hint_manor_parents');
+      case 'p2_unscarred_hands':
+        return linkTags.includes('hint_sleep_dreams');
+      case 'p2_jade_suspicion':
+        return linkTags.includes('talked_tarlow_history');
+      case 'p2_eldrant_and_blank':
+        return (
+          sectors.some((s) => s.id === 'SEC-18' && s.unlocked) ||
+          linkTags.includes('talked_tarlow_history') ||
+          linkTags.includes('talked_eldrant_blank')
+        );
+      case 'p2_ask_about_dp002':
+        return (
+          sectors.some(
+            (s) => (s.id === 'SEC-19' || s.code === 'DP-002') && s.unlocked
+          ) || linkTags.includes('sec19_unlocked')
+        );
+      case 'p2_tarlow_broken_reason':
+        return (
+          sectors.some(
+            (s) => (s.id === 'SEC-20' || s.code === 'DP-003') && s.unlocked
+          ) ||
+          linkTags.includes('sec20_unlocked') ||
+          linkTags.includes('talked_eldrant_blank')
+        );
+      default:
+        return false;
+    }
+  };
+
+  const hasHintForCurrentTopic = Boolean(
+    activeTopicReply &&
+      (isCurrentTopicHintUnlocked(activeTopicReply.topicId) ||
+        activeTopicReply.options.some(
+          (opt) =>
+            Boolean(opt.requireLinkTag) &&
+            linkTags.includes(opt.requireLinkTag!) &&
+            !opt.id.endsWith('_back_off')
+        ))
+  );
+
   const filteredTopicReplyOptions = activeTopicReply
     ? activeTopicReply.options.filter((opt) => {
-        if (
-          opt.resetsTopicProgress &&
-          linkTags.includes(`backed_off_${activeTopicReply.topicId}`)
-        ) {
-          return false;
-        }
         if (opt.requireLinkTag && !linkTags.includes(opt.requireLinkTag)) {
           return false;
         }
@@ -6012,6 +6105,15 @@ export default function App() {
           return false;
         }
         if (opt.hideWhenBadMoodOrCold && shouldShowColdQuestionOption) {
+          return false;
+        }
+        // ヒント話題入手後は「引き下がる」選択肢を非表示（誤操作防止・テンポ向上）
+        // ※ただし10（エルドラントの最期）と11（前の機体が壊れた理由）はすべての選択肢を保持する
+        const isExcludedFromHide =
+          activeTopicReply.topicId === 'p2_eldrant_and_blank' ||
+          activeTopicReply.topicId === 'p2_tarlow_broken_reason';
+        const isBackOffOption = opt.id.endsWith('_back_off');
+        if (!isExcludedFromHide && isBackOffOption && hasHintForCurrentTopic) {
           return false;
         }
         return true;
@@ -6028,6 +6130,57 @@ export default function App() {
   const currentEndingScenario =
     ENDING_SCENARIOS[resolvedEndingScenarioKey] ||
     ENDING_SCENARIOS.END_PHASE2_ASCH;
+
+  // === 話題全消化時の自動Phase 3（END 5〜7）遷移処理 ===
+  // DP-002およびDP-003（特定フラグ/裏ルート話題）が未開封の状態で、
+  // 選択可能な話題をすべて読み終えて0件になった時、自動的にPhase 3（アッシュの問いかけ）へ移行
+  const isDp002Or003Opened =
+    sectors.some(
+      (s) =>
+        (s.id === 'SEC-19' ||
+          s.id === 'SEC-20' ||
+          s.code === 'DP-002' ||
+          s.code === 'DP-003') &&
+        s.unlocked
+    ) ||
+    linkTags.includes('sec19_unlocked') ||
+    linkTags.includes('sec20_unlocked') ||
+    (topicAskCounts['p2_ask_about_dp002'] ?? 0) > 0 ||
+    (topicAskCounts['p2_tarlow_broken_reason'] ?? 0) > 0;
+
+  useEffect(() => {
+    if (
+      gamePhase === 'PLAYING' &&
+      linkTags.includes('phase2_started') &&
+      displayedRegularTopics.length === 0 &&
+      !isDp002Or003Opened &&
+      canTriggerPhase3Directly &&
+      !isSequencing &&
+      !isTerminalOpen &&
+      !isDialogueLogOpen &&
+      !isManualOpen &&
+      !activeTopicReply &&
+      !activeAschQuestion &&
+      !customEndingKey &&
+      !hasAutoTriggeredPhase3Ref.current
+    ) {
+      hasAutoTriggeredPhase3Ref.current = true;
+      handleStartPhase3Question();
+    }
+  }, [
+    gamePhase,
+    linkTags,
+    displayedRegularTopics.length,
+    isDp002Or003Opened,
+    canTriggerPhase3Directly,
+    isSequencing,
+    isTerminalOpen,
+    isDialogueLogOpen,
+    isManualOpen,
+    activeTopicReply,
+    activeAschQuestion,
+    customEndingKey,
+  ]);
 
   // === セクター解放・迷い回数・即答回数・エンディング到達時の実績自動同期 ===
   useEffect(() => {
@@ -6315,7 +6468,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 1.0.0</span>
+              <span>VERSION 1.0.1</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
@@ -6719,14 +6872,16 @@ export default function App() {
                       !isTopicLockedInProgress &&
                       (isDecisionMenuOpen ||
                         isPhase1LimitReached ||
-                        displayedRegularTopics.length === 0);
+                        (displayedRegularTopics.length === 0 &&
+                          (isDp002Or003Opened || !canTriggerPhase3Directly)));
 
                     // 逆質問・話題進行中ロック・質問上限到達など、切り替え自体をロックすべき状態
                     const isHardForcedEvent =
                       !!activeAschQuestion ||
                       isTopicLockedInProgress ||
                       isPhase1LimitReached ||
-                      displayedRegularTopics.length === 0;
+                      (displayedRegularTopics.length === 0 &&
+                        (isDp002Or003Opened || !canTriggerPhase3Directly));
 
                     const PAGE_SIZE = 3;
 
@@ -6979,7 +7134,11 @@ export default function App() {
                                   soundEngine.playTerminalTab();
                                   cycledPagesInTurnRef.current = 0;
                                   setPreviewPage(0);
-                                  setIsDecisionMenuOpen(true);
+                                  if (canTriggerPhase3Directly) {
+                                    handleStartPhase3Question();
+                                  } else {
+                                    setIsDecisionMenuOpen(true);
+                                  }
                                 }}
                                 className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-600 hover:text-black cursor-pointer whitespace-nowrap transition-colors"
                                 title="話を切り上げてアッシュの処遇を決める"

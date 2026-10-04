@@ -347,6 +347,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedContent:
       '3年前、崩落するエルドラントにてルークがアッシュの身体を抱え、大爆発が発生した瞬間の視覚・音素記録。\n本機が自覚・参照可能な「当時の記憶」はこの断片のみであり、直後から1年前までの2年間のメモリ領域には管理者権限によるアクセス遮断が施されている。',
     dialogueUnlockedContent: '',
+    paradoxWarning: 'WARNING // DEEP MEMORY PARTITION DETECTED',
     errorCost: 0,
     reactionLine: '',
     reactionExpression: 'normal',

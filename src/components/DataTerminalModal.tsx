@@ -275,6 +275,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
       const category: InfoCategoryLabel = sec.unlockedCategory ?? '深層解凍';
       const isDistoMajor =
         !!sec.onlyOverride ||
+        sec.id === 'SEC-18' ||
         sec.id === 'SEC-19' ||
         sec.id === 'SEC-20';
 

@@ -421,13 +421,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_why_outside_reply_correct_corner',
-            thoughtText: '部屋の隅に隠れようとした？',
+            thoughtText: '部屋の隅っこに待機した？',
             spokenText:
-              '足音が聞こえたとき、前の小さな機体のつもりで部屋の隅に隠れようとしたんだろ？',
+              '足音が聞こえたとき、前の機体のつもりで……部屋の隅っこに待機しちゃったのか？',
             aschText:
-              'う、うるさい！　習慣で体が勝手に動いただけだ・・・・・・！',
-            expression: 'look_away',
-            faceParts: { brow: 'angry', eyes: 'away', mouth: 'shout', effects: ['blush', 'sweat'] },
+              '・・・・・・っ！！\nう、うるさい！　習慣で体が勝手に動いただけだ・・・・・・！！',
+            expression: 'glare',
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'grit', effects: ['blush', 'sweat'] },
             moodDelta: 0,
             trustDelta: 2,
             requireLinkTag: 'talked_dist_hideout',
@@ -564,7 +564,6 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['blush'] },
             moodDelta: 0,
             trustDelta: 2,
-            requireLinkTag: 'hint_lab_comms',
             naturalUnlockSectorId: 'SEC-07',
             grantsLinkTags: ['talked_friends_news'],
             completesTopic: true,
@@ -584,16 +583,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_friends_reply_back_off',
-            thoughtText: 'みんなが元気ならそれでいいよな',
+            thoughtText: '本当に興味ないのか？',
             spokenText:
-              'そうかい？　まあ、皆元気にやってるよ',
+              '本当に興味ないのか？',
             aschText:
-              '・・・・・・',
+              '・・・・・・しつこいぞ。ないと言ったら、ない',
             expression: 'look_away',
-            faceParts: { brow: 'normal', eyes: 'close', mouth: 'close', effects: [] },
+            faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: [] },
             moodDelta: 0,
-            trustDelta: 1,
-            completesTopic: true,
+            resetsTopicProgress: true,
           },
         ],
       },
@@ -1033,11 +1031,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             },
             moodDelta: 0,
             trustDelta: 2,
-            requireLinkTag: 'hint_sleep_dreams',
             naturalUnlockSectorId: 'SEC-12',
             grantsLinkTags: ['p2_heard_true_reason'],
             systemLog:
-              'DIALOGUE UNLOCK // SECTOR: [EM-007 / SEC-12]',
+              'DIALOGUE UNLOCK // SECTOR: [EM-007 / SEC-12]（核心対話完了：いつでも話を切り上げて結末へ進めます）',
             completesTopic: true,
           },
           {
@@ -1569,7 +1566,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // ロック会話⑩（SEC-16）：剣ダコも傷跡もない人工皮膚の手（眠り・休止の話がヒント）
   {
     id: 'p2_unscarred_hands',
-    thoughtText: '傷もタコもない掌',
+    thoughtText: '傷のない体',
     phase2Tab: '追求',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -1805,9 +1802,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_eldrant_reply_back_off',
-            thoughtText: '無理に思い出させようとして悪かった',
+            thoughtText: '思い出させようとして悪かった',
             spokenText:
-              '・・・・・・そうか。無理に掘り返すようなことを聞いて悪かったよ',
+              '・・・・・・そうか。思い出させようとして悪かったよ',
             aschText:
               '・・・・・・',
             expression: 'look_away',
@@ -2110,9 +2107,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             id: 'p2_broken_reply_back_off',
-            thoughtText: '思い出せないなら無理には聞かないよ',
+            thoughtText: '無理には聞かないが・・・・・・',
             spokenText:
-              '・・・・・・そうか。思い出せないなら、無理には聞かないよ',
+              '・・・・・・そうか。思い出せないなら、無理には聞かないが・・・・・・',
             aschText:
               '・・・・・・',
             expression: 'look_away',
@@ -2821,52 +2818,24 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
 
   {
-    id: 'p2_idle_voice_crack',
-    thoughtText: 'まだ幼い声',
-    phase2Tab: '雑談',
-    contextCategory: 'body',
-    requireLinkTag: 'phase2_started',
-    relatedTopicIds: ['p2_voice_discomfort'],
-    stages: [
-      {
-        spokenText:
-          'こうして話していると、声の高さまであの頃のままだな。やっぱり前とは勝手が違うか？',
-        aschText:
-          '・・・・・・ああ。少し声を荒らげただけで高い音が出るから、鬱陶しくて仕方がない',
-        expression: 'look_away',
-        faceParts: { brow: 'angry', eyes: 'away', mouth: 'grit', effects: ['blush', 'sweat'] },
-        moodDelta: 0,
-        trustDelta: 1,
-        grantsLinkTags: ['hint_voice_crack'],
-        badMoodResponse: {
-          aschText: '・・・・・・少し声を荒らげただけで高い音が出るから、鬱陶しくて仕方がない',
-          expression: 'look_away',
-          faceParts: { brow: 'angry', eyes: 'down', mouth: 'frown', effects: [] },
-          moodDelta: 0,
-        },
-      },
-    ],
-  },
-
-  {
     id: 'p2_awkward_silence',
-    thoughtText: 'ふと訪れた沈黙',
+    thoughtText: '気まずい',
     phase2Tab: '雑談',
     contextCategory: 'daily',
     awkwardSilenceTopic: true,
     requireLinkTag: 'phase2_started',
     stages: [
       {
-        spokenText:
-          '・・・・・・こうしておまえと2人で部屋で向き合っていると、なんだか不思議な気分だよ',
+        spokenText: '・・・・・・なんだか間が持たないな',
         aschText:
-          '・・・・・・妙な感傷に浸るな。俺はただ、おまえが勝手に連れ込んだからここにいるだけだ',
+          '・・・・・・気まずそうにするな。おまえが勝手に連れ込んだんだろうが',
         expression: 'look_away',
         faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['blush'] },
         moodDelta: 0,
         trustDelta: 1,
         badMoodResponse: {
-          aschText: '・・・・・・別に、おまえに腹を立てているわけじゃない',
+          aschText:
+            '・・・・・・気まずそうにするな。おまえが勝手に連れ込んだんだろうが',
           expression: 'look_away',
           faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
           moodDelta: 0,
