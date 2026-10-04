@@ -1,6 +1,6 @@
 {
-  "name": "Ghost in the mASCHine",
-  "description": "対話観測アドベンチャーゲーム Ghost in the mASCHine",
+  "name": "",
+  "description": "",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

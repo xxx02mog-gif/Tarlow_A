@@ -491,11 +491,11 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       {isCreditsOpen && (
         <div
           onClick={() => setIsCreditsOpen(false)}
-          className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-6 select-none font-zen"
+          className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-6 select-none"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[420px] bg-[#0a0a0e] text-zinc-100 border border-zinc-700 p-5 space-y-3.5 shadow-2xl font-zen"
+            className="w-full max-w-[420px] bg-[#0a0a0e] text-zinc-100 border border-zinc-700 p-5 space-y-3.5 shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
               <h3 className="text-[13px] font-bold tracking-wider text-zinc-100">

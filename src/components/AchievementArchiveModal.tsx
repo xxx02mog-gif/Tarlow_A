@@ -275,7 +275,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 }}
                 className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
               >
-                ★ シナリオチェッカー
+                ★ 演出インスペクター
               </button>
             )}
           </div>

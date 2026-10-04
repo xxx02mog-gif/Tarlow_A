@@ -6249,7 +6249,7 @@ export default function App() {
                           toastId: `notice-18-${Date.now()}`,
                           id: 'notice_18',
                           numberLabel: '18',
-                          title: 'シナリオチェッカー（未解放）',
+                          title: '演出インスペクター（未解放）',
                           description: '実績18（もう寝よう）を達成すると解放されます。',
                         },
                       ]);
@@ -6263,7 +6263,7 @@ export default function App() {
                       : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
                   }`}
                 >
-                  <span>★ シナリオチェッカー</span>
+                  <span>★ 演出インスペクター</span>
                   {!canAccessScenarioInspector && (
                     <span className="text-[9.5px] text-zinc-500 font-mono">(実績18)</span>
                   )}
@@ -6439,7 +6439,7 @@ export default function App() {
                         handleOpenScenarioInspector();
                       }
                     }}
-                    title="シナリオチェッカー"
+                    title="全シナリオ・演出インスペクター"
                     className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border font-zen transition-colors cursor-pointer ${
                       isScenarioInspectorOpen
                         ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
@@ -6447,7 +6447,7 @@ export default function App() {
                     }`}
                   >
                     <span>▶</span>
-                    <span>シナリオ確認</span>
+                    <span>演出確認</span>
                   </button>
                 )}
 

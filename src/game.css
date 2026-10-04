@@ -4,7 +4,6 @@
 @theme {
   --font-sans: "WDXL Lubrifont JP N", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   --font-mono: "WDXL Lubrifont JP N", monospace;
-  --font-zen: "Zen Kaku Gothic New", sans-serif;
 }
 
 @layer base {
@@ -66,12 +65,6 @@ button:focus:not(:focus-visible) {
 .font-terminal,
 .font-terminal * {
   font-family: "Zen Kaku Gothic New", sans-serif !important;
-}
-
-/* リザルト画面・実績画面・クレジット・表情ビューワー・インスペクター用フォント（Zen Kaku Gothic New） */
-.font-zen,
-.font-zen * {
-  font-family: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif !important;
 }
 
 /* フローチャート確認用フォント（読みやすい標準ゴシック体・テキスト選択許可） */
