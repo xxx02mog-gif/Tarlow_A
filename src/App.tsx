@@ -1913,7 +1913,7 @@ export default function App() {
             {
               delayMs: 260,
               action: () => {
-                pushScreenBubble('GUY', '・・・・・・。', 'normal');
+                pushScreenBubble('GUY', '・・・・・・', 'normal');
               },
               isBubble: true,
             },
@@ -1945,7 +1945,7 @@ export default function App() {
                 });
                 pushScreenBubble(
                   'ASCH',
-                  '・・・・・・、いや。いい。なんでもない。',
+                  '・・・・・・、いや。いい。なんでもない',
                   'normal'
                 );
               },
@@ -1962,7 +1962,7 @@ export default function App() {
                   mouth: 'close',
                   effects: ['shadow'],
                 });
-                pushScreenBubble('ASCH', '変なことを聞いた。忘れてくれ。', 'normal');
+                pushScreenBubble('ASCH', '変なことを聞いた。忘れてくれ', 'normal');
               },
               isBubble: true,
             },
@@ -2493,6 +2493,8 @@ export default function App() {
       return;
     }
     soundEngine.unlockOnUserInteraction();
+    soundEngine.stopBgm();
+    soundEngine.setPlayingPhase(false);
     setIsDecisionMenuOpen(false);
 
     const qLines = FINAL_ASCH_QUESTION_LINE.split('\n')
@@ -2952,14 +2954,6 @@ export default function App() {
         ]
       : null;
 
-    const isBackedOffOnce = linkTags.includes(`backed_off_${topic.id}`);
-    const effectiveSpokenText =
-      (isBackedOffOnce && currentStage.retrySpokenText) ||
-      currentStage.spokenText;
-    const effectiveStageAschText =
-      (isBackedOffOnce && currentStage.retryAschText) ||
-      currentStage.aschText;
-
     // --- 機嫌による反応分岐の判定（フェーズ1ではまだタルロウAを演じているため不機嫌拒否を発生させない） ---
     const isAngryNow = mood < 0 && !isPhase1Now && !caughtAngryGlance;
     const isGoodMoodNow = mood >= 2 && !isPhase1Now;
@@ -2978,6 +2972,16 @@ export default function App() {
     // 3) 上機嫌（mood >= 2）で goodMoodResponse が設定されている場合（頭を撫でさせてくれる等）
     const useCustomGoodMood =
       !isAngryNow && isGoodMoodNow && Boolean(currentStage.goodMoodResponse);
+
+    const isBackedOffOnce = linkTags.includes(`backed_off_${topic.id}`);
+    const effectiveSpokenText =
+      (useCustomBadMood && currentStage.badMoodResponse?.spokenText) ||
+      (useCustomGoodMood && currentStage.goodMoodResponse?.spokenText) ||
+      (isBackedOffOnce && currentStage.retrySpokenText) ||
+      currentStage.spokenText;
+    const effectiveStageAschText =
+      (isBackedOffOnce && currentStage.retryAschText) ||
+      currentStage.aschText;
 
     // 本題の冒頭にすでに「・・・・・・」や「さっき」「そういえば」「なあ」等の導入がある場合は、二重に言い淀みを重ねない
     const alreadyHasNaturalLeadIn =
@@ -3003,7 +3007,7 @@ export default function App() {
 
     // 不機嫌でアッシュに拒絶される場合、ガイが長文や明るいセリフを最後まで喋り切る不自然さを防ぎ、切り出しの段階で遮られる形にする
     const guyLines = isRefusedByBadMood
-      ? [awkwardHesitationLine ?? '・・・・・・なあ、少し聞きたいんだが。']
+      ? [awkwardHesitationLine ?? '・・・・・・なあ、少し聞きたいんだが']
       : effectiveSpokenText
           .split('\n')
           .map((s) => s.trim())
@@ -4071,7 +4075,7 @@ export default function App() {
         action: () => {
           pushScreenBubble(
             'GUY',
-            'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ。',
+            'これ、おまえを連れ出すときにディストから渡された管理端末なんだよ',
             'normal'
           );
         },
@@ -4081,7 +4085,7 @@ export default function App() {
         action: () => {
           pushScreenBubble(
             'GUY',
-            'おまえが動揺した波形も、内部の記録も全部ここに映ってるぞ。',
+            'おまえが動揺した波形も、内部の記録も全部ここに映ってるぞ',
             'normal'
           );
         },
@@ -4122,7 +4126,7 @@ export default function App() {
         action: () => {
           pushScreenBubble(
             'GUY',
-            'おまえがいくら他人のフリをしても、この記録までは誤魔化せない。',
+            'おまえがいくら他人のフリをしても、この記録までは誤魔化せない',
             'normal'
           );
         },
@@ -4130,7 +4134,7 @@ export default function App() {
       {
         delayMs: 1100,
         action: () => {
-          pushScreenBubble('GUY', '・・・・・・アッシュ、観念しろよ。', 'normal');
+          pushScreenBubble('GUY', '・・・・・・アッシュ、観念しろよ', 'normal');
         },
       },
       {
@@ -4363,7 +4367,7 @@ export default function App() {
           );
           pushScreenBubble(
             'ASCH',
-            '・・・・・・ただの譜業のフリをしてやり過ごすつもりだったんだがな。',
+            '・・・・・・ただの譜業のフリをしてやり過ごすつもりだったんだがな',
             'normal'
           );
         },
@@ -4377,22 +4381,24 @@ export default function App() {
       enqueueSequence(steps);
     } else {
       unlockAchievements('ach_08');
+      soundEngine.stopBgm();
+      soundEngine.setPlayingPhase(false);
       // 【不正解】：ボロが出ていなかった話題、または的外れな理由を指摘した場合 → あしらわれてタルロウA確定EDへ
       const guySpoken =
         selectedChoice.id === 'REWRITE'
-          ? 'おまえ、さっき途中で言葉を言い直したよな？　本当は『タルロウA』なんかじゃないんだろ。'
+          ? 'おまえ、さっき途中で言葉を言い直したよな？　本当は『タルロウA』なんかじゃないんだろ'
           : selectedChoice.id === 'PRE_FACE'
-            ? 'おまえ、さっき一瞬顔色が変わったよな？　本当は『タルロウA』なんかじゃないんだろ。'
+            ? 'おまえ、さっき一瞬顔色が変わったよな？　本当は『タルロウA』なんかじゃないんだろ'
             : selectedChoice.id === 'CALL_NAME'
-              ? 'おまえ、さっき『ガイ』って俺の名前を呼んだよな？　本当は『タルロウA』なんかじゃないんだろ。'
+              ? 'おまえ、さっき『ガイ』って俺の名前を呼んだよな？　本当は『タルロウA』なんかじゃないんだろ'
               : selectedChoice.id === 'BLUFF_TONE'
-                ? 'おまえ、さっき声が上ずってたぞ。本当は『タルロウA』なんかじゃないんだろ。'
+                ? 'おまえ、さっき声が上ずってたぞ。本当は『タルロウA』なんかじゃないんだろ'
                 : selectedChoice.id === 'BLUFF_DELAY'
-                  ? 'おまえ、さっきやけに早口で言い返したぞ。本当は『タルロウA』なんかじゃないんだろ。'
-                  : 'おまえ、タルロウにしては口調が違いすぎるぞ。本当は『タルロウA』なんかじゃないんだろ。';
+                  ? 'おまえ、さっきやけに早口で言い返したぞ。本当は『タルロウA』なんかじゃないんだろ'
+                  : 'おまえ、タルロウにしては口調が違いすぎるぞ。本当は『タルロウA』なんかじゃないんだろ';
 
       const aschRefute =
-        '言いがかりだな。俺は最初から事実しか言っていない。\n疑う根拠がないなら、さっさと研究所へ戻せ。';
+        '言いがかりだな。俺は最初から事実しか言っていない。\n疑う根拠がないなら、さっさと研究所へ戻せ';
 
       const steps: QueuedStep[] = [
         {
@@ -4743,6 +4749,8 @@ export default function App() {
 
   // === 機嫌ライフ限界（2回目の危険域到達）による対話打ち切り・帰還処理 ===
   const triggerMoodLimitDeparture = () => {
+    soundEngine.stopBgm();
+    soundEngine.setPlayingPhase(false);
     setActiveTopicReply(null);
     setActiveAschQuestion(null);
     setIsDecisionMenuOpen(false);
@@ -4827,8 +4835,11 @@ export default function App() {
     soundEngine.unlockOnUserInteraction();
     const currentReplyTopicId = activeTopicReply.topicId;
 
-    // EDイベント突入に伴いBGMを即座に完全停止
-    if (option.triggersEndingKey || option.triggersEnding) {
+    // EDイベント突入に伴いBGMを即座に完全停止（keepBgm指定時を除く）
+    if (
+      (option.triggersEndingKey || option.triggersEnding) &&
+      !option.endingTransition?.keepBgm
+    ) {
       soundEngine.stopBgm();
       soundEngine.setPlayingPhase(false);
     }

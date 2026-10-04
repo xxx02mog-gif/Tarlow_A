@@ -128,6 +128,7 @@ export interface MemorySector {
 }
 
 export interface MoodVariantResponse {
+  spokenText?: string;
   aschText: string;
   expression: ExpressionId;
   faceParts?: Partial<FaceParts>;

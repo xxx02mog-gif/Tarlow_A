@@ -384,7 +384,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
   // ② ディストへの忠誠について【嫌悪の挑発】
   {
     id: 'p1_dist_loyalty',
-    thoughtText: '造ったディストのこと',
+    thoughtText: 'ディストのこと',
     contextCategory: 'body',
     forbidLinkTags: ['phase2_started'],
     relatedTopicIds: ['p1_luke_model', 'p1_tarlow_zura'],
@@ -417,7 +417,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText: 'おい、頭にゴミがついてるぞ。ちょっとじっとしてろよ',
-        aschText: '不要な接触はやめろ。',
+        aschText: '不要な接触はやめろ',
         expression: 'normal',
         faceParts: {
           brow: 'normal',

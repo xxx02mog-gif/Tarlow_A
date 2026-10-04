@@ -861,7 +861,7 @@ export const TURN_MILESTONE_QUESTIONS: {
   {
     turnCount: 6,
     questionLine:
-      '・・・・・・おい、ガイ。レ・・・・・・いや。・・・・・・ルークはどうしてる。',
+      '・・・・・・おい、ガイ。レ・・・・・・いや。・・・・・・ルークはどうしてる',
     expression: 'look_away',
     faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['sweat'] },
     question: {
@@ -870,11 +870,11 @@ export const TURN_MILESTONE_QUESTIONS: {
       options: [
         {
           id: 'q_p2_luke_hero',
-          thoughtText: '「今や英雄様だからな。アイツも忙しそうだよ」',
+          thoughtText: '今や英雄様だからな。あいつも忙しそうだよ',
           spokenText:
-            '今や英雄様だからな。あいつも忙しそうにあちこち飛び回ってるよ。',
+            '今や英雄様だからな。あいつも忙しそうにあちこち飛び回ってるよ',
           aschText:
-            '・・・・・・そうか。あいつが背負い込みすぎて潰れなきゃいいがな。',
+            'そうか。あいつが背負い込みすぎて潰れなきゃいいがな',
           expression: 'look_away',
           faceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 1,
@@ -884,8 +884,8 @@ export const TURN_MILESTONE_QUESTIONS: {
         },
         {
           id: 'q_p2_luke_fine',
-          thoughtText: '「元気でやってるみたいだぜ」',
-          spokenText: '元気でやってるみたいだぜ。',
+          thoughtText: '元気にやってるみたいだぜ',
+          spokenText: '元気にやってるみたいだぜ。\nなんだ、心配なのか？',
           aschText: '・・・・・・だっ、誰が心配なんかするか！',
           expression: 'look_away',
           faceParts: {
@@ -900,8 +900,8 @@ export const TURN_MILESTONE_QUESTIONS: {
         },
         {
           id: 'q_p2_luke_cold',
-          thoughtText: '「・・・・・・さあ。わからないな」と突き放す',
-          spokenText: '・・・・・・さあ。わからないな。',
+          thoughtText: 'さあ、わからないな',
+          spokenText: 'さあ、わからないな',
           aschText: '・・・・・・',
           expression: 'look_away',
           faceParts: { brow: 'doubt', eyes: 'away', mouth: 'close', effects: [] },
@@ -914,7 +914,7 @@ export const TURN_MILESTONE_QUESTIONS: {
   },
   {
     turnCount: 9,
-    questionLine: '・・・・・・どうして俺を連れ出したりしたんだ。',
+    questionLine: '・・・・・・どうして俺を連れ出したりしたんだ',
     expression: 'look_away',
     faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
     question: {
@@ -924,10 +924,10 @@ export const TURN_MILESTONE_QUESTIONS: {
         {
           id: 'q_p2_bother_no',
           thoughtText:
-            '「あのなあ。あんなとこに置いておけるわけがないだろーがっ！」',
+            'あのなあ。あんなとこに置いておけるわけがないだろーがっ！',
           spokenText:
             'あのなあ。あんなとこに置いておけるわけがないだろーがっ！',
-          aschText: '・・・・・・お人好しめ。',
+          aschText: 'お人好しめ',
           expression: 'look_away',
           faceParts: {
             brow: 'sad',
@@ -942,10 +942,10 @@ export const TURN_MILESTONE_QUESTIONS: {
         {
           id: 'q_p2_bother_honest',
           thoughtText:
-            '「もう一度、おまえとちゃんと話したかったんだよ。それだけじゃ駄目か？」',
+            'もう一度、おまえとちゃんと話したかったんだよ。それだけじゃ駄目か？',
           spokenText:
             'もう一度、おまえとちゃんと話したかったんだよ。それだけじゃ駄目か？',
-          aschText: '・・・・・・駄目では、ないが・・・・・・。',
+          aschText: '・・・・・・駄目では、ないが・・・・・・',
           expression: 'look_away',
           faceParts: {
             brow: 'sad',
@@ -960,11 +960,11 @@ export const TURN_MILESTONE_QUESTIONS: {
         {
           id: 'q_p2_bother_cold',
           thoughtText:
-            '「・・・・・・連れ出したものの、こうもつっかかられ続けちゃ後悔もするよ」',
+            '連れ出したものの、こうもつっかかられ続けちゃ後悔もするよ',
           spokenText:
-            '・・・・・・連れ出したものの、こうもつっかかられ続けちゃ後悔もするよ。',
+            '連れ出したものの、こうもつっかかられ続けちゃ後悔もするよ',
           aschText:
-            '・・・・・・ふん、だったら最初から放っておけばよかっただろうが！',
+            'ふん、だったら最初から放っておけばよかっただろうが！',
           expression: 'glare',
           faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
           moodDelta: -3,
