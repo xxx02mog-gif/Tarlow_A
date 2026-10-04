@@ -4,6 +4,11 @@
 @theme {
   --font-sans: "WDXL Lubrifont JP N", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   --font-mono: "WDXL Lubrifont JP N", monospace;
+  --font-zen: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+.font-zen {
+  font-family: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif !important;
 }
 
 @layer base {

@@ -110,7 +110,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_15',
     numberLabel: '15',
     title: 'なんて言おうか',
-    description: '1回のプレイ中に選択肢の切り替え（迷い回数）が15回以上になった',
+    description: '1回のプレイ中に選択の迷い（長考や話題の一巡）が5回以上になった',
   },
   {
     id: 'ach_16',

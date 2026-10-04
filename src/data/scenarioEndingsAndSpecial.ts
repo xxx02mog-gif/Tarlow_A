@@ -59,7 +59,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
   // 【END 05（True）ルート：アッシュだと答える（通常時）】
   {
     id: 'p3_ans_asch',
-    thoughtText: '「・・・・・・おまえは、アッシュだよ」',
+    thoughtText: 'おまえはアッシュだ',
     forbidLinkTag: 'terminal_opened_many',
     spokenText: '・・・・・・おまえは、アッシュだよ',
     waitMs: 2600,
@@ -212,7 +212,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
   // 【END 05（True）ルート：アッシュだと答える（※いっぱい端末を開いているときの差分）】
   {
     id: 'p3_ans_asch_terminal_many',
-    thoughtText: '「・・・・・・おまえは、アッシュだよ」',
+    thoughtText: 'おまえはアッシュだ',
     requireLinkTag: 'terminal_opened_many',
     spokenText: '・・・・・・おまえは、アッシュだよ',
     waitMs: 2600,
@@ -378,7 +378,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
   // 【END 06ルート：譜業だと答える】
   {
     id: 'p3_ans_machine',
-    thoughtText: '「・・・・・・おまえが最初に言っていた通り、おまえは譜業人形みたいだな」',
+    thoughtText: '譜業人形にしか見えない',
     spokenText:
       '・・・・・・おまえが最初に言っていた通り\nおまえは譜業人形みたいだな',
     waitMs: 2600,
@@ -1533,11 +1533,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
     dialogues: [
       {
         speaker: 'GUY',
-        text: 'アッシュにああ言わせたのは、あいつのためなんかじゃない',
-      },
-      {
-        speaker: 'GUY',
-        text: 'ただ、俺自身が耐えられなかっただけだ',
+        text: 'アッシュにああいわせたのは、あいつのためなんかじゃない\nただ、俺自身が耐えられなかっただけだ。',
       },
       {
         speaker: 'GUY',
@@ -1545,11 +1541,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: '最近、皆に会いに行ったようだ',
-      },
-      {
-        speaker: 'GUY',
-        text: 'ルークも、ナタリアも、皆泣いて喜んだらしい',
+        text: '先日、皆に会いに行ったようだ\nルークも、ナタリアも・・・・・・皆泣いて喜んだらしい',
       },
       {
         speaker: 'GUY',

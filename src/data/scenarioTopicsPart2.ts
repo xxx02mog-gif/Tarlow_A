@@ -211,10 +211,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     relatedTopicIds: ['p2_sword_limiter', 'p2_friends_news'],
     stages: [
       {
-        spokenText:
-          'そこの『宝刀ガルディオス』、やっぱり気になるか？　少し前に、公爵様から返してもらったんだ',
+        spokenText: 'そこの剣、やっぱり気になるか？',
         aschText:
-          '・・・・・・そうか。その刀、おまえの手に戻ったんだな。\n・・・・・・元々おまえの家のものだ。あの屋敷に飾っておくより、よほどいい',
+          '・・・・・・おまえの手に戻ったんだな。\n・・・・・・元々おまえの家のものだ。あの屋敷に飾っておくより、よほどいい',
         expression: 'normal',
         faceParts: { brow: 'sad', eyes: 'normal', mouth: 'open', effects: [] },
         secondFaceParts: { brow: 'smile', eyes: 'close', mouth: 'close', effects: [] },
@@ -422,7 +421,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_why_outside_reply_correct_corner',
-            thoughtText: '前の機体のつもりで部屋の隅に隠れようとしたんだろ？',
+            thoughtText: '部屋の隅に隠れようとした？',
             spokenText:
               '足音が聞こえたとき、前の小さな機体のつもりで部屋の隅に隠れようとしたんだろ？',
             aschText:
@@ -868,7 +867,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec13_chess_cheat',
-    thoughtText: '【EM-008】空き部屋での1人チェスの記録',
+    thoughtText: '【EM-008】1人チェスの記録',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -954,7 +953,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec17_jade_smile',
-    thoughtText: '【EM-010】タルロウAの前で足を止めた大佐',
+    thoughtText: '【EM-010】大佐の様子',
     phase2Tab: '端末',
     contextCategory: 'friends',
     sensitiveToBadMood: true,
@@ -1014,7 +1013,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_why_hide_reply_step_in',
-            thoughtText: '自分が譜業なのか本人なのか分からないからか？',
+            thoughtText: '自分が何者か分からないからか？',
             spokenText:
               '・・・・・・今の姿を見られるのが嫌なんじゃなくて、\n死んだはずの自分が、記憶を模倣されただけの譜業なのかアッシュ本人なのか、おまえ自身にも分からないからか？',
             aschText:
@@ -1754,7 +1753,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_eldrant_reply_step_in',
-            thoughtText: 'ディストにロックをかけられているんじゃないか？',
+            thoughtText: 'ロックをかけられている？',
             spokenText:
               'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、\nディストにロックをかけられているんじゃないか？',
             aschText:
@@ -2192,7 +2191,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // ==========================================
   {
     id: 'p2_examine_terminal_clue',
-    thoughtText: '（・・・・・・端末に何か新しい記録が届いているようだ）',
+    thoughtText: '（端末の新しい記録を確認する）',
     phase2Tab: '端末',
     contextCategory: 'core',
     prioritySlot1: true,

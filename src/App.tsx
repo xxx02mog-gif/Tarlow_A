@@ -9,7 +9,7 @@ import {
   Award,
   BookOpen,
   Info,
-  Scale,
+  Skull,
   Users,
 } from 'lucide-react';
 import {
@@ -2541,6 +2541,9 @@ export default function App() {
             topicId: 'p3_final_who_am_i',
             options: PHASE3_WHO_AM_I_OPTIONS,
           });
+          choiceShownAtRef.current = Date.now();
+          idleStageRef.current = 0;
+          setIdleWaitSec(0);
         }
         pushScreenBubble('ASCH', line, 'normal');
       },
@@ -2548,7 +2551,11 @@ export default function App() {
 
     steps.push({
       delayMs: 420,
-      action: () => {},
+      action: () => {
+        choiceShownAtRef.current = Date.now();
+        idleStageRef.current = 0;
+        setIdleWaitSec(0);
+      },
     });
 
     enqueueSequence(steps);
@@ -6067,7 +6074,7 @@ export default function App() {
 
   useEffect(() => {
     const toUnlock: string[] = [];
-    if (stats.choiceHoverSwitchCount >= 15) {
+    if (stats.choiceHoverSwitchCount >= 5) {
       toUnlock.push('ach_15');
     }
     if (stats.quickReplyCount >= 10) {
@@ -6200,60 +6207,8 @@ export default function App() {
   const isInteractionBlocked =
     isTerminalOpen || isDialogueLogOpen || isManualOpen || isSequencing;
 
-  // PCのホバー切り替え ＆ スマホで選択肢に指を触れたあと指をずらして押すのをやめたときの「迷い」検出ハンドラ
-  const getChoiceHesitationHandlers = (choiceId: string) => ({
-    onMouseEnter: () => {
-      if (isCompactViewport) return;
-      if (
-        lastHoveredChoiceIdRef.current !== null &&
-        lastHoveredChoiceIdRef.current !== choiceId
-      ) {
-        setStats((prev) => ({
-          ...prev,
-          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
-        }));
-      }
-      lastHoveredChoiceIdRef.current = choiceId;
-    },
-    onTouchStart: () => {
-      touchChoiceStateRef.current = { id: choiceId, movedOff: false };
-    },
-    onTouchMove: (e: React.TouchEvent<HTMLButtonElement>) => {
-      const state = touchChoiceStateRef.current;
-      if (!state || state.id !== choiceId || state.movedOff) return;
-      const touch = e.touches[0];
-      if (!touch) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pad = 8;
-      if (
-        touch.clientX < rect.left - pad ||
-        touch.clientX > rect.right + pad ||
-        touch.clientY < rect.top - pad ||
-        touch.clientY > rect.bottom + pad
-      ) {
-        state.movedOff = true;
-      }
-    },
-    onTouchEnd: () => {
-      const state = touchChoiceStateRef.current;
-      if (state && state.id === choiceId && state.movedOff) {
-        setStats((prev) => ({
-          ...prev,
-          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
-        }));
-      }
-      touchChoiceStateRef.current = null;
-    },
-    onTouchCancel: () => {
-      if (touchChoiceStateRef.current?.id === choiceId) {
-        setStats((prev) => ({
-          ...prev,
-          choiceHoverSwitchCount: prev.choiceHoverSwitchCount + 1,
-        }));
-      }
-      touchChoiceStateRef.current = null;
-    },
-  });
+  // 選択肢のホバー・スワイプ検出（端末差解消のため、迷いカウントは長考と話題一巡に一本化）
+  const getChoiceHesitationHandlers = (_choiceId: string) => ({});
 
   const bgBlurPx =
     isDialogueLogOpen || isManualOpen ? 6 : isTerminalOpen ? 2 : 0;
@@ -6287,7 +6242,7 @@ export default function App() {
               : `scale(${stageScale})`,
             transformOrigin: 'center center',
           }}
-          className={`relative bg-[#c5c6cc] flex flex-col justify-between overflow-hidden shadow-2xl shrink-0 ${
+          className={`relative bg-[#C0C5CC] flex flex-col justify-between overflow-hidden shadow-2xl shrink-0 ${
             isScreenShaking ? 'screen-heavy-shake' : ''
           }`}
         >
@@ -6398,7 +6353,7 @@ export default function App() {
                       <span>ガイアシュ（恋愛描写なし）</span>
                     </li>
                     <li className="flex items-center gap-1 whitespace-nowrap">
-                      <Scale className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
+                      <Skull className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
                       <span>死亡ルート有り</span>
                     </li>
                   </ul>
@@ -6414,6 +6369,8 @@ export default function App() {
                     本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
                     <br />
                     原作および関係各社様とは一切関係ございません。
+                    <br />
+                    素人が作ってるので多目にみてください！
                   </p>
                 </div>
               </div>
@@ -6582,27 +6539,6 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
-                {canAccessScenarioInspector && (
-                  <button
-                    onClick={() => {
-                      if (isScenarioInspectorOpen) {
-                        handleCloseScenarioInspector();
-                      } else {
-                        handleOpenScenarioInspector();
-                      }
-                    }}
-                    title="シナリオ台本（全セリフ・分岐・演出確認）"
-                    className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border font-zen transition-colors cursor-pointer ${
-                      isScenarioInspectorOpen
-                        ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
-                        : 'text-zinc-300 hover:text-white border-zinc-700 hover:border-zinc-500 bg-zinc-900/60'
-                    }`}
-                  >
-                    <span>▶</span>
-                    <span>シナリオ台本</span>
-                  </button>
-                )}
-
                 <button
                   onClick={() => {
                     soundEngine.playTerminalTab();
@@ -6993,11 +6929,6 @@ export default function App() {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
                                   cycledPagesInTurnRef.current = 0;
-                                  setStats((prev) => ({
-                                    ...prev,
-                                    choiceHoverSwitchCount:
-                                      prev.choiceHoverSwitchCount + 1,
-                                  }));
                                   setPreviewPage(0);
                                   setPhase1AccuseStep('SELECT_TOPIC');
                                 }}
@@ -7015,11 +6946,6 @@ export default function App() {
                                     e.stopPropagation();
                                     soundEngine.playTerminalTab();
                                     cycledPagesInTurnRef.current = 0;
-                                    setStats((prev) => ({
-                                      ...prev,
-                                      choiceHoverSwitchCount:
-                                        prev.choiceHoverSwitchCount + 1,
-                                    }));
                                     setPreviewPage(0);
                                     setPhase1AccuseStep('NONE');
                                   }}
@@ -7037,11 +6963,6 @@ export default function App() {
                                   e.stopPropagation();
                                   soundEngine.playTerminalTab();
                                   cycledPagesInTurnRef.current = 0;
-                                  setStats((prev) => ({
-                                    ...prev,
-                                    choiceHoverSwitchCount:
-                                      prev.choiceHoverSwitchCount + 1,
-                                  }));
                                   setPreviewPage(0);
                                   setIsDecisionMenuOpen(false);
                                 }}
