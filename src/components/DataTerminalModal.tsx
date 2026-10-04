@@ -318,9 +318,9 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
     touchStartXRef.current = null;
     touchStartYRef.current = null;
 
-    const threshold = 25;
-    // 水平方向の移動が縦方向より大きく、一定値以上ならスワイプ判定
-    if (Math.abs(diffX) > threshold && Math.abs(diffX) > Math.abs(diffY)) {
+    const threshold = 35;
+    // 水平方向のスワイプ判定（縦スクロール誤作動防止のため水平移動が縦移動の1.4倍以上かつ35px以上）
+    if (Math.abs(diffX) > threshold && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
       if (diffX > 0) {
         // 右スワイプ -> 前のページ（INFOからMONITORへ）
         goPrev();
@@ -435,11 +435,18 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
           </div>
         </div>
 
-        {/* 液晶メイン領域 */}
-        <div className="flex-1 min-h-0 p-1.5 flex flex-col justify-between overflow-hidden">
-          {/* === 1/2 : MONITOR（感情のグラフ・稼働ログ） === */}
-          {pageIndex === 0 && (
-            <div className="flex-1 min-h-0 flex flex-col justify-between gap-1">
+        {/* 液晶メイン領域（左右スライドアニメーションコンテナ） */}
+        <div className="flex-1 min-h-0 overflow-hidden relative">
+          <div
+            className="w-[200%] h-full flex flex-row transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${pageIndex * 50}%)` }}
+          >
+            {/* === 1/2 : MONITOR（感情のグラフ・稼働ログ） === */}
+            <div
+              className={`w-1/2 h-full p-1.5 flex flex-col justify-between gap-1 shrink-0 overflow-hidden ${
+                pageIndex === 0 ? 'pointer-events-auto' : 'pointer-events-none'
+              }`}
+            >
               {/* 上段：感情のグラフ（情動波形）ステータス */}
               <div className="flex items-center justify-between border-b border-zinc-800/90 pb-0.5 shrink-0">
                 <span className="text-[8.5px] text-zinc-400 tracking-wider">
@@ -511,11 +518,13 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
-          {/* === 2/2 : INFO（【カテゴリ】観測ログ ＆ フィルター ＆ PROTECT長押し解除・常時スクロールバー表示） === */}
-          {pageIndex === 1 && (
-            <div className="flex-1 min-h-0 flex flex-col gap-1">
+            {/* === 2/2 : INFO（【カテゴリ】観測ログ ＆ フィルター ＆ PROTECT長押し解除・常時スクロールバー表示） === */}
+            <div
+              className={`w-1/2 h-full p-1.5 flex flex-col gap-1 shrink-0 overflow-hidden ${
+                pageIndex === 1 ? 'pointer-events-auto' : 'pointer-events-none'
+              }`}
+            >
               {/* カテゴリフィルターボタン */}
               <div className="flex items-center gap-1 pb-1 border-b border-zinc-800/90 shrink-0 overflow-x-auto">
                 {INFO_FILTERS.map((f) => {
@@ -682,7 +691,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                 {item.subWarning && (
                                   <p className="text-[8px] leading-snug text-red-400 border-t border-red-950/70 pt-1 whitespace-pre-wrap">
                                     {formatParagraphText(
-                                      `[PARADOX] ${item.subWarning}`,
+                                      `${item.subWarning}`,
                                       36.0
                                     )}
                                   </p>
@@ -697,7 +706,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                 )}
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

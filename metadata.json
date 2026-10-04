@@ -1,6 +1,6 @@
 {
   "name": "Ghost in the mASCHine",
-  "description": "崩壊の刻が迫るグランコクマで、ガイとアッシュが言葉を交わす対話型アドベンチャー",
+  "description": "対話観測アドベンチャーゲーム Ghost in the mASCHine",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

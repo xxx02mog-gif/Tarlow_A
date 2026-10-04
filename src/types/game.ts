@@ -238,6 +238,7 @@ export interface TopicExchangeStage {
   capturedProtects?: CapturedProtectTrigger[]; // 複数のロックが同時発生する場合（SEC-19/20など）
   naturalUnlockSectorId?: string;  // この段階の対話で自然解除されるプロテクトID
   grantsLinkTags?: string[];       // この会話を見ることで解放される関連フラグ
+  extraExchanges?: ExtraDialogueExchange[]; // ガイとアッシュの追加掛け合い（選択肢を挟まない連続したセリフの流れ）
   triggersAschQuestion?: AschIncomingQuestion; // 会話直後に選択肢が専用返答に切り替わるイベント
   replyOptions?: AschQuestionReplyOption[]; // このステージのアッシュの返答に対してガイが選べる複数の反応選択肢
   completesTopic?: boolean;

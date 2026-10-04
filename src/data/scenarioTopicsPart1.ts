@@ -416,8 +416,8 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     relatedTopicIds: ['p1_luke_model', 'p1_octopus_meal'],
     stages: [
       {
-        spokenText: 'おい、頭にゴミでもついてるぞ。ちょっとじっとしてろよ',
-        aschText: '不要な接触はやめろ。機体のセンサーに障る',
+        spokenText: 'おい、頭にゴミがついてるぞ。ちょっとじっとしてろよ',
+        aschText: '不要な接触はやめろ。',
         expression: 'normal',
         faceParts: {
           brow: 'normal',
@@ -517,7 +517,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'ディストの造った精巧な機体なら、人間の食事も摂れるんじゃないのか？ 美味いタコ料理を出す店があるんだが、どうだ？',
+          'あのディストが作った機体なんだろ？ 人間の食事も摂れるんじゃないのか？ 美味いタコ料理を出す店があるんだが、どうだ？',
         aschText:
           '俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない',
         expression: 'normal',

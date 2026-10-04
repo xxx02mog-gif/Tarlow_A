@@ -24,6 +24,7 @@ import {
   EndingDisposition,
   EndingTransitionConfig,
   ExpressionId,
+  ExtraDialogueExchange,
   EyePartId,
   FaceParts,
   GamePhaseState,
@@ -987,7 +988,9 @@ export default function App() {
     null
   );
   const lastContextCategoryRef = useRef<TopicContextCategory>('daily');
+  const lastDecisionExecutedAtRef = useRef<number>(0);
   const lastMilestoneQuestionTurnRef = useRef<number>(0);
+  const totalTurnsRef = useRef<number>(0);
   const idleStageRef = useRef<number>(0);
   const pendingStepsRef = useRef<QueuedStep[]>([]);
   const activeTimeoutRef = useRef<number | null>(null);
@@ -1147,6 +1150,7 @@ export default function App() {
     soundEngine.unlockOnUserInteraction();
     if (!isSequencing || pendingStepsRef.current.length === 0) return;
     if (isTerminalOpen || isDialogueLogOpen || isManualOpen) return;
+    if (Date.now() - lastDecisionExecutedAtRef.current < 450) return;
 
     if (activeTimeoutRef.current !== null) {
       window.clearTimeout(activeTimeoutRef.current);
@@ -1453,6 +1457,7 @@ export default function App() {
           action: () => {
             if (trans.aschAction === 'fade_out') {
               setIsAschExited(true);
+              setVisibleBubbles([]);
             } else if (trans.aschAction === 'collapse') {
               setIsAschCollapsed(true);
             }
@@ -1745,6 +1750,22 @@ export default function App() {
           lastAwayReactionAtRef.current = Date.now();
           const idx = awayReactionCountRef.current;
           awayReactionCountRef.current += 1;
+
+          // DP-002の追及後などパニック・発作未解決時は復帰セリフを完全抑制し息を整えている状態を維持
+          const isPanicking =
+            linkTags.includes('asked_about_dp002') &&
+            !linkTags.includes('talked_tarlow_broken');
+          if (isPanicking) {
+            setOverrideExpression('pain');
+            setOverrideFaceParts({
+              brow: 'pain',
+              eyes: 'away',
+              mouth: 'grit',
+              effects: ['sweat'],
+            });
+            return;
+          }
+
           if (idx < 3) {
             const pool = !linkTags.includes('phase2_started')
               ? AWAY_RETURN_REACTIONS.phase1
@@ -1908,6 +1929,7 @@ export default function App() {
             delayMs: 2400,
             action: () => {
               setIsAschExited(true);
+              setVisibleBubbles([]);
               soundEngine.playFootsteps('slow', 3);
             },
             isBubble: false,
@@ -2086,6 +2108,85 @@ export default function App() {
         }
       }
 
+      // DP-002後の緊迫・混乱時の放置リアクション：
+      if (
+        linkTags.includes('asked_about_dp002') &&
+        !linkTags.includes('p2_dilemma_resolved')
+      ) {
+        if (idleMs > 18000 && idleStageRef.current === 0) {
+          idleStageRef.current = 1;
+          setOverrideExpression('pain');
+          setOverrideFaceParts({
+            brow: 'pain',
+            eyes: 'close',
+            mouth: 'grit',
+            effects: ['pale', 'sweat', 'noise'],
+          });
+          pushScreenBubble(
+            'ASCH',
+            '・・・・・・っ、くそ・・・・・・頭が・・・・・・ッ',
+            'tremble_glitch'
+          );
+        }
+        return;
+      }
+
+      // フェーズ2：話題を選ばず一拍置いたとき（約3.8秒の沈黙）に発生するアッシュからの逆質問
+      if (
+        linkTags.includes('phase2_started') &&
+        !linkTags.includes('p2_dilemma_resolved') &&
+        !linkTags.includes('asked_about_dp002') &&
+        !linkTags.includes('asked_about_dp003') &&
+        !isHatredMode &&
+        overrideExpression !== 'pain' &&
+        !aschQuestionsDisabled &&
+        !activeTopicReply &&
+        !activeAschQuestion &&
+        !isDecisionMenuOpen &&
+        !isTerminalOpen &&
+        idleStageRef.current === 0 &&
+        idleMs >= 3800 &&
+        idleMs < 15000 &&
+        lastContextCategoryRef.current !== 'core' &&
+        lastContextCategoryRef.current !== 'fight' &&
+        badMoodRefusalCountRef.current < 2 &&
+        totalTurnsRef.current - lastMilestoneQuestionTurnRef.current >= 3
+      ) {
+        const unanswered = TURN_MILESTONE_QUESTIONS.filter(
+          (m) =>
+            !answeredQuestionIds.includes(m.question.id) &&
+            totalTurnsRef.current >= m.turnCount
+        );
+        if (unanswered.length > 0) {
+          const targetQ = unanswered[0];
+          idleStageRef.current = 1;
+          lastMilestoneQuestionTurnRef.current = totalTurnsRef.current;
+          const qLines = targetQ.questionLine
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const steps: QueuedStep[] = [];
+          qLines.forEach((qLine, qIdx) => {
+            steps.push({
+              delayMs: qIdx === 0 ? 300 : 850,
+              action: () => {
+                if (qIdx === 0) {
+                  setOverrideExpression(targetQ.expression);
+                  setOverrideFaceParts(targetQ.faceParts);
+                }
+                if (qIdx === qLines.length - 1) {
+                  setPreviewPage(0);
+                  setActiveAschQuestion(targetQ.question);
+                }
+                pushScreenBubble('ASCH', qLine, 'normal');
+              },
+            });
+          });
+          enqueueSequence(steps);
+          return;
+        }
+      }
+
       // 通常〜上機嫌時の放置リアクション（全セッション通じて最大3回まで・すべて別セリフ）
       if (
         !(linkTags.includes('phase2_started') && mood < 0) &&
@@ -2178,6 +2279,38 @@ export default function App() {
           pendingClimaxDilemmaRef.current = false;
           setPreviewTab('端末');
           setPreviewPage(0);
+        }
+
+        // DP-002後の緊迫・混乱時（端末を見た後の反応）：
+        if (
+          linkTags.includes('asked_about_dp002') &&
+          !linkTags.includes('p2_dilemma_resolved')
+        ) {
+          if (
+            !isSequencing &&
+            !isSequencingRef.current &&
+            !activeAschQuestion &&
+            durationMs >= 1000 &&
+            sinceLastGaze >= 5000
+          ) {
+            lastTerminalGazeAtRef.current = Date.now();
+            setOverrideExpression('pain');
+            setOverrideFaceParts({
+              brow: 'pain',
+              eyes: 'away',
+              mouth: 'grit',
+              effects: ['sweat', 'noise'],
+            });
+            pushScreenBubble(
+              'ASCH',
+              '・・・・・・っ、ハァ・・・・・・ハァ・・・・・・ッ。・・・・・・見るな・・・・・・っ',
+              'tremble_glitch'
+            );
+          }
+          terminalOpenedAtRef.current = null;
+          choiceShownAtRef.current = Date.now();
+          setIdleWaitSec(0);
+          return;
         }
 
         // 端末認知フラグの連動（IMMUTABLE_RULES 2-①・6-②準拠）：
@@ -2331,17 +2464,39 @@ export default function App() {
       return;
     }
     soundEngine.unlockOnUserInteraction();
+    lastDecisionExecutedAtRef.current = Date.now();
     setIsDecisionMenuOpen(false);
+    setVisibleBubbles([]);
 
     const isPhase2Now = linkTags.includes('phase2_started');
     const phase2TalkedCount = Object.entries(topicAskCounts).filter(
       ([id, count]) => !id.startsWith('p1_') && count > 0
     ).length;
 
+    const isDp002Unlocked =
+      isPhase2Now &&
+      (linkTags.includes('sec19_unlocked') ||
+        sectors.some(
+          (s) => (s.id === 'SEC-19' || s.code === 'DP-002') && s.unlocked
+        ));
+
     // フェーズ2で『ディストの研究所へ帰す』（RETURN）を選んだ際、
     // 不機嫌・険悪ではなく、かつ深い対話条件を満たしていれば、帰る間際にアッシュから最後の問いかけ（Phase 3）が発生する
+    // ※ただし、深層記憶（DP-001: SEC-18以降）を開封している場合は裏ルート（END 08〜10）へ進むため、表の問いかけは発生させない
+    const hasDeepMemoryOpened =
+      sectors.some(
+        (s) =>
+          (s.id === 'SEC-18' || s.id === 'SEC-19' || s.id === 'SEC-20') &&
+          s.unlocked
+      ) ||
+      linkTags.includes('sec18_unlocked') ||
+      linkTags.includes('sec19_unlocked') ||
+      linkTags.includes('sec20_unlocked');
+
     if (
       isPhase2Now &&
+      !isDp002Unlocked &&
+      !hasDeepMemoryOpened &&
       disposition === 'RETURN' &&
       hasEnoughDeepTalkForPhase3 &&
       mood >= 0 &&
@@ -2352,31 +2507,56 @@ export default function App() {
       return;
     }
 
-    // 『少し休んでいけと声をかける』（KEEP）を選んだ場合：
-    // 不機嫌でなく、かつフェーズ2で2回以上会話している（または機嫌・信頼度が上がっている）場合のみ素直に休む（END 04）。
-    // まだ警戒中（会話不足）や不機嫌な場合は断って帰ってしまう（END 02）。
-    const isNotWarmEnoughYet =
-      mood < 0 ||
-      isHatredMode ||
-      (phase2TalkedCount < 2 && mood < 2 && trustLevel < 2);
+    let forcedCustomEndingKey: string | null = null;
+    let isStayRefused = false;
 
-    const isStayRefused =
-      isPhase2Now && disposition === 'KEEP' && isNotWarmEnoughYet;
+    if (isDp002Unlocked) {
+      if (disposition === 'KEEP') {
+        forcedCustomEndingKey = 'END_PHASE3_TOMORROW'; // END 08a
+      } else if (disposition === 'RETURN') {
+        forcedCustomEndingKey = 'END_PHASE3_TOMORROW_RETURN'; // END 08b
+      } else if (disposition === 'DESTROY') {
+        forcedCustomEndingKey = 'END_PHASE3_MERCY_DESTROY'; // END 09
+      }
+    } else {
+      // 『少し休んでいけと声をかける』（KEEP）を選んだ場合：
+      // 不機嫌でなく、かつフェーズ2で2回以上会話している（または機嫌・信頼度が上がっている）場合のみ素直に休む（END 04）。
+      // まだ警戒中（会話不足）や不機嫌な場合は断って帰ってしまう（END 02）。
+      const isNotWarmEnoughYet =
+        mood < 0 ||
+        isHatredMode ||
+        (phase2TalkedCount < 2 && mood < 2 && trustLevel < 2);
 
-    const forcedCustomEndingKey = isStayRefused
-      ? 'END_PHASE2_INCOMPLETE'
-      : isPhase2Now && disposition === 'RETURN' && isNotWarmEnoughYet
-        ? 'END_PHASE2_INCOMPLETE'
-        : null;
+      isStayRefused =
+        isPhase2Now && disposition === 'KEEP' && isNotWarmEnoughYet;
+
+      forcedCustomEndingKey = isStayRefused
+        ? 'END_PHASE2_STAY_REFUSED'
+        : isPhase2Now && disposition === 'RETURN' && isNotWarmEnoughYet
+          ? 'END_PHASE2_INCOMPLETE'
+          : null;
+    }
 
     setCustomEndingKey(forcedCustomEndingKey);
     setEndingDisposition(disposition);
+
+    const isPanickingAfterSecret =
+      (linkTags.includes('talked_tarlow_broken') &&
+        !linkTags.includes('soothed_after_broken')) ||
+      (linkTags.includes('asked_about_dp002') &&
+        !linkTags.includes('apologized_to_asch') &&
+        !linkTags.includes('checked_asch_headache') &&
+        !linkTags.includes('soothed_after_broken'));
 
     const resolvedKey =
       forcedCustomEndingKey ?? resolveEndingKey(disposition, endingApproach);
     const decisionStageKey = isStayRefused
       ? 'END_PHASE2_STAY_REFUSED'
-      : resolvedKey;
+      : isDp002Unlocked && disposition === 'KEEP'
+        ? 'END_PHASE3_TOMORROW'
+        : isDp002Unlocked && disposition === 'RETURN'
+          ? 'END_PHASE3_TOMORROW_RETURN'
+          : resolvedKey;
     const decisionData =
       FINAL_DECISION_STAGES[decisionStageKey] ||
       FINAL_DECISION_STAGES[resolvedKey] ||
@@ -2404,6 +2584,7 @@ export default function App() {
         action: () => {
           pushScreenBubble('GUY', line, 'normal');
         },
+        isBubble: true,
       });
     });
 
@@ -2451,6 +2632,7 @@ export default function App() {
           }
           pushScreenBubble('ASCH', line, baseEff);
         },
+        isBubble: true,
       });
     });
 
@@ -2468,6 +2650,47 @@ export default function App() {
       });
     }
 
+    // 追加ラリー演出（END 08b等の掛け合い・葛藤・見送り）
+    if (decisionData.extraRallies && decisionData.extraRallies.length > 0) {
+      let lastSpeakerForRally = 'ASCH';
+      let lastLineTextForRally = closingLines[closingLines.length - 1] ?? '';
+      decisionData.extraRallies.forEach((rally) => {
+        const rallyLines = rally.text
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        rallyLines.forEach((rLine, rIdx) => {
+          const isSpeakerChange = lastSpeakerForRally !== rally.speaker;
+          const delay =
+            rIdx === 0
+              ? (rally.waitMs ?? calculateLineDelayMs(lastLineTextForRally, { isSpeakerChange }))
+              : calculateLineDelayMs(rallyLines[rIdx - 1]);
+          steps.push({
+            delayMs: delay,
+            action: () => {
+              if (rally.speaker === 'ASCH') {
+                if (rIdx === 0 && rally.expression) {
+                  setOverrideExpression(rally.expression);
+                  if (rally.faceParts) setOverrideFaceParts(rally.faceParts);
+                } else if (rally.secondExpression) {
+                  setOverrideExpression(rally.secondExpression);
+                  if (rally.secondFaceParts) setOverrideFaceParts(rally.secondFaceParts);
+                }
+              }
+              pushScreenBubble(
+                rally.speaker,
+                rLine,
+                rally.voiceEffect ?? 'normal'
+              );
+            },
+            isBubble: true,
+          });
+          lastSpeakerForRally = rally.speaker;
+          lastLineTextForRally = rLine;
+        });
+      });
+    }
+
     if (decisionData.endingTransition) {
       const trans = decisionData.endingTransition;
       const stepInterval =
@@ -2481,6 +2704,7 @@ export default function App() {
         action: () => {
           if (trans.aschAction === 'fade_out') {
             setIsAschExited(true);
+            setVisibleBubbles([]);
           }
           if (trans.footsteps) {
             soundEngine.playFootsteps(trans.footsteps, count);
@@ -2500,6 +2724,7 @@ export default function App() {
           setGamePhase('ENDING');
         },
         isBubble: false,
+        isTerminal: true,
       });
     } else {
       steps.push({
@@ -2512,6 +2737,8 @@ export default function App() {
           setEndingStep(0);
           setGamePhase('ENDING');
         },
+        isBubble: false,
+        isTerminal: true,
       });
     }
 
@@ -2539,6 +2766,7 @@ export default function App() {
     const pageLoopHesitation = cycledPagesInTurnRef.current;
     cycledPagesInTurnRef.current = 0;
     const nextTotalTurns = stats.totalTurns + 1;
+    totalTurnsRef.current = nextTotalTurns;
 
     setStats((prev) => ({
       ...prev,
@@ -2579,6 +2807,11 @@ export default function App() {
     const askCount = topicAskCounts[topic.id] ?? 0;
     const stageIdx = Math.min(topic.stages.length - 1, askCount);
     const currentStage = topic.stages[stageIdx];
+
+    if (currentStage.triggersEndingKey) {
+      soundEngine.stopBgm();
+      soundEngine.setPlayingPhase(false);
+    }
 
     // 直前が核心・過去・対立などのシリアスな話題で、今回から明るめの日常話題へ切り替わる場合は「ためらい・間」を入れる
     const isPrevSerious =
@@ -2937,41 +3170,6 @@ export default function App() {
       currentStage.replyOptions && currentStage.replyOptions.length > 0
     );
 
-    const isTopicCompletedThisTurn =
-      askCount + 1 >= topic.stages.length && !hasReplyOptionsForCurrentStage;
-
-    const isNaturalTimingForReverseQuestion =
-      isTopicCompletedThisTurn &&
-      aschLines.length <= 1 &&
-      topic.contextCategory !== 'core' &&
-      topic.contextCategory !== 'fight';
-
-    const unansweredMilestoneQuestions = TURN_MILESTONE_QUESTIONS.filter(
-      (m) =>
-        !answeredQuestionIds.includes(m.question.id) &&
-        nextTotalTurns >= m.turnCount
-    );
-
-    const shouldTriggerRandomReverseQuestion =
-      !aschQuestionsDisabled &&
-      linkTags.includes('phase2_started') &&
-      shouldAdvanceStage &&
-      !currentStage.triggersAschQuestion &&
-      isCalmAfterCurrentStage &&
-      isNaturalTimingForReverseQuestion &&
-      nextTotalTurns >= 5 &&
-      nextTotalTurns - lastMilestoneQuestionTurnRef.current >= 3 &&
-      unansweredMilestoneQuestions.length > 0 &&
-      Math.random() < 0.55;
-
-    const milestoneQuestionObj = shouldTriggerRandomReverseQuestion
-      ? unansweredMilestoneQuestions[0]
-      : undefined;
-
-    if (milestoneQuestionObj) {
-      lastMilestoneQuestionTurnRef.current = nextTotalTurns;
-    }
-
     aschLines.forEach((line, idx) => {
       const delay =
         idx === 0
@@ -3110,7 +3308,12 @@ export default function App() {
                   prev.filter((t) => t !== 'cold_clash_escalated')
                 );
               } else {
-                if (isAngryNow && !topic.calmsAnger && mDelta > 0) {
+                const hasReplyOptions = Boolean(
+                  currentStage.replyOptions && currentStage.replyOptions.length > 0
+                );
+                if (hasReplyOptions && mDelta > 0) {
+                  // 返答選択肢がある場合、選択肢側の回答によって機嫌が増減するためステージ開始時は加算しない
+                } else if (isAngryNow && !topic.calmsAnger && mDelta > 0) {
                   updateMood(0);
                 } else {
                   updateMood(mDelta);
@@ -3124,13 +3327,19 @@ export default function App() {
               }
             }
 
+            const hasReplyOptions = Boolean(
+              currentStage.replyOptions && currentStage.replyOptions.length > 0
+            );
+
             const tDelta = isRefusedByBadMood
               ? 0
               : useCustomBadMood
                 ? (currentStage.badMoodResponse!.trustDelta ?? 0)
                 : useCustomGoodMood
                   ? (currentStage.goodMoodResponse!.trustDelta ?? 1)
-                  : (currentStage.trustDelta ?? 0);
+                  : hasReplyOptions
+                    ? 0
+                    : (currentStage.trustDelta ?? 0);
 
             if (tDelta !== 0) {
               setTrustLevel((prev) => prev + tDelta);
@@ -3275,26 +3484,68 @@ export default function App() {
       });
     });
 
-    // 話題が一区切りついた後のアッシュからの逆質問がある場合、一拍置いてからアッシュが切り出す
-    if (milestoneQuestionObj) {
-      const qLines = milestoneQuestionObj.questionLine
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      qLines.forEach((qLine, qIdx) => {
-        steps.push({
-          delayMs: qIdx === 0 ? 1300 : 850,
-          action: () => {
-            if (qIdx === 0) {
-              setOverrideExpression(milestoneQuestionObj.expression);
-              setOverrideFaceParts(milestoneQuestionObj.faceParts);
-            }
-            if (qIdx === qLines.length - 1) {
-              setPreviewPage(0);
-              setActiveAschQuestion(milestoneQuestionObj.question);
-            }
-            pushScreenBubble('ASCH', qLine, 'normal');
-          },
+    if (currentStage.extraExchanges && currentStage.extraExchanges.length > 0) {
+      let prevSpeaker: 'ASCH' | 'GUY' = aschLines.length > 0 ? 'ASCH' : 'GUY';
+      let prevText: string =
+        aschLines.length > 0 ? aschLines[aschLines.length - 1] : '';
+
+      currentStage.extraExchanges.forEach((ex: ExtraDialogueExchange) => {
+        const exLines = ex.text
+          .split('\n')
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+        exLines.forEach((exLine: string, lineIdx: number) => {
+          const isSpeakerChange = prevSpeaker !== ex.speaker;
+          const delay =
+            lineIdx === 0
+              ? (ex.waitMs ?? calculateLineDelayMs(prevText, { isSpeakerChange }))
+              : calculateLineDelayMs(exLines[lineIdx - 1], { isSpeakerChange: false });
+          prevSpeaker = ex.speaker;
+          prevText = exLine;
+
+          steps.push({
+            delayMs: delay,
+            action: () => {
+              if (ex.specialEffect === 'shout_shock') {
+                soundEngine.playHeavyShoutThud();
+                setReplayPulse((p) => p + 1);
+                setIsScreenShaking(true);
+                setTimeout(() => setIsScreenShaking(false), 240);
+              }
+              if (ex.silentFaceSequence && ex.silentFaceSequence.length > 0) {
+                let accumSilentDelay = 0;
+                ex.silentFaceSequence.forEach((sStep) => {
+                  accumSilentDelay += sStep.delayMs;
+                  window.setTimeout(() => {
+                    if (sStep.expression) {
+                      setOverrideExpression(sStep.expression);
+                    }
+                    if (sStep.faceParts) {
+                      setOverrideFaceParts((prev) => ({
+                        ...(prev ?? DEFAULT_EXPRESSION_PARTS[sStep.expression ?? 'normal']),
+                        ...sStep.faceParts,
+                      }));
+                    }
+                  }, accumSilentDelay);
+                });
+              }
+              if (ex.speaker === 'ASCH') {
+                if (ex.expression) {
+                  setOverrideExpression(ex.expression);
+                }
+                if (ex.faceParts) {
+                  const fallbackExpr: ExpressionId =
+                    ex.expression ?? (activeExpression as ExpressionId);
+                  setOverrideFaceParts((prev) => ({
+                    ...(prev ?? DEFAULT_EXPRESSION_PARTS[fallbackExpr]),
+                    ...ex.faceParts,
+                  }));
+                }
+              }
+              pushScreenBubble(ex.speaker, exLine, ex.voiceEffect);
+            },
+            isBubble: true,
+          });
         });
       });
     }
@@ -3319,6 +3570,8 @@ export default function App() {
             endTime: Date.now(),
           }));
           setEndingStep(0);
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
           setGamePhase('ENDING');
           return;
         }
@@ -3492,6 +3745,26 @@ export default function App() {
     // フェーズ2：頭撫でリアクション（3回目まで機嫌に応じた反応、4回目以降はどの機嫌でも不機嫌化＆手払い＆帰還判定）
     const currentCount = headPatCount;
     setHeadPatCount((prev) => prev + 1);
+
+    // DP-002後の緊迫・混乱時（触られたことへの切迫した拒絶）：
+    if (
+      linkTags.includes('asked_about_dp002') &&
+      !linkTags.includes('p2_dilemma_resolved')
+    ) {
+      soundEngine.playHandSlap();
+      setReplayPulse((p) => p + 1);
+      setIsScreenShaking(true);
+      setTimeout(() => setIsScreenShaking(false), 200);
+      setOverrideExpression('pain');
+      setOverrideFaceParts({
+        brow: 'pain',
+        eyes: 'pain',
+        mouth: 'grit',
+        effects: ['pale', 'sweat', 'noise'],
+      });
+      pushScreenBubble('ASCH', '・・・・・・っ！　触るな・・・・・・っ！！', 'shout_glitch');
+      return;
+    }
 
     // 4回目以上（currentCount >= 3）：どの機嫌であっても手を払われ、不機嫌になる
     if (currentCount >= 3) {
@@ -3801,18 +4074,21 @@ export default function App() {
             ? 'REWRITE'
             : 'PRE_FACE';
 
-      // 常に主要なボロ指摘候補（REWRITE、PRE_FACE、CALL_NAME）から2個とランダムなブラフ1個の合計3個に絞り、枠内に綺麗に収める
-      const coreIds = topicId === 'p1_touch_shoulder'
-        ? ['CALL_NAME', 'REWRITE']
-        : ['REWRITE', 'PRE_FACE'];
+      // アイデアB（排他制御）：
+      // 正解（REWRITE / PRE_FACE / CALL_NAME）に対し、紛らわしい他の核心選択肢（言い直しvs顔色の競合など）を完全排除
+      // 常に「正解1個 ＋ シリアスなブラフ2個（声の上ずり／早口／口調の違い）」の合計3個に厳選して表示
+      const bluffCandidates = ALL_CANDIDATES.filter(
+        (c) =>
+          c.id === 'BLUFF_TONE' ||
+          c.id === 'BLUFF_DELAY' ||
+          c.id === 'BLUFF_MANNER'
+      );
+      const pickedBluffs = shuffle(bluffCandidates).slice(0, 2);
+      const correctCandidate = ALL_CANDIDATES.find((c) => c.id === correctId);
 
-      const otherCandidates = ALL_CANDIDATES.filter((c) => !coreIds.includes(c.id));
-      const pickedOther = shuffle(otherCandidates).slice(0, 1);
-
-      const selectedCandidates = [
-        ...ALL_CANDIDATES.filter((c) => coreIds.includes(c.id)),
-        ...pickedOther,
-      ];
+      const selectedCandidates = correctCandidate
+        ? [correctCandidate, ...pickedBluffs]
+        : pickedBluffs;
 
       return shuffle(
         selectedCandidates.map((c) => ({
@@ -3938,7 +4214,7 @@ export default function App() {
           );
           pushScreenBubble(
             'ASCH',
-            '・・・・・・ああ。ただの譜業のフリをしてやり過ごすつもりだったんだがな。',
+            '・・・・・・ただの譜業のフリをしてやり過ごすつもりだったんだがな。',
             'normal'
           );
         },
@@ -4051,6 +4327,8 @@ export default function App() {
     const isLongThink = responseTimeMs >= 8000;
     const pageLoopHesitation = cycledPagesInTurnRef.current;
     cycledPagesInTurnRef.current = 0;
+    const nextTotalTurns = stats.totalTurns + 1;
+    totalTurnsRef.current = nextTotalTurns;
 
     setStats((prev) => ({
       ...prev,
@@ -4363,6 +4641,7 @@ export default function App() {
         delayMs: 700,
         action: () => {
           setIsAschExited(true);
+          setVisibleBubbles([]);
           soundEngine.playFootsteps('fast', 4);
         },
         isBubble: false,
@@ -4849,6 +5128,7 @@ export default function App() {
         action: () => {
           if (trans.aschAction === 'fade_out') {
             setIsAschExited(true);
+            setVisibleBubbles([]);
           } else if (trans.aschAction === 'collapse') {
             setIsAschCollapsed(true);
           }
@@ -5325,6 +5605,7 @@ export default function App() {
     touchChoiceStateRef.current = null;
     lastContextCategoryRef.current = 'daily';
     lastMilestoneQuestionTurnRef.current = 0;
+    totalTurnsRef.current = 0;
     choiceShownAtRef.current = Date.now();
   };
 
@@ -5385,6 +5666,24 @@ export default function App() {
       }
       if (t.requireTrust !== undefined && trustLevel < t.requireTrust) {
         return false;
+      }
+      // DP-002の真実追究後（緊迫・真相解明フェーズ）：日常雑談を抑止し、真相追求・状況整理・端末に絞る
+      if (linkTags.includes('asked_about_dp002') && !linkTags.includes('p2_dilemma_resolved')) {
+        const isAllowedAfterDp002 =
+          t.id === 'p2_tarlow_broken_reason' ||
+          t.id === 'p2_soothe_after_broken' ||
+          t.id === 'p2_examine_terminal_clue' ||
+          t.id === 'p2_dp002_apologize' ||
+          t.id === 'p2_dp002_headache_worry' ||
+          t.id === 'p2_dp002_dist_inquiry' ||
+          t.id === 'p2_deep_truth_dilemma' ||
+          t.id === 'p2_deep_truth_confront' ||
+          t.id === 'topic_41_apologize' ||
+          t.id === 'p2_irritated_clash' ||
+          t.phase2Tab === '端末';
+        if (!isAllowedAfterDp002) {
+          return false;
+        }
       }
       return true;
     },
@@ -5885,7 +6184,7 @@ export default function App() {
                     </li>
                     <li className="flex items-center gap-1 whitespace-nowrap">
                       <Scale className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
-                      <span>ほのぼの：ギスギス＝８：２</span>
+                      <span>死亡ルート有り</span>
                     </li>
                   </ul>
                 </div>
@@ -5911,9 +6210,10 @@ export default function App() {
                     soundEngine.unlockOnUserInteraction();
                     soundEngine.playTerminalTab();
                     if (!canAccessExpressionViewer) {
-                      setToastAchievements((prev) => [
+                      setAchievementToasts((prev) => [
                         ...prev,
                         {
+                          toastId: `notice-17-${Date.now()}`,
                           id: 'notice_17',
                           numberLabel: '17',
                           title: '表情ビューワー（未解放）',
@@ -5922,9 +6222,7 @@ export default function App() {
                       ]);
                       return;
                     }
-                    if (gamePhase !== 'PLAYING') {
-                      startPlayingPhase();
-                    }
+                    startPlayingPhase();
                     setIsDebugViewerOpen(true);
                   }}
                   className={`px-3 py-1.5 text-[11.5px] tracking-wider border font-zen transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -5945,12 +6243,13 @@ export default function App() {
                     soundEngine.unlockOnUserInteraction();
                     soundEngine.playTerminalTab();
                     if (!canAccessScenarioInspector) {
-                      setToastAchievements((prev) => [
+                      setAchievementToasts((prev) => [
                         ...prev,
                         {
+                          toastId: `notice-18-${Date.now()}`,
                           id: 'notice_18',
                           numberLabel: '18',
-                          title: '演出インスペクター（未解放）',
+                          title: 'シナリオチェッカー（未解放）',
                           description: '実績18（もう寝よう）を達成すると解放されます。',
                         },
                       ]);
@@ -5964,7 +6263,7 @@ export default function App() {
                       : 'border-zinc-800/80 bg-zinc-950/60 text-zinc-600 hover:text-zinc-400'
                   }`}
                 >
-                  <span>★ 演出インスペクター</span>
+                  <span>★ シナリオチェッカー</span>
                   {!canAccessScenarioInspector && (
                     <span className="text-[9.5px] text-zinc-500 font-mono">(実績18)</span>
                   )}
@@ -6140,7 +6439,7 @@ export default function App() {
                         handleOpenScenarioInspector();
                       }
                     }}
-                    title="全シナリオ・演出インスペクター"
+                    title="シナリオチェッカー"
                     className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border font-zen transition-colors cursor-pointer ${
                       isScenarioInspectorOpen
                         ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
@@ -6148,7 +6447,7 @@ export default function App() {
                     }`}
                   >
                     <span>▶</span>
-                    <span>演出確認</span>
+                    <span>シナリオ確認</span>
                   </button>
                 )}
 
@@ -6262,15 +6561,16 @@ export default function App() {
                 }
                 className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-all duration-[130ms] ease-out ${
                   isTerminalOpen ? 'pointer-events-none select-none' : ''
-                } ${
-                  isAschAbsent ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}
               >
                 {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限200pxで下の選択肢と絶対に重ならない） */}
                 <div className="w-[calc(100%+24px)] -mr-6 max-h-[200px] overflow-hidden flex flex-col justify-start pt-0.5">
-                  {visibleBubbles.map((bubble, bubbleIdx) => {
+                  {(isAschExited
+                    ? visibleBubbles.filter((b) => b.speaker !== 'ASCH')
+                    : visibleBubbles
+                  ).map((bubble, bubbleIdx, arr) => {
                     const isAsch = bubble.speaker === 'ASCH';
-                    const isLatest = bubbleIdx === visibleBubbles.length - 1;
+                    const isLatest = bubbleIdx === arr.length - 1;
                     const resolvedEffect: BubbleVoiceEffect =
                       bubble.voiceEffect ?? 'normal';
                     const isGuyShout =
@@ -6337,7 +6637,11 @@ export default function App() {
                 </div>
 
                 {/* 下部：ガイの思考選択肢（上部の吹き出し領域(上限y=206px)と重ならず、右端をアッシュのセリフ枠右端と揃える） */}
-                <div className="absolute left-7 -right-3 bottom-3.5 h-[134px] flex flex-col justify-start">
+                <div
+                  className={`absolute left-7 -right-3 bottom-3.5 h-[134px] flex flex-col justify-start transition-opacity duration-150 ${
+                    isAschAbsent ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                  }`}
+                >
                   {!isInteractionBlocked && (() => {
                     const isPhase1LimitReached =
                       !linkTags.includes('phase2_started') && phase1QuestionsCount >= 5;
@@ -6434,7 +6738,13 @@ export default function App() {
                                 ) {
                                   return 75;
                                 }
+                                if (t.id === 'p2_ask_about_dp002') return 72;
                                 if (t.id === 'p2_tarlow_broken_reason') return 70;
+                                if (
+                                  t.id === 'p2_dp002_apologize' ||
+                                  t.id === 'p2_dp002_headache_worry' ||
+                                  t.id === 'p2_dp002_dist_inquiry'
+                                ) return 68;
                                 if (t.prioritySlot1) return 65;
                                 if (relatedIds.includes(t.id)) return 60;
                                 if (t.requireSectorUnlocked) return 50;
@@ -6871,6 +7181,24 @@ export default function App() {
                                     </span>
                                   </div>
                                 </button>
+
+                                {linkTags.includes('sec19_unlocked') && (
+                                  <button
+                                    {...getChoiceHesitationHandlers('p2_dec_destroy')}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleExecuteDecision('DESTROY');
+                                    }}
+                                    className={`${choiceBtnSizeClass} group text-left flex items-stretch cursor-pointer transition-transform hover:translate-x-1`}
+                                  >
+                                    <div className="w-[3px] shrink-0 mr-2.5 bg-red-700 group-hover:bg-red-900 transition-colors" />
+                                    <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
+                                      <span className="text-[13px] leading-snug text-red-700 group-hover:text-red-900 font-medium">
+                                        首裏のスイッチで機能停止させる
+                                      </span>
+                                    </div>
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>

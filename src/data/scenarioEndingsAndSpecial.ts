@@ -8,6 +8,17 @@ import {
   FaceParts,
 } from '../types/game';
 
+export interface ExtraEndingRally {
+  speaker: 'GUY' | 'ASCH';
+  text: string;
+  expression?: ExpressionId;
+  faceParts?: Partial<FaceParts>;
+  secondExpression?: ExpressionId;
+  secondFaceParts?: Partial<FaceParts>;
+  voiceEffect?: BubbleVoiceEffect;
+  waitMs?: number;
+}
+
 export interface DecisionDialogueStage {
   spokenText: string;
   aschText: string;
@@ -19,6 +30,7 @@ export interface DecisionDialogueStage {
   guyWaitMs?: number;
   aschWaitMs?: number;
   endingTransition?: EndingTransitionConfig;
+  extraRallies?: ExtraEndingRally[];
 }
 
 export interface EndingScenarioData {
@@ -198,7 +210,7 @@ export const PHASE3_WHO_AM_I_OPTIONS: AschQuestionReplyOption[] = [
     spokenText: '・・・・・・おまえは、アッシュだよ',
     waitMs: 2600,
     aschText:
-      '・・・・・・っ、こんな、譜業の体でもか。\nそれ（管理端末）で、何もかも見えるんだろう？\nそんなのは、人間とは呼べないはずだ',
+      '・・・・・・っ、こんな、譜業の体でもか。\nそれで、何もかも見えるんだろう？\nそんなのは、人間とは呼べないはずだ',
     aschWaitMs: 2400,
     extraExchanges: [
       {
@@ -710,31 +722,60 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   },
   END_PHASE2_STAY_REST: {
     spokenText:
-      '・・・・・・なあ、今すぐ急いで戻らなくてもいいだろ。そこのソファで少し休んでいけよ',
+      '・・・・・・なあ。そんなに急いで戻ることもないだろ。\nそこのソファで、少し休んでいけよ',
     aschText:
-      '・・・・・・\n少しだけ、なら',
+      '・・・・・・ふん。くだらない。\n俺に休息など必要ない',
     expression: 'look_away',
     faceParts: {
       brow: 'angry',
-      eyes: 'away',
-      mouth: 'close',
-      effects: ['blush'],
+      eyes: 'glare',
+      mouth: 'frown',
+      effects: [],
     },
     secondExpression: 'look_away',
     secondFaceParts: {
-      brow: 'sad',
-      eyes: 'close',
-      mouth: 'close',
-      effects: ['blush'],
+      brow: 'angry',
+      eyes: 'glare',
+      mouth: 'frown',
+      effects: [],
     },
     voiceEffects: ['normal'],
-    guyWaitMs: 1900,
-    aschWaitMs: 2200,
+    guyWaitMs: 1800,
+    aschWaitMs: 2000,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: 'そう言うなって。\n少し横になるくらい、減るもんじゃないだろ',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・言っておくが、寝るわけじゃないからな。\n・・・・・・少し、座るだけだ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: ['blush'],
+        },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: ['blush'],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2200,
+      },
+    ],
     endingTransition: {
-      waitBeforeExitMs: 1400,
+      waitBeforeExitMs: 1200,
       aschAction: 'fade_out',
+      footsteps: 'slow',
+      footstepsCount: 3,
       doorAction: 'none',
-      waitAfterDoorMs: 1200,
+      waitAfterDoorMs: 1400,
     },
   },
   END_PHASE2_STAY_REFUSED: {
@@ -771,28 +812,237 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
   },
   END_PHASE3_TOMORROW: {
     spokenText:
-      '・・・・・・なんだか急に腹が減って来たな。なあ、明日また研究所から連れ出すのも面倒だし、今夜はそこのソファで休んで、明日美味いもんでも食いに行くか？',
+      '・・・・・・少し休んでいけよ。熱い茶でも淹れ直すからさ',
     aschText:
-      '・・・・・・は？　おまえ、急に何を言い出すんだ！\n・・・・・・チッ、まずい店だったら承知しないからな',
+      '・・・・・・急に何を言い出すかと思えば。\n休息など必要ない',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'doubt',
+      eyes: 'glare',
+      mouth: 'frown',
+      effects: [],
+    },
+    voiceEffects: ['normal'],
+    guyWaitMs: 2200,
+    aschWaitMs: 2000,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: 'そう言うなって。\nおまえとこうして茶を飲むのも、いつぶりか分かんねえしな。\n・・・・・・少しだけ、付き合えよ',
+        waitMs: 2600,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・っ\n一杯だけだ。飲んだら帰るからな！',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'angry',
+          eyes: 'away',
+          mouth: 'close',
+          effects: ['blush'],
+        },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'angry',
+          eyes: 'away',
+          mouth: 'close',
+          effects: ['blush'],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'GUY',
+        text: 'ああ。・・・・・・すぐ淹れるよ',
+        waitMs: 2000,
+      },
+    ],
+    endingTransition: {
+      waitBeforeExitMs: 1600,
+      aschAction: 'stay',
+      doorAction: 'none',
+      waitAfterDoorMs: 1600,
+      keepBgm: true,
+    },
+  },
+  END_PHASE3_TOMORROW_PANIC: {
+    spokenText:
+      '・・・・・・待てよ！\nそんな息も絶え絶えな状態で、帰れるわけないだろ',
+    aschText:
+      '・・・・・・っ、ハァ・・・・・・放せ・・・・・・っ、俺は・・・・・・',
+    expression: 'pain',
+    faceParts: {
+      brow: 'pain',
+      eyes: 'away',
+      mouth: 'grit',
+      effects: ['sweat', 'noise'],
+    },
+    voiceEffects: ['tremble_glitch', 'tremble'],
+    guyWaitMs: 1800,
+    aschWaitMs: 2000,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: '頼むから、少し座って息を整えろ。\n・・・・・・熱い茶でも淹れ直すからさ',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・っ。\n・・・・・・ハァ・・・・・・一杯だけだぞ・・・・・・っ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: ['sweat'],
+        },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'sad',
+          eyes: 'down',
+          mouth: 'close',
+          effects: ['sweat'],
+        },
+        voiceEffect: 'tremble',
+        waitMs: 2200,
+      },
+    ],
+    endingTransition: {
+      waitBeforeExitMs: 1600,
+      aschAction: 'none',
+      doorAction: 'none',
+      waitAfterDoorMs: 1400,
+    },
+  },
+  END_PHASE3_TOMORROW_RETURN: {
+    spokenText:
+      '・・・・・・なあ、アッシュ',
+    aschText:
+      '・・・・・・？　なんだ。',
+    expression: 'look_away',
+    faceParts: {
+      brow: 'doubt',
+      eyes: 'glare',
+      mouth: 'close',
+      effects: [],
+    },
+    voiceEffects: ['normal'],
+    guyWaitMs: 1800,
+    aschWaitMs: 2000,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: '・・・・・・いや。\n夜道だ、気をつけて帰れよ',
+        waitMs: 2400,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・ふん。子ども扱いするな。\n・・・・・・じゃあな、ガイ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'GUY',
+        text: 'ああ。・・・・・・またな',
+        waitMs: 1800,
+      },
+    ],
+    endingTransition: {
+      waitBeforeExitMs: 1100,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 4,
+      doorAction: 'soft',
+      waitAfterDoorMs: 1600,
+    },
+  },
+  END_PHASE3_TOMORROW_RETURN_PANIC: {
+    spokenText:
+      '・・・・・・おい、本当に歩けるのか？\n無理するなよ・・・・・・',
+    aschText:
+      '・・・・・・っ、ハァ・・・・・・余計な、心配をするな・・・・・・っ',
+    expression: 'pain',
+    faceParts: {
+      brow: 'pain',
+      eyes: 'away',
+      mouth: 'grit',
+      effects: ['sweat'],
+    },
+    voiceEffects: ['tremble'],
+    guyWaitMs: 1600,
+    aschWaitMs: 1800,
+    extraRallies: [
+      {
+        speaker: 'GUY',
+        text: '・・・・・・何かあったら、すぐ呼べよ。\n・・・・・・気をつけてな',
+        waitMs: 2000,
+      },
+      {
+        speaker: 'ASCH',
+        text: '・・・・・・ふん。・・・・・・言われなくても分かってる。\n・・・・・・じゃあな、ガイ',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'sad',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        secondExpression: 'look_away',
+        secondFaceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        voiceEffect: 'normal',
+        waitMs: 2200,
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・ああ。またな',
+        waitMs: 1600,
+      },
+    ],
+    endingTransition: {
+      waitBeforeExitMs: 1100,
+      aschAction: 'fade_out',
+      footsteps: 'normal',
+      footstepsCount: 4,
+      doorAction: 'none',
+      waitAfterDoorMs: 1400,
+    },
+  },
+  END_PHASE3_MERCY_DESTROY: {
+    spokenText:
+      '・・・・・・アッシュ。首の後ろ・・・・・・埃がついてるぞ。取ってやる',
+    aschText:
+      '？・・・・・・何だ、改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
     expression: 'shock',
     faceParts: {
       brow: 'sad',
       eyes: 'wide',
       mouth: 'gasp',
-      effects: ['blush', 'sweat'],
+      effects: ['sweat'],
     },
-    secondExpression: 'look_away',
-    secondFaceParts: {
-      brow: 'angry',
-      eyes: 'away',
-      mouth: 'close',
-      effects: ['blush'],
-    },
-    voiceEffects: ['normal'],
+    voiceEffects: ['tremble_glitch'],
     guyWaitMs: 2000,
-    aschWaitMs: 2400,
+    aschWaitMs: 2200,
     endingTransition: {
-      waitBeforeExitMs: 1600,
+      waitBeforeExitMs: 800,
       aschAction: 'fade_out',
       doorAction: 'none',
       waitAfterDoorMs: 1400,
@@ -826,9 +1076,6 @@ export const resolveEndingKey = (
   }
   if (disposition === 'KEEP') {
     return 'END_PHASE2_STAY_REST';
-  }
-  if (approach === 'ACCOMPLICE') {
-    return 'END_PHASE2_INCOMPLETE';
   }
   return 'END_PHASE2_NORMAL_RETURN';
 };
@@ -979,31 +1226,58 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       '最後の問いかけに答えられないまま沈黙し、アッシュは部屋を出ていった。翌日研究所を訪ねたが彼の姿はなく、手元には管理端末だけが残された',
   },
 
-  // END 08：DP-002, DP-003を解放した上で、秘密を問い詰めない
+  // END 08a：DP-002, DP-003を解放した上で、秘密を問い詰めず休ませる
   END_PHASE3_TOMORROW: {
     id: 'END_PHASE3_TOMORROW',
-    title: 'END 08 // 全部がうまくいく',
-    subtitle: 'SECRET END // LET IT BE UNSAID',
+    title: 'END 08a // 全部がうまくいく（茶会）',
+    subtitle: 'SECRET END // LET IT BE UNSAID (TEA)',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '体がどうであれ、アッシュはアッシュで、ルークはルークだ',
+        text: '湯気を立てるケトルの向こうで、あいつが静かに座っている',
       },
       {
         speaker: 'GUY',
-        text: '変に話して、混乱させる必要もないだろう',
+        text: '喉元まで出かけた真実は、全部俺が呑み込めばいい',
       },
       {
         speaker: 'GUY',
-        text: 'この真実を、俺が黙っているだけでいい',
+        text: '墓場まで持っていく秘密が、ひとつ増えただけの話だ',
       },
       {
         speaker: 'GUY',
-        text: 'そうだ。それできっと、全部がうまくいく',
+        text: '――そうだ。それできっと、全部がうまくいく',
       },
     ],
     summaryText:
       '肉体の秘密を知りながらも真実を口にせず、もう一杯の茶を淹れた。真実を胸の奥にしまい込み、あいつと生きる平穏な日常を守ることを選んだ',
+  },
+
+  // END 08b：DP-002, DP-003を解放した上で、秘密を問い詰めず見送る
+  END_PHASE3_TOMORROW_RETURN: {
+    id: 'END_PHASE3_TOMORROW_RETURN',
+    title: 'END 08b // 全部がうまくいく（見送り）',
+    subtitle: 'SECRET END // LET IT BE UNSAID (FAREWELL)',
+    dialogues: [
+      {
+        speaker: 'GUY',
+        text: 'バチカルの日常と、あの子どもの身体で研究所へ戻るあいつ',
+      },
+      {
+        speaker: 'GUY',
+        text: 'どちらの真実も壊さないために、俺が全部呑み込めばいい',
+      },
+      {
+        speaker: 'GUY',
+        text: '墓場まで持っていく秘密が、ひとつ増えただけの話だ',
+      },
+      {
+        speaker: 'GUY',
+        text: '――そうだ。それできっと、全部がうまくいく',
+      },
+    ],
+    summaryText:
+      '肉体の秘密を知りながらも真実を口にせず、研究所へ戻るあいつの背中を静かに見送った。バチカルの日常とあいつの日常、その両方を守るため、真実を胸の奥にしまい込むことを選んだ',
   },
 
   // END 09：DP-002, DP-003を解放した上で、問い詰めずに殺す
@@ -1036,27 +1310,43 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   // END 10：DP-002, DP-003を解放した上で、秘密を問い詰める
   END_PHASE3_SWAMPMAN: {
     id: 'END_PHASE3_SWAMPMAN',
-    title: 'END 10 // 魂の証明',
+    title: 'END 10 // 魂の容れ物',
     subtitle: 'Ghost in the mASCHine',
     dialogues: [
       {
         speaker: 'GUY',
-        text: '好奇心と真実を確かめたい気持ちが災いしてしまった',
+        text: 'アッシュにああ言わせたのは、あいつのためなんかじゃない',
       },
       {
         speaker: 'GUY',
-        text: '何もかも明らかにすることがいいことばかりではない',
+        text: 'ただ、俺自身が耐えられなかっただけだ',
       },
       {
         speaker: 'GUY',
-        text: '一度根を張った認識は、簡単にどうにかなるものではないようだ',
+        text: '――それからというもの、あいつは堂々としている',
       },
       {
         speaker: 'GUY',
-        text: '――俺は、いつかこいつを心から信じ切ることができるのだろうか',
+        text: '最近、皆に会いに行ったようだ',
+      },
+      {
+        speaker: 'GUY',
+        text: 'ルークも、ナタリアも、皆泣いて喜んだらしい',
+      },
+      {
+        speaker: 'GUY',
+        text: 'これで、よかったはずなんだ',
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・それなのに',
+      },
+      {
+        speaker: 'GUY',
+        text: 'あの記録の文字が、頭にこびりついて離れない',
       },
     ],
     summaryText:
-      '真実を確かめようとした結果、一度芽生えた疑惑と認識の歪みは消えなくなった。それでもこいつを信じようと、自分に言い聞かせるように明日へと歩き出す',
+      'あいつに『自分はアッシュだ』と言わせたのは、あいつのためなんかじゃない。ただ、俺自身が耐えられなかっただけだ。皆が涙を流して再会を喜ぶ中、ガイの脳裏からはあの記録の文字がこびりついて離れなかった',
   },
 };

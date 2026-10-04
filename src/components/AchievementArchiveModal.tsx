@@ -63,7 +63,12 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
   );
 
   const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
-  const reachedEndingsCount = saveData.reachedEndingKeys.length;
+  const reachedEndingsCount = ENDING_ARCHIVE_LIST.filter((item) => {
+    if (item.subKeys) {
+      return item.subKeys.some((s) => saveData.reachedEndingKeys.includes(s.key));
+    }
+    return saveData.reachedEndingKeys.includes(item.key);
+  }).length;
 
   const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
   const unlockedAchievementsCount = saveData.unlockedAchievementIds.length;
@@ -134,7 +139,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
           setSelectedEndingKey(null);
           setSelectedAchId(null);
         }}
-        className="w-full max-w-[700px] bg-[#e4e5ea] text-zinc-900 border border-zinc-950 p-5 shadow-2xl flex flex-col justify-between"
+        className="w-full max-w-[700px] bg-[#e4e5ea] text-zinc-900 border border-zinc-950 p-5 shadow-2xl flex flex-col justify-between font-zen"
       >
         {/* 上部タイトルバー（リザルト画面に合わせたデザイン） */}
         <div className="flex items-end justify-between border-b-2 border-zinc-900 pb-2 shrink-0">
@@ -270,7 +275,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 }}
                 className="px-2 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold cursor-pointer"
               >
-                ★ 演出インスペクター
+                ★ シナリオチェッカー
               </button>
             )}
           </div>
@@ -287,7 +292,20 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
           {activeTab === 'ENDINGS' && (
             <div className="w-full grid grid-cols-2 grid-rows-5 gap-x-6 gap-y-2.5 items-center">
               {ENDING_ARCHIVE_LIST.map((item, idx) => {
-                const isReached = saveData.reachedEndingKeys.includes(item.key);
+                const isSubItem = Boolean(item.subKeys && item.subKeys.length > 0);
+                const isReachedA = item.subKeys
+                  ? saveData.reachedEndingKeys.includes(item.subKeys[0].key)
+                  : false;
+                const isReachedB = item.subKeys
+                  ? saveData.reachedEndingKeys.includes(item.subKeys[1].key)
+                  : false;
+                const isReached = isSubItem
+                  ? isReachedA || isReachedB
+                  : saveData.reachedEndingKeys.includes(item.key);
+                const isAllReached = isSubItem
+                  ? isReachedA && isReachedB
+                  : isReached;
+
                 const scenario = ENDING_SCENARIOS[item.key];
                 const isSelected = selectedEndingKey === item.key;
                 const colIndex = idx % 2;
@@ -295,10 +313,13 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 const isFirstRow = rowIndex === 0;
                 const tooltipAlignClass = colIndex === 0 ? 'left-0' : 'right-0';
 
-                const titleText =
-                  isReached && scenario
-                    ? scenario.title
-                    : `${item.numberLabel} // ？？？？？？`;
+                const cleanTitle = isSubItem
+                  ? isReached
+                    ? 'これで全部うまくいく'
+                    : '？？？？？？'
+                  : isReached && scenario
+                    ? scenario.title.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
+                    : '？？？？？？';
 
                 return (
                   <button
@@ -312,7 +333,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                       );
                       setSelectedAchId(null);
                     }}
-                    className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-baseline gap-2 transition-colors cursor-pointer"
+                    className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     {/* ヒントツールチップ（1行目は下方向、2行目以降は上方向へ展開） */}
                     {isSelected && (
@@ -326,18 +347,43 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                     )}
 
                     <span
-                      className={`text-[10px] font-mono shrink-0 ${
+                      className={`text-[11px] font-mono shrink-0 flex items-center gap-1.5 ${
                         isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
-                      {isReached ? '●' : item.numberLabel}
+                      <span className={isAllReached ? 'text-zinc-950' : isReached ? 'text-zinc-700' : 'text-zinc-400 text-[9px]'}>
+                        {isReached ? '●' : '○'}
+                      </span>
+                      <span>{item.numberLabel}</span>
                     </span>
                     <span
-                      className={`text-[11.5px] truncate ${
+                      className={`text-[11.5px] whitespace-nowrap overflow-visible flex items-center ${
                         isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
-                      {titleText}
+                      <span>{cleanTitle}</span>
+                      {isSubItem && (
+                        <span className="inline-flex items-center gap-1.5 ml-2 font-mono text-[11px]">
+                          <span
+                            className={
+                              isReachedA
+                                ? 'text-zinc-950 font-bold'
+                                : 'text-zinc-400 font-normal'
+                            }
+                          >
+                            a
+                          </span>
+                          <span
+                            className={
+                              isReachedB
+                                ? 'text-zinc-950 font-bold'
+                                : 'text-zinc-400 font-normal'
+                            }
+                          >
+                            b
+                          </span>
+                        </span>
+                      )}
                     </span>
                   </button>
                 );

@@ -319,7 +319,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
     '■ DP-002 / DP-003 を解放したルート',
     '  ・END 08 // 全部がうまくいく ： 秘密を問い詰めずに肯定する',
     '  ・END 09 // これでぜんぶ元通り ： 秘密を問い詰めずに殺す',
-    '  ・END 10 // 魂の証明 ： 秘密を問い詰める（Ghost in the mASCHine）',
+    '  ・END 10 // 魂の容れ物 ： 秘密を問い詰める（Ghost in the mASCHine）',
     '',
     '====================================',
     '【前提記録：DP-002 / DP-003】',
@@ -623,7 +623,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 </div>
                 <div className="text-stone-200">
                   <span className="text-rose-300 font-bold">END 10：</span>
-                  秘密を問い詰める（魂の証明）
+                  秘密を問い詰める（魂の容れ物）
                 </div>
               </div>
             </div>
@@ -896,7 +896,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 {
                   ...PHASE3_WHO_AM_I_OPTIONS[0],
                   aschText:
-                    '・・・・・・っ、こんな、譜業の体でもか。\n※それ（管理端末）で、何もかも見えるんだろう？\n※そんなのは、人間とは呼べないはずだ',
+                    '・・・・・・っ、こんな、譜業の体でもか。\n※それで、何もかも見えるんだろう？\n※そんなのは、人間とは呼べないはずだ',
                   extraExchanges: [
                     {
                       speaker: 'GUY' as const,

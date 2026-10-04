@@ -87,7 +87,16 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   );
 
   const totalEndingsCount = ENDING_ARCHIVE_LIST.length;
-  const reachedEndingsCount = achievementSave?.reachedEndingKeys.length ?? 0;
+  const reachedEndingsCount = achievementSave
+    ? ENDING_ARCHIVE_LIST.filter((item) => {
+        if (item.subKeys) {
+          return item.subKeys.some((s) =>
+            achievementSave.reachedEndingKeys.includes(s.key)
+          );
+        }
+        return achievementSave.reachedEndingKeys.includes(item.key);
+      }).length
+    : 0;
 
   const totalAchievementsCount = ACHIEVEMENT_DEFINITIONS.length;
   const unlockedAchievementsCount =
@@ -283,8 +292,20 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
             {activeTab === 'ENDINGS' && (
               <div className="w-full grid grid-cols-2 grid-rows-5 gap-x-6 gap-y-2.5 items-center">
                 {ENDING_ARCHIVE_LIST.map((item, idx) => {
-                  const isReached =
-                    achievementSave?.reachedEndingKeys.includes(item.key) ?? false;
+                  const isSubItem = Boolean(item.subKeys && item.subKeys.length > 0);
+                  const isReachedA = item.subKeys
+                    ? achievementSave?.reachedEndingKeys.includes(item.subKeys[0].key) ?? false
+                    : false;
+                  const isReachedB = item.subKeys
+                    ? achievementSave?.reachedEndingKeys.includes(item.subKeys[1].key) ?? false
+                    : false;
+                  const isReached = isSubItem
+                    ? isReachedA || isReachedB
+                    : (achievementSave?.reachedEndingKeys.includes(item.key) ?? false);
+                  const isAllReached = isSubItem
+                    ? isReachedA && isReachedB
+                    : isReached;
+
                   const scenario = ENDING_SCENARIOS[item.key];
                   const isSelected = selectedEndingKey === item.key;
                   const colIndex = idx % 2;
@@ -292,10 +313,13 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   const isFirstRow = rowIndex === 0;
                   const tooltipAlignClass = colIndex === 0 ? 'left-0' : 'right-0';
 
-                  const titleText =
-                    isReached && scenario
-                      ? scenario.title
-                      : `${item.numberLabel} // ？？？？？？`;
+                  const cleanTitle = isSubItem
+                    ? isReached
+                      ? 'これで全部うまくいく'
+                      : '？？？？？？'
+                    : isReached && scenario
+                      ? scenario.title.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
+                      : '？？？？？？';
 
                   return (
                     <button
@@ -309,7 +333,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                         );
                         setSelectedAchId(null);
                       }}
-                      className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-baseline gap-2 transition-colors cursor-pointer"
+                      className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       {/* ヒントツールチップ（1行目は下方向、2行目以降は上方向へ展開して途切れを防止） */}
                       {isSelected && (
@@ -323,18 +347,43 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                       )}
 
                       <span
-                        className={`text-[10px] font-mono shrink-0 ${
+                        className={`text-[11px] font-mono shrink-0 flex items-center gap-1.5 ${
                           isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >
-                        {isReached ? '●' : item.numberLabel}
+                        <span className={isAllReached ? 'text-zinc-950' : isReached ? 'text-zinc-700' : 'text-zinc-400 text-[9px]'}>
+                          {isReached ? '●' : '○'}
+                        </span>
+                        <span>{item.numberLabel}</span>
                       </span>
                       <span
-                        className={`text-[11.5px] truncate ${
+                        className={`text-[11.5px] whitespace-nowrap overflow-visible flex items-center ${
                           isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >
-                        {titleText}
+                        <span>{cleanTitle}</span>
+                        {isSubItem && (
+                          <span className="inline-flex items-center gap-1.5 ml-2 font-mono text-[11px]">
+                            <span
+                              className={
+                                isReachedA
+                                ? 'text-zinc-950 font-bold'
+                                : 'text-zinc-400 font-normal'
+                              }
+                            >
+                              a
+                            </span>
+                            <span
+                              className={
+                                isReachedB
+                                ? 'text-zinc-950 font-bold'
+                                : 'text-zinc-400 font-normal'
+                              }
+                            >
+                              b
+                            </span>
+                          </span>
+                        )}
                       </span>
                     </button>
                   );
@@ -442,11 +491,11 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       {isCreditsOpen && (
         <div
           onClick={() => setIsCreditsOpen(false)}
-          className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-6 select-none"
+          className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-6 select-none font-zen"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[420px] bg-[#0a0a0e] text-zinc-100 border border-zinc-700 p-5 space-y-3.5 shadow-2xl"
+            className="w-full max-w-[420px] bg-[#0a0a0e] text-zinc-100 border border-zinc-700 p-5 space-y-3.5 shadow-2xl font-zen"
           >
             <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
               <h3 className="text-[13px] font-bold tracking-wider text-zinc-100">

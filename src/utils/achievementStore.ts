@@ -136,6 +136,7 @@ export interface EndingArchiveItem {
   key: string;
   numberLabel: string;
   hint: string;
+  subKeys?: { key: string; label: string; hint: string }[];
 }
 
 export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
@@ -177,7 +178,11 @@ export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
   {
     key: 'END_PHASE3_TOMORROW',
     numberLabel: 'END 08',
-    hint: '秘密を知っても、決して追及しないでおく',
+    hint: '秘密を知っても追及せず、この部屋で休ませる (a) ／ 静かに見送る (b)',
+    subKeys: [
+      { key: 'END_PHASE3_TOMORROW', label: 'a', hint: 'a: この部屋で休ませる' },
+      { key: 'END_PHASE3_TOMORROW_RETURN', label: 'b', hint: 'b: 静かに見送る' },
+    ],
   },
   {
     key: 'END_PHASE3_MERCY_DESTROY',
@@ -428,10 +433,13 @@ export const evaluateMilestoneAchievements = (
   // 18: 全10種類のエンディング ＆ セリフ回収率90%以上
   const totalCanonical = Math.max(1, ALL_CANONICAL_DIALOGUE_LINES.size);
   const lineRate = data.seenLines.length / totalCanonical;
-  if (
-    data.reachedEndingKeys.length >= ENDING_ARCHIVE_LIST.length &&
-    lineRate >= 0.9
-  ) {
+  const allEndingsReached = ENDING_ARCHIVE_LIST.every((item) => {
+    if (item.subKeys) {
+      return item.subKeys.some((s) => data.reachedEndingKeys.includes(s.key));
+    }
+    return data.reachedEndingKeys.includes(item.key);
+  });
+  if (allEndingsReached && lineRate >= 0.9) {
     achSet.add('ach_18');
   }
 

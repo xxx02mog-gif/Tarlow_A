@@ -29,6 +29,7 @@ import {
   AWAY_RETURN_REACTIONS,
   IDLE_REACTIONS,
   INITIAL_MEMORY_SECTORS,
+  TURN_MILESTONE_QUESTIONS,
 } from '../data/scenarioSectors';
 import {
   DEFAULT_EXPRESSION_PARTS,
@@ -180,6 +181,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
   const [autoIntervalSec, setAutoIntervalSec] = useState<number>(1.4); // シーン完了後の待機時間(秒)
   const [isLoop, setIsLoop] = useState<boolean>(false);
   const [dockSubTab, setDockSubTab] = useState<'detail' | 'list'>('detail');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const autoPlayTimerRef = useRef<number | null>(null);
   const isAutoPlayRef = useRef<boolean>(false);
@@ -451,6 +453,44 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       });
     });
 
+    // --- 2.5. フェーズ2 逆質問（TURN_MILESTONE_QUESTIONS） ---
+    TURN_MILESTONE_QUESTIONS.forEach((mq) => {
+      const q = mq.question;
+      const qLines = mq.questionLine
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const scriptLines: ScriptLinePreview[] = qLines.map((line, idx) => ({
+        speaker: 'ASCH',
+        text: line,
+        expression: mq.expression,
+        faceParts: mq.faceParts,
+        note: idx === 0 ? `規定ターン: ${mq.turnCount}T〜` : undefined,
+      }));
+
+      const extraOptions = q.options.map((opt) => ({
+        id: opt.id,
+        thoughtText: opt.thoughtText,
+        spokenText: opt.spokenText,
+        aschText: opt.aschText,
+        expression: opt.expression,
+        faceParts: opt.faceParts,
+        moodDelta: opt.moodDelta,
+        trustDelta: opt.trustDelta,
+      }));
+
+      list.push({
+        id: `milestone_q_${q.id}`,
+        category: 'P2_QUESTION',
+        categoryLabel: '逆質問',
+        title: `逆質問：${q.promptSummary} (${mq.turnCount}T〜)`,
+        subtitle: mq.questionLine.slice(0, 42) + '...',
+        tags: ['Phase2', '逆質問', `${mq.turnCount}ターン以降`, q.id],
+        lines: scriptLines,
+        extraOptions,
+      });
+    });
+
     // --- 3. 決断・クライマックス・全エンディング (ED-01 〜 ED-10) ---
     list.push({
       id: 'climax_final_question',
@@ -570,11 +610,21 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           secondExpression: FINAL_DECISION_STAGES.END_PHASE2_STAY_REST.secondExpression,
           secondFaceParts: FINAL_DECISION_STAGES.END_PHASE2_STAY_REST.secondFaceParts,
           voiceEffects: FINAL_DECISION_STAGES.END_PHASE2_STAY_REST.voiceEffects,
+          extraRallies: FINAL_DECISION_STAGES.END_PHASE2_STAY_REST.extraRallies?.map((r) => ({
+            speaker: r.speaker,
+            text: r.text,
+            expression: r.expression,
+            faceParts: r.faceParts,
+            secondExpression: r.secondExpression,
+            secondFaceParts: r.secondFaceParts,
+            voiceEffect: r.voiceEffect,
+            waitMs: r.waitMs,
+          })),
           endingTransition: FINAL_DECISION_STAGES.END_PHASE2_STAY_REST.endingTransition,
         },
         {
           id: 'decision_opt_end08',
-          thoughtText: '「秘密を問い詰めずに明日へ繋げる」（➔ END 08）',
+          thoughtText: '「秘密を問い詰めずに部屋で休ませる」（➔ END 08a）',
           spokenText: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.spokenText,
           waitMs: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.guyWaitMs,
           aschText: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.aschText,
@@ -584,7 +634,41 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           secondExpression: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.secondExpression,
           secondFaceParts: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.secondFaceParts,
           voiceEffects: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.voiceEffects,
+          extraRallies: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.extraRallies?.map((r) => ({
+            speaker: r.speaker,
+            text: r.text,
+            expression: r.expression,
+            faceParts: r.faceParts,
+            secondExpression: r.secondExpression,
+            secondFaceParts: r.secondFaceParts,
+            voiceEffect: r.voiceEffect,
+            waitMs: r.waitMs,
+          })),
           endingTransition: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW.endingTransition,
+        },
+        {
+          id: 'decision_opt_end08b',
+          thoughtText: '「秘密を問い詰めずに研究所へ帰す」（➔ END 08b）',
+          spokenText: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.spokenText,
+          waitMs: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.guyWaitMs,
+          aschText: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.aschText,
+          aschWaitMs: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.aschWaitMs,
+          expression: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.expression,
+          faceParts: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.faceParts,
+          secondExpression: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.secondExpression,
+          secondFaceParts: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.secondFaceParts,
+          voiceEffects: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.voiceEffects,
+          extraRallies: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.extraRallies?.map((r) => ({
+            speaker: r.speaker,
+            text: r.text,
+            expression: r.expression,
+            faceParts: r.faceParts,
+            secondExpression: r.secondExpression,
+            secondFaceParts: r.secondFaceParts,
+            voiceEffect: r.voiceEffect,
+            waitMs: r.waitMs,
+          })),
+          endingTransition: FINAL_DECISION_STAGES.END_PHASE3_TOMORROW_RETURN.endingTransition,
         },
         {
           id: 'decision_opt_end09',
@@ -646,7 +730,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
             },
             {
               speaker: 'GUY',
-              text: '・・・・・・すまない。\n・・・・・・これで、いいんだ。',
+              text: '・・・・・・これで、いいんだ。',
               waitMs: 2400,
             },
           ],
@@ -1057,15 +1141,30 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
     return list;
   }, []);
 
-  // フィルタリング（カテゴリのみ）
+  // フィルタリング（カテゴリ + 検索クエリ）
   const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return allScenarioItems.filter((item) => {
       if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
         return false;
       }
+      if (q) {
+        const matchesTitle = item.title.toLowerCase().includes(q);
+        const matchesSubtitle = item.subtitle?.toLowerCase().includes(q);
+        const matchesTags =
+          item.tags?.some((t) => t.toLowerCase().includes(q)) ?? false;
+        const matchesLines = item.lines.some(
+          (l) =>
+            l.text.toLowerCase().includes(q) ||
+            (l.note && l.note.toLowerCase().includes(q))
+        );
+        if (!matchesTitle && !matchesSubtitle && !matchesTags && !matchesLines) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [allScenarioItems, selectedCategory]);
+  }, [allScenarioItems, selectedCategory, searchQuery]);
 
   // 現在選択されている項目
   const activeItem = useMemo(() => {
@@ -1221,7 +1320,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                   text: '・・・・・・',
                   expression: s.expression,
                   faceParts: s.faceParts,
-                  waitMs: s.waitMs,
+                  waitMs: s.delayMs,
                 });
               });
             }
@@ -1468,7 +1567,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               handleStopPlayback();
               onClose();
             }}
-            title="インスペクターを終了してゲーム画面に戻る [Esc]"
+            title="シナリオチェッカーを終了してゲーム画面に戻る [Esc]"
             className="px-2.5 py-1 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors font-bold"
           >
             ✕ 閉じる
@@ -1479,7 +1578,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
   }
 
   // =========================================================================
-  // 2. ドックモード（右側サイドパネル形式：左のゲーム画面を隠さずリアルタイム確認）
+  // 2. ドックモード（左側壁際サイドパネル形式：画面中央〜右のアッシュ立ち絵や吹き出しを隠さず確認）
   // 3. フルスクリーンモード（台本全体をじっくり精査するモード）
   // =========================================================================
   const isFull = viewMode === 'full';
@@ -1488,25 +1587,25 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
     <div
       className={
         isFull
-          ? 'fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 select-none'
-          : 'fixed top-0 right-0 bottom-0 z-40 w-full max-w-[540px] bg-zinc-950/98 border-l border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-zinc-100 font-sans select-none'
+          ? 'fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 select-none font-zen'
+          : 'fixed top-0 left-0 bottom-0 z-40 w-full max-w-[380px] bg-[#e4e5ea] border-r-2 border-zinc-950 shadow-[0_0_40px_rgba(0,0,0,0.45)] flex flex-col overflow-hidden text-zinc-900 font-zen select-none'
       }
     >
       <div
         className={
           isFull
-            ? 'relative w-full max-w-[1240px] h-[92vh] max-h-[840px] bg-zinc-950 border border-zinc-700 shadow-2xl flex flex-col overflow-hidden text-zinc-100 font-sans'
-            : 'flex-1 flex flex-col h-full overflow-hidden'
+            ? 'relative w-full max-w-[1240px] h-[92vh] max-h-[840px] bg-[#e4e5ea] border-2 border-zinc-950 shadow-2xl flex flex-col overflow-hidden text-zinc-900 font-zen'
+            : 'flex-1 flex flex-col h-full overflow-hidden bg-[#e4e5ea]'
         }
       >
         {/* ================= ヘッダー ================= */}
-        <div className="h-11 px-3.5 border-b border-zinc-800 bg-zinc-900/90 flex items-center justify-between shrink-0">
+        <div className="h-11 px-3.5 border-b-2 border-zinc-900 bg-[#e4e5ea] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[12px] tracking-wide text-emerald-400 font-bold flex items-center gap-1.5 shrink-0">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              演出インスペクター
+            <span className="text-[13.5px] sm:text-[14.5px] tracking-wide text-zinc-950 font-bold flex items-center gap-1.5 shrink-0 font-zen">
+              <span className="inline-block w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
+              シナリオチェッカー
             </span>
-            <span className="text-[10.5px] text-zinc-400 font-mono truncate hidden sm:inline">
+            <span className="text-[10px] text-zinc-600 font-mono tracking-wider truncate hidden sm:inline">
               // 全{allScenarioItems.length}シーン
             </span>
           </div>
@@ -1519,7 +1618,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 onChangeViewMode('minimized');
               }}
               title="画面下のコンパクトバーに最小化（ゲーム画面を最大化して確認）"
-              className="px-2 py-0.8 text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors"
+              className="px-2 py-0.8 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
             >
               − 最小化
             </button>
@@ -1529,10 +1628,10 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 soundEngine.playTerminalTab();
                 onChangeViewMode(isFull ? 'dock' : 'full');
               }}
-              title={isFull ? '画面分割ドックに戻す' : '全画面に拡大'}
-              className="px-2 py-0.8 text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors"
+              title={isFull ? '画面左ドックに戻す' : '全画面に拡大'}
+              className="px-2 py-0.8 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
             >
-              {isFull ? '◨ ドック' : '⛶ 拡大'}
+              {isFull ? '◧ ドック' : '⛶ 拡大'}
             </button>
 
             <button
@@ -1541,8 +1640,8 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 handleStopPlayback();
                 onClose();
               }}
-              title="インスペクターを終了してゲーム画面に戻る [Esc]"
-              className="px-2.5 py-0.8 text-[11.5px] font-bold bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-800 rounded cursor-pointer transition-colors"
+              title="シナリオチェッカーを終了してゲーム画面に戻る [Esc]"
+              className="px-2.5 py-0.8 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
             >
               ✕ 閉じる
             </button>
@@ -1550,13 +1649,13 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         </div>
 
         {/* ================= 統一プレイバックコントロールバー ================= */}
-        <div className="px-3.5 py-2 border-b border-zinc-800 bg-zinc-900/60 flex flex-wrap items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-1.5">
+        <div className="px-3.5 py-1.5 border-b border-zinc-400/80 bg-[#dcdde2] flex flex-wrap items-center justify-between gap-1.5 shrink-0 font-zen">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={handlePrevScene}
               disabled={currentIndex <= 0}
               title="前のシーン [←]"
-              className="px-2 py-1 text-[11.5px] bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors"
+              className="px-2 py-1 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 disabled:opacity-30 disabled:pointer-events-none text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
             >
               ◀ 前
             </button>
@@ -1570,10 +1669,10 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 }
               }}
               title={isPlayingCurrent ? '停止 [Space]' : '現在のシーンを再生 [Space]'}
-              className={`px-3 py-1 text-[12px] font-bold rounded cursor-pointer transition-colors border flex items-center gap-1.5 ${
+              className={`px-3 py-1 text-[11.5px] font-bold cursor-pointer transition-colors border flex items-center gap-1.5 shadow-sm ${
                 isPlayingCurrent
-                  ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-400 animate-pulse'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400'
+                  ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-800 animate-pulse'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border-zinc-950'
               }`}
             >
               <span>{isPlayingCurrent ? '⏸ 停止' : '▶ 再生'}</span>
@@ -1583,33 +1682,33 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               onClick={handleNextScene}
               disabled={currentIndex >= filteredItems.length - 1 && !isLoop}
               title="次のシーンへ進む [→]"
-              className="px-3 py-1 text-[12px] font-bold bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border border-emerald-600 rounded cursor-pointer transition-colors flex items-center gap-1"
+              className="px-2.5 py-1 text-[11px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1"
             >
-              <span>次へ進む ▶|</span>
+              <span>次へ ▶|</span>
             </button>
 
             <button
               onClick={handleToggleAutoPlay}
               title="全シーンを順番に自動再生"
-              className={`px-2.5 py-1 text-[11.5px] rounded border cursor-pointer transition-colors flex items-center gap-1 font-bold ${
+              className={`px-2 py-1 text-[10.5px] border cursor-pointer transition-colors flex items-center gap-1 font-bold ${
                 isAutoPlay
-                  ? 'bg-emerald-400 text-zinc-950 border-emerald-300'
-                  : 'bg-zinc-900 text-zinc-300 hover:text-white border-zinc-700'
+                  ? 'bg-zinc-900 text-zinc-100 border-zinc-950'
+                  : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300 border-zinc-500'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${isAutoPlay ? 'bg-zinc-950 animate-ping' : 'bg-zinc-500'}`} />
-              <span>連続再生: {isAutoPlay ? 'ON' : 'OFF'}</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${isAutoPlay ? 'bg-emerald-400 animate-ping' : 'bg-zinc-500'}`} />
+              <span>連続: {isAutoPlay ? 'ON' : 'OFF'}</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+          <div className="flex items-center gap-2 text-[10.5px] text-zinc-700">
             {/* ループトグル */}
-            <label className="flex items-center gap-1 cursor-pointer hover:text-zinc-200">
+            <label className="flex items-center gap-1 cursor-pointer hover:text-zinc-950 font-bold">
               <input
                 type="checkbox"
                 checked={isLoop}
                 onChange={(e) => setIsLoop(e.target.checked)}
-                className="rounded accent-emerald-500"
+                className="accent-zinc-900"
               />
               <span>ループ</span>
             </label>
@@ -1618,7 +1717,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
             <select
               value={autoIntervalSec}
               onChange={(e) => setAutoIntervalSec(parseFloat(e.target.value))}
-              className="bg-zinc-900 border border-zinc-700 rounded px-1.5 py-0.5 text-[11px] text-zinc-200"
+              className="bg-white border border-zinc-400 px-1 py-0.5 text-[10.5px] text-zinc-900 font-zen"
             >
               <option value={0.7}>高速 (0.7s)</option>
               <option value={1.4}>標準 (1.4s)</option>
@@ -1628,9 +1727,9 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         </div>
 
         {/* ================= 検索 & カテゴリタブ ================= */}
-        <div className="px-3.5 py-1.5 border-b border-zinc-800 bg-zinc-950 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="px-3 py-1.5 border-b border-zinc-400/80 bg-[#e4e5ea] flex flex-col gap-1.5 shrink-0 font-zen">
           {/* カテゴリ一覧（横スクロール） */}
-          <div className="flex items-center gap-1 overflow-x-auto py-0.5 max-w-full">
+          <div className="flex items-center gap-1 overflow-x-auto py-0.5 max-w-full [scrollbar-width:none]">
             {CATEGORY_TABS.map((cat) => {
               const count =
                 cat.id === 'ALL'
@@ -1645,16 +1744,16 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                     soundEngine.playTerminalTab();
                     setSelectedCategory(cat.id);
                   }}
-                  className={`px-2 py-0.8 text-[11px] border cursor-pointer whitespace-nowrap transition-colors flex items-center gap-1 rounded ${
+                  className={`px-2 py-0.8 text-[10.5px] border cursor-pointer whitespace-nowrap transition-colors flex items-center gap-1 ${
                     isActive
-                      ? 'bg-zinc-100 text-zinc-950 border-white font-bold'
-                      : 'bg-zinc-900/90 text-zinc-300 hover:text-white border-zinc-800 hover:border-zinc-600'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 font-bold shadow-sm'
+                      : 'bg-zinc-200/90 text-zinc-700 hover:text-zinc-950 border-zinc-400 hover:border-zinc-600'
                   }`}
                 >
                   <span>{cat.label}</span>
                   <span
-                    className={`text-[9.5px] px-1 py-0.2 rounded ${
-                      isActive ? 'bg-zinc-300 text-zinc-950' : 'bg-zinc-800 text-zinc-400'
+                    className={`text-[9px] px-1 py-0.2 ${
+                      isActive ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-300 text-zinc-700'
                     }`}
                   >
                     {count}
@@ -1665,19 +1764,19 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           </div>
 
           {/* 検索入力 & ドック表示時のサブタブ切り替え */}
-          <div className="flex items-center gap-2 w-full justify-between pt-1">
-            <div className="relative flex-1 max-w-[320px]">
+          <div className="flex flex-col gap-1.5 w-full">
+            <div className="relative w-full">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="セリフ・タイトル・タグ検索..."
-                className="w-full bg-zinc-900 border border-zinc-700 rounded px-2.5 py-1 text-[11.5px] text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-sans"
+                className="w-full bg-white border border-zinc-400 px-2.5 py-1 text-[11px] text-zinc-900 placeholder-zinc-500 focus:outline-none focus:border-zinc-950 font-zen"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1 text-zinc-400 hover:text-white text-[10px]"
+                  className="absolute right-2 top-1 text-zinc-500 hover:text-zinc-900 text-[10px]"
                 >
                   ✕
                 </button>
@@ -1685,23 +1784,23 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
             </div>
 
             {!isFull && (
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="grid grid-cols-2 gap-1 w-full">
                 <button
                   onClick={() => setDockSubTab('detail')}
-                  className={`px-2.5 py-1 text-[11px] rounded border cursor-pointer font-bold ${
+                  className={`py-1 text-[11px] border cursor-pointer font-bold transition-colors text-center ${
                     dockSubTab === 'detail'
-                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
-                      : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 shadow-sm'
+                      : 'bg-zinc-200 text-zinc-700 border-zinc-400 hover:border-zinc-600 hover:text-zinc-950'
                   }`}
                 >
                   台本・演出詳細
                 </button>
                 <button
                   onClick={() => setDockSubTab('list')}
-                  className={`px-2.5 py-1 text-[11px] rounded border cursor-pointer font-bold ${
+                  className={`py-1 text-[11px] border cursor-pointer font-bold transition-colors text-center ${
                     dockSubTab === 'list'
-                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
-                      : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-100 border-zinc-950 shadow-sm'
+                      : 'bg-zinc-200 text-zinc-700 border-zinc-400 hover:border-zinc-600 hover:text-zinc-950'
                   }`}
                 >
                   全一覧 ({filteredItems.length})
@@ -1712,15 +1811,15 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         </div>
 
         {/* ================= メイン表示領域 ================= */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden font-zen">
           {/* 左カラム：項目リスト（フルスクリーン時、またはドック時のlistタブ） */}
           {(isFull || dockSubTab === 'list') && (
             <div
-              className={`border-r border-zinc-800 bg-zinc-950 flex flex-col shrink-0 ${
-                isFull ? 'w-[340px]' : 'w-full'
+              className={`border-r border-zinc-400/80 bg-[#dcdde2]/60 flex flex-col shrink-0 ${
+                isFull ? 'w-[320px]' : 'w-full'
               }`}
             >
-              <div className="px-3 py-1 border-b border-zinc-800/80 bg-zinc-900/40 flex items-center justify-between text-[11px] text-zinc-400 font-sans">
+              <div className="px-3 py-1 border-b border-zinc-300 bg-[#e4e5ea] flex items-center justify-between text-[10.5px] text-zinc-600 font-zen">
                 <span>一覧 ({filteredItems.length}件)</span>
                 <span>
                   {currentIndex >= 0
@@ -1729,7 +1828,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 p-1">
+              <div className="flex-1 overflow-y-auto divide-y divide-zinc-300/80 p-1">
                 {filteredItems.map((item) => {
                   const isSelected = activeItem?.id === item.id;
                   return (
@@ -1742,14 +1841,14 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                           setDockSubTab('detail');
                         }
                       }}
-                      className={`p-2.5 cursor-pointer transition-colors text-left rounded ${
+                      className={`p-2.5 cursor-pointer transition-colors text-left ${
                         isSelected
-                          ? 'bg-zinc-800/90 border-l-3 border-emerald-400 pl-2 text-white'
-                          : 'hover:bg-zinc-900/60 text-zinc-300'
+                          ? 'bg-white border-l-4 border-zinc-950 pl-2 shadow-sm text-zinc-950 font-bold'
+                          : 'hover:bg-white/60 text-zinc-800'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="px-1.5 py-0.3 rounded text-[9.5px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                        <span className="px-1.5 py-0.3 text-[9.5px] font-bold bg-zinc-200 text-zinc-800 border border-zinc-400">
                           {item.categoryLabel}
                         </span>
                         <span className="text-[10px] text-zinc-500 font-mono truncate max-w-[120px]">
@@ -1758,15 +1857,15 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                       </div>
 
                       <p
-                        className={`text-[13px] font-bold line-clamp-1 mb-0.5 leading-snug ${
-                          isSelected ? 'text-emerald-300' : 'text-zinc-100'
+                        className={`text-[12.5px] font-bold line-clamp-1 mb-0.5 leading-snug ${
+                          isSelected ? 'text-zinc-950' : 'text-zinc-900'
                         }`}
                       >
                         {item.title}
                       </p>
 
                       {item.subtitle && (
-                        <p className="text-[11.5px] text-zinc-400 line-clamp-1 leading-snug">
+                        <p className="text-[11px] text-zinc-600 line-clamp-1 leading-snug">
                           {item.subtitle}
                         </p>
                       )}
@@ -1785,17 +1884,17 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
 
           {/* 右カラム：台本詳細・演出プレビュー（フルスクリーン時、またはドック時のdetailタブ） */}
           {(isFull || dockSubTab === 'detail') && (
-            <div className="flex-1 bg-zinc-950 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-[#e4e5ea] flex flex-col overflow-hidden">
               {activeItem ? (
                 <div className="flex-1 flex flex-col overflow-hidden">
                   {/* 項目メタバー & 実機再生アクション */}
-                  <div className="p-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between gap-2 shrink-0">
+                  <div className="p-2.5 border-b border-zinc-300 bg-white/70 flex items-center justify-between gap-1.5 shrink-0">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="px-1.5 py-0.3 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700/60">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="px-1.5 py-0.3 text-[9.5px] font-bold bg-zinc-900 text-zinc-100 border border-zinc-950 shrink-0">
                           {activeItem.categoryLabel}
                         </span>
-                        <h2 className="text-[14px] font-bold text-white truncate">
+                        <h2 className="text-[13px] font-bold text-zinc-950 truncate font-zen">
                           {activeItem.title}
                         </h2>
                       </div>
@@ -1804,7 +1903,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                           {activeItem.tags.map((t) => (
                             <span
                               key={t}
-                              className="px-1.5 py-0.2 rounded text-[9.5px] bg-zinc-800 text-zinc-400"
+                              className="px-1.5 py-0.2 text-[9px] bg-zinc-200 text-zinc-600 border border-zinc-300"
                             >
                               #{t}
                             </span>
@@ -1813,25 +1912,25 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       {isPlayingCurrent && onSkipAdvance && (
                         <button
                           onClick={onSkipAdvance}
-                          className="px-2.5 py-1 text-[11.5px] font-bold bg-amber-600 hover:bg-amber-500 text-white rounded cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+                          className="px-2 py-0.8 text-[10.5px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
                           title="現在のタメをスキップして次のセリフへ進めます"
                         >
                           <span>⏭</span>
-                          <span>タップ送り</span>
+                          <span>送り</span>
                         </button>
                       )}
 
                       <button
                         onClick={handlePlayCurrentScene}
                         disabled={isPlayingCurrent}
-                        className="px-3 py-1 text-[11.5px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded cursor-pointer transition-colors flex items-center gap-1"
+                        className="px-2.5 py-0.8 text-[11px] font-bold bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 text-zinc-100 border border-zinc-950 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
                       >
                         <span>▶</span>
-                        <span>このシーンを再生</span>
+                        <span>再生</span>
                       </button>
 
                       <button
@@ -1847,19 +1946,19 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                             );
                           }
                         }}
-                        className="px-2 py-1 text-[10.5px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors"
+                        className="px-2 py-0.8 text-[10.5px] font-bold bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors"
                       >
-                        表情適用
+                        表情
                       </button>
                     </div>
                   </div>
 
                   {/* スクロール可能領域：セリフ・演出の詳細一覧 */}
-                  <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-                    <div className="space-y-2.5">
-                      <div className="text-[11px] text-zinc-400 tracking-wider flex items-center justify-between border-b border-zinc-800 pb-1 font-bold">
+                  <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 bg-[#e4e5ea]">
+                    <div className="space-y-2">
+                      <div className="text-[10.5px] font-bold text-zinc-700 tracking-wider flex items-center justify-between border-b border-zinc-400/90 pb-0.5">
                         <span>台本・演出詳細 (全{activeItem.lines.length}枠)</span>
-                        <span className="text-[10px] text-zinc-500 font-normal">
+                        <span className="text-[9.5px] text-zinc-500 font-normal">
                           各行の「▶」で単発再生
                         </span>
                       </div>
@@ -1872,39 +1971,39 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                         return (
                           <div
                             key={lIdx}
-                            className={`p-3 rounded border text-left flex flex-col gap-2 ${
+                            className={`p-2.5 border text-left flex flex-col gap-1.5 shadow-sm ${
                               isAsch
-                                ? 'bg-zinc-900/90 border-zinc-800'
-                                : 'bg-zinc-900/40 border-zinc-800/80'
+                                ? 'bg-white/95 border-zinc-300'
+                                : 'bg-[#f4f5f8] border-zinc-300'
                             }`}
                           >
                             {/* 発話者・ボイスエフェクト・再生ボタン */}
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span
-                                  className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                  className={`px-2 py-0.5 text-[10.5px] font-bold ${
                                     isAsch
-                                      ? 'bg-rose-950 text-rose-200 border border-rose-700'
-                                      : 'bg-sky-950 text-sky-200 border border-sky-700'
+                                      ? 'bg-zinc-900 text-zinc-100 border border-zinc-950'
+                                      : 'bg-zinc-200 text-zinc-900 border border-zinc-400'
                                   }`}
                                 >
                                   {isAsch ? 'ASCH (アッシュ)' : 'GUY (ガイ)'}
                                 </span>
 
                                 {line.voiceEffect && line.voiceEffect !== 'normal' && (
-                                  <span className="px-1.5 py-0.3 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800/70">
+                                  <span className="px-1.5 py-0.2 text-[9.5px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                                     声: {line.voiceEffect}
                                   </span>
                                 )}
 
                                 {line.note && (
-                                  <span className="text-[10.5px] text-zinc-400 font-sans">
+                                  <span className="text-[10px] text-zinc-500 font-zen">
                                     ({line.note})
                                   </span>
                                 )}
                               </div>
 
-                              <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 {activeItem.lines.length > 1 && lIdx > 0 && (
                                   <button
                                     onClick={() => {
@@ -1919,16 +2018,16 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                                       );
                                     }}
                                     title="このセリフ枠まで本番の流れ・重なりで順番に再生"
-                                    className="px-2 py-0.8 text-[11px] bg-sky-950 hover:bg-sky-900 text-sky-200 border border-sky-800 rounded cursor-pointer transition-colors flex items-center gap-1 font-bold"
+                                    className="px-1.5 py-0.5 text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1 font-bold"
                                   >
                                     <span>▶</span>
-                                    <span>ここまで再生</span>
+                                    <span>ここまで</span>
                                   </button>
                                 )}
                                 <button
                                   onClick={() => handlePlaySingleLine(line)}
                                   title="この1枠だけ単発で表示・確認"
-                                  className="px-2 py-0.8 text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded cursor-pointer transition-colors flex items-center gap-1 font-bold"
+                                  className="px-1.5 py-0.5 text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 cursor-pointer transition-colors flex items-center gap-1 font-bold"
                                 >
                                   <span>▶</span>
                                   <span>この行</span>
@@ -1936,38 +2035,38 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                               </div>
                             </div>
 
-                            {/* セリフ本文（フォント可読性強化） */}
-                            <div className="p-2.5 rounded bg-black/60 border border-zinc-800 text-zinc-100 text-[14px] leading-relaxed whitespace-pre-wrap break-words font-sans">
+                            {/* セリフ本文 */}
+                            <div className="p-2 bg-white border border-zinc-300 text-zinc-900 text-[13px] leading-relaxed whitespace-pre-wrap break-words font-zen">
                               {line.text}
                             </div>
 
                             {/* 表情タグ */}
                             {isAsch && hasFace && (
-                              <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-[11px]">
-                                <span className="text-zinc-400 font-bold">表情:</span>
+                              <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-[10px]">
+                                <span className="text-zinc-600 font-bold">表情:</span>
                                 {line.expression && (
-                                  <span className="px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-200 border border-zinc-700">
-                                    プリセット: {line.expression}
+                                  <span className="px-1.5 py-0.2 bg-zinc-100 text-zinc-800 border border-zinc-300">
+                                    {line.expression}
                                   </span>
                                 )}
                                 {facePartsDesc?.eyes && (
-                                  <span className="px-1.5 py-0.2 rounded bg-zinc-800/80 text-zinc-300">
-                                    目: {facePartsDesc.eyes}
+                                  <span className="px-1.5 py-0.2 bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                    目:{facePartsDesc.eyes}
                                   </span>
                                 )}
                                 {facePartsDesc?.brow && (
-                                  <span className="px-1.5 py-0.2 rounded bg-zinc-800/80 text-zinc-300">
-                                    眉: {facePartsDesc.brow}
+                                  <span className="px-1.5 py-0.2 bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                    眉:{facePartsDesc.brow}
                                   </span>
                                 )}
                                 {facePartsDesc?.mouth && (
-                                  <span className="px-1.5 py-0.2 rounded bg-zinc-800/80 text-zinc-300">
-                                    口: {facePartsDesc.mouth}
+                                  <span className="px-1.5 py-0.2 bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                    口:{facePartsDesc.mouth}
                                   </span>
                                 )}
                                 {facePartsDesc?.effects && facePartsDesc.effects.length > 0 && (
-                                  <span className="px-1.5 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-900/60 font-bold">
-                                    感情エフェクト:{' '}
+                                  <span className="px-1.5 py-0.2 bg-rose-100 text-rose-900 border border-rose-300 font-bold">
+                                    エフェクト:{' '}
                                     {facePartsDesc.effects
                                       .map(
                                         (e) =>
@@ -1981,10 +2080,10 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                             )}
 
                             {isAsch && line.secondExpression && (
-                              <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-zinc-300 pl-2 border-l-2 border-zinc-700">
+                              <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-zinc-700 pl-1.5 border-l-2 border-zinc-400">
                                 <span className="font-bold">後半変化 ➔</span>
-                                <span className="px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-200">
-                                  プリセット: {line.secondExpression}
+                                <span className="px-1.5 py-0.2 bg-zinc-100 text-zinc-800 border border-zinc-300">
+                                  {line.secondExpression}
                                 </span>
                               </div>
                             )}
@@ -1995,19 +2094,19 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
 
                     {/* 逆質問の選択肢分岐 */}
                     {activeItem.extraOptions && (
-                      <div className="space-y-2.5 pt-2">
-                        <div className="text-[11px] font-bold text-zinc-400 tracking-wider border-b border-zinc-800 pb-1 flex items-center justify-between">
+                      <div className="space-y-2 pt-1.5">
+                        <div className="text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5 flex items-center justify-between">
                           <span>返答選択肢と反応分岐 ({activeItem.extraOptions.length}個)</span>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                           {activeItem.extraOptions.map((opt, oIdx) => (
                             <div
                               key={opt.id}
-                              className="p-3 rounded border border-zinc-800 bg-zinc-900/50 space-y-2 text-left"
+                              className="p-2.5 border border-zinc-300 bg-white/90 space-y-1.5 text-left shadow-sm"
                             >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-[12px] font-bold text-sky-300">
+                              <div className="flex items-center justify-between gap-1.5">
+                                <span className="text-[11.5px] font-bold text-zinc-900">
                                   選択肢 {oIdx + 1}: {opt.thoughtText}
                                 </span>
                                 <button
@@ -2103,32 +2202,32 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                                       opt.endingTransition
                                     );
                                   }}
-                                  className="px-2 py-0.8 text-[11px] font-bold bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-800 rounded cursor-pointer transition-colors"
+                                  className="px-2 py-0.5 text-[10.5px] font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-950 cursor-pointer transition-colors"
                                 >
-                                  ▶ この分岐を再生（本番演出）
+                                  ▶ 分岐再生
                                 </button>
                               </div>
 
-                              <div className="text-[11.5px] text-zinc-400">
+                              <div className="text-[11px] text-zinc-600">
                                 ガイ発話: 『{opt.spokenText}』
                               </div>
 
-                              <div className="p-2 rounded bg-black/60 border border-zinc-800 text-[13.5px] text-zinc-100 leading-relaxed font-sans">
-                                <span className="font-bold text-rose-400 mr-1.5">
+                              <div className="p-2 bg-white border border-zinc-300 text-[12.5px] text-zinc-900 leading-relaxed font-zen">
+                                <span className="font-bold text-zinc-950 mr-1.5">
                                   ASCH:
                                 </span>
                                 {opt.aschText}
                               </div>
 
                               {opt.extraRallies && opt.extraRallies.length > 0 && (
-                                <div className="pl-3 border-l-2 border-zinc-700 space-y-1.5 text-[12px]">
+                                <div className="pl-2.5 border-l-2 border-zinc-400 space-y-1 text-[11.5px]">
                                   {opt.extraRallies.map((r, rIdx) => (
-                                    <div key={rIdx} className="text-zinc-200">
+                                    <div key={rIdx} className="text-zinc-800">
                                       <span
                                         className={`font-bold mr-1.5 ${
                                           r.speaker === 'ASCH'
-                                            ? 'text-rose-400'
-                                            : 'text-sky-400'
+                                            ? 'text-zinc-950'
+                                            : 'text-zinc-700'
                                         }`}
                                       >
                                         {r.speaker}:
@@ -2146,11 +2245,11 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
 
                     {/* 端末セクター情報 */}
                     {activeItem.sectorData && (
-                      <div className="space-y-2 pt-2 text-left">
-                        <div className="text-[11px] font-bold text-zinc-400 tracking-wider border-b border-zinc-800 pb-1">
+                      <div className="space-y-1.5 pt-1.5 text-left">
+                        <div className="text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5">
                           <span>端末ログ本文 (SEC DATA)</span>
                         </div>
-                        <div className="p-3 rounded bg-black/60 border border-zinc-800 text-[12.5px] leading-relaxed text-zinc-200 whitespace-pre-wrap font-sans">
+                        <div className="p-2.5 bg-white border border-zinc-300 text-[11.5px] leading-relaxed text-zinc-800 whitespace-pre-wrap font-zen">
                           {activeItem.sectorData.unlockedContent}
                         </div>
                       </div>
@@ -2158,21 +2257,21 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-zinc-500 text-[13px]">
+                <div className="flex-1 flex items-center justify-center text-zinc-500 text-[12px]">
                   左のリストからシナリオ項目を選択してください
                 </div>
               )}
 
               {/* フッター：シーン進行ナビゲーション */}
-              <div className="h-9 px-3 border-t border-zinc-800 bg-zinc-900/60 flex items-center justify-between shrink-0 text-[11px] text-zinc-400">
-                <span>
+              <div className="h-8 px-2.5 border-t border-zinc-300 bg-[#dcdde2] flex items-center justify-between shrink-0 text-[10.5px] text-zinc-600 font-zen">
+                <span className="truncate max-w-[240px]">
                   {currentIndex >= 0
                     ? `[ ${currentIndex + 1} / ${filteredItems.length} ] ${activeItem?.title}`
                     : ''}
                 </span>
 
                 <span className="hidden sm:inline text-zinc-500">
-                  ショートカット: [Space] 再生/停止 | [→] 次シーン | [Esc] 閉じる
+                  [Space] 再生/停止 | [→] 次へ
                 </span>
               </div>
             </div>
