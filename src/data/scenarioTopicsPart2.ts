@@ -166,6 +166,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           trustDelta: 1,
         },
         grantsLinkTags: ['tea_served'],
+        naturalUnlockSectorId: 'SEC-25',
+        oralInfo: {
+          id: 'oral-tea-and-taste',
+          category: '機体ログ',
+          title: '味覚受容センサーと気化排熱機構',
+          content:
+            '口腔内の音素センサーにより味覚データを数値化し、本来の肉体時における嗜好メモリと照合可能。\nただし消化器官系が存在しないため、摂取された水分は内部の気化排熱機構へ送られ、微小蒸気として外部へ排出される構造。\n対象が淹れた茶を摂取した際、嗜好照合結果に基づき「悪くない」という情動波形の微細な好転が記録されている。',
+        },
+        systemLog: 'GUSTATORY SENSOR LOG // CODE: [MC-TEA_VAPORIZE]',
         replyOptions: [
           {
             id: 'p2_tea_reply_preferences',
@@ -357,7 +366,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               'はは、ディスト相手に毎日怒鳴り散らしてるおまえの姿が目に浮かぶよ。\nでも、そんなに騒がしいならあんな研究所に居続けなくてもいいだろうに',
             aschText:
-              '・・・・・・あそこは人目につかない。あいつも口だけは堅いからな、身を隠すには都合がいいだけだ',
+              '・・・・・・あそこは人目につかない。身を隠すには都合がいいだけだ',
             expression: 'look_away',
             faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
             trustDelta: 1,
@@ -1616,13 +1625,22 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'frown', effects: [] },
             moodDelta: -2,
+            oralInfo: {
+              id: 'oral-hands-feeling-bloodless',
+              category: '機体ログ',
+              title: '痛覚オミットと生体模倣の限界',
+              content:
+                '本機は痛覚受容回路が遮断されており外傷による機能低下は生じないが、本機自身は「出血しないこと」に強い疎外感を抱いており、自己同一性を損なう主要因となっていることが判明。',
+            },
+            systemLog: 'PAIN SENSOR STATUS // CODE: [MC-NO_PAIN_OMIT]',
+            naturalUnlockSectorId: 'SEC-24',
             completesTopic: true,
           },
           {
             id: 'p2_hands_reply_back_off',
-            thoughtText: '・・・・・・そうだな、悪かったよ',
+            thoughtText: 'そりゃそうだよな',
             spokenText:
-              '・・・・・・そうだな。悪かったよ、変なこと聞いて',
+              '悪い、そりゃそうだよな',
             aschText:
               '・・・・・・別にいい。気にしてない',
             expression: 'look_away',
@@ -1862,9 +1880,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         replyOptions: [
           {
             id: 'p2_dp002_reply_why_hide',
-            thoughtText: '身体に何か違和感や異変はないのか？',
+            thoughtText: 'おまえ、本当に覚えていないのか？',
             spokenText:
-              '・・・・・・なあ、身体に何か違和感や異変はないのか？\nディストの記録には、おまえの稼働状態について不可解な点が多くて・・・・・・',
+              '・・・・・・なあ、おまえ、本当に何も覚えていないのか？\nエルドラントのあと・・・・・・ディストのところへ行くまでのこと',
             aschText:
               '・・・・・・知るかそんなもの・・・・・・ッ！！\n・・・・・・何なんだよ、おまえは・・・・・・！\n・・・・・・俺を疑って、何を探ろうとしているんだ・・・・・・っ！',
             expression: 'glare',
@@ -1898,6 +1916,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               },
             ],
             grantsLinkTags: ['asked_about_dp002'],
+            oralInfo: {
+              id: 'oral-dp002-memory-defense',
+              category: '情動反応',
+              title: '記憶防衛プロテクト強制励起の形跡',
+              content:
+                '空白の2年間に言及された際、言語野の音声出力がグリッチ状に乱壊。\n激しい拒絶反応とともに、中枢コアの自壊を防ぐための緊急メモリ封鎖が作動した。',
+            },
+            systemLog: 'PROTECT RESISTANCE DETECTED // CODE: [EM-MEMORY_DEFENSE]',
+            naturalUnlockSectorId: 'SEC-26',
             completesTopic: true,
           },
           {
@@ -1906,7 +1933,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText:
               '・・・・・・すまない。俺の気のせいかもしれない。少し動転してたみたいだ',
             aschText:
-              '・・・・・・気味が悪い奴だ。わけの分からんことを吹き込むな・・・・・・',
+              '・・・・・・っ。　へ、平気だ・・・・・・',
             expression: 'look_away',
             faceParts: {
               brow: 'doubt',
@@ -2006,7 +2033,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '・・・・・・なあ、アッシュ。ディストはおまえに、どこまで話したんだ？　この身体で目覚めさせた時に',
         aschText:
-          'あいつが何を言うかなど知らん。\nただ「前の機体が壊れたから予備に移し替えた」とだけ言われた。\n・・・・・・あいつの戯言など、最初から真に受けていない',
+          'ただ「前の機体が壊れたから予備に移し替えた」とだけ言われた。\n・・・・・・あいつの戯言など、最初から真に受けていない',
         expression: 'look_away',
         faceParts: {
           brow: 'doubt',
@@ -2349,7 +2376,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             spokenText: '・・・・・・アッシュ。\n首の後ろ・・・・・・埃がついてるぞ。取ってやる',
             waitMs: 1900,
             aschText:
-              '？　・・・・・・何だ。改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
+              '？　・・・・・・何だ。\n・・・・・・っ、おい、気安く触るなと言って――',
             aschWaitMs: 2200,
             expression: 'normal',
             faceParts: {
@@ -2400,6 +2427,16 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 voiceEffect: 'tremble_glitch',
                 waitMs: 2700,
                 specialEffect: 'collapse',
+              },
+              {
+                speaker: 'GUY',
+                text: '・・・・・・',
+                waitMs: 1600,
+              },
+              {
+                speaker: 'GUY',
+                text: 'これで・・・・・・',
+                waitMs: 1800,
               },
               {
                 speaker: 'GUY',

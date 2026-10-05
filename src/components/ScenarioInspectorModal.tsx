@@ -8,6 +8,7 @@ import {
   ExtraDialogueExchange,
   FaceParts,
   MemorySector,
+  OralInfoEntry,
   SilentFaceStep,
   TopicExchangeStage,
 } from '../types/game';
@@ -99,11 +100,15 @@ export interface ScenarioInspectorItem {
     }[];
     specialEffect?: 'destroy' | 'collapse' | 'shout_shock' | 'none';
     endingTransition?: EndingTransitionConfig;
+    oralInfo?: OralInfoEntry;
+    systemLog?: string;
   }[];
   endingTransition?: EndingTransitionConfig;
   sectorData?: MemorySector;
   rawTopic?: ConversationTopic;
   slipVariant?: Phase1SlipVariant;
+  oralInfo?: OralInfoEntry;
+  systemLog?: string;
 }
 
 export type InspectorViewMode = 'dock' | 'minimized' | 'full';
@@ -421,6 +426,8 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               voiceEffects: r.voiceEffects,
               moodDelta: r.moodDelta,
               trustDelta: r.trustDelta,
+              oralInfo: r.oralInfo,
+              systemLog: r.systemLog,
               extraRallies: r.extraExchanges?.map((ex: ExtraDialogueExchange) => ({
                 speaker: ex.speaker,
                 text: ex.text,
@@ -431,6 +438,26 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                 voiceEffect: ex.voiceEffect,
               })),
             }));
+
+            // 逆質問の場合、沈黙タイムアウト（取り下げ）の選択肢も台本に併記
+            if (aschQuestion) {
+              extraOptions.push({
+                id: `${t.id}_stage_${sIdx + 1}_timeout`,
+                thoughtText: '（無言で沈黙を続ける／約30秒経過）',
+                spokenText: '・・・・・・（無言で沈黙を続ける）',
+                aschText: '・・・・・・\nいや、いい。なんでもない。忘れてくれ',
+                expression: 'look_away',
+                faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: [] },
+                voiceEffects: ['normal'],
+                oralInfo: {
+                  id: 'oral-autonomous-query-abort',
+                  category: '情動反応',
+                  title: '自発的問いかけの破棄',
+                  content:
+                    '対象（ガイ・セシル）への能動的質問プロトコル実行時、無応答状態が継続したため、中枢コアが「拒絶」と判定して質問を自律破棄。\n「忘れてくれ」という発声とともに、以降の自律的質問プロトコルをすべて閉鎖した。\n本来の肉体時における自尊心の高さと、他者からの無視・拒絶に対する過剰な防衛反応が観測される。',
+                },
+              });
+            }
           }
         }
 
@@ -449,6 +476,8 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           lines,
           extraOptions,
           rawTopic: t,
+          oralInfo: stage.oralInfo,
+          systemLog: stage.systemLog,
         });
       });
     });
@@ -468,7 +497,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         note: idx === 0 ? `規定ターン: ${mq.turnCount}T〜` : undefined,
       }));
 
-      const extraOptions = q.options.map((opt) => ({
+      const extraOptions: NonNullable<ScenarioInspectorItem['extraOptions']> = q.options.map((opt) => ({
         id: opt.id,
         thoughtText: opt.thoughtText,
         spokenText: opt.spokenText,
@@ -477,7 +506,27 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         faceParts: opt.faceParts,
         moodDelta: opt.moodDelta,
         trustDelta: opt.trustDelta,
+        oralInfo: opt.oralInfo,
+        systemLog: opt.systemLog,
       }));
+
+      // 沈黙による取り下げ（約30秒沈黙）
+      extraOptions.push({
+        id: `milestone_q_${q.id}_timeout`,
+        thoughtText: '（無言で沈黙を続ける／約30秒経過）',
+        spokenText: '・・・・・・（無言で沈黙を続ける）',
+        aschText: '・・・・・・\nいや、いい。なんでもない。忘れてくれ',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'frown', effects: [] },
+        voiceEffects: ['normal'],
+        oralInfo: {
+          id: 'oral-autonomous-query-abort',
+          category: '情動反応',
+          title: '自発的問いかけの破棄',
+          content:
+            '対象（ガイ・セシル）への能動的質問プロトコル実行時、無応答状態が継続したため、中枢コアが「拒絶」と判定して質問を自律破棄。\n「忘れてくれ」という発声とともに、以降の自律的質問プロトコルをすべて閉鎖した。\n本来の肉体時における自尊心の高さと、他者からの無視・拒絶に対する過剰な防衛反応が観測される。',
+        },
+      });
 
       list.push({
         id: `milestone_q_${q.id}`,
@@ -673,73 +722,26 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         {
           id: 'decision_opt_end09',
           thoughtText: '「埃を取るふりをして首裏の制御核を壊す」（➔ END 09）',
-          spokenText: '・・・・・・アッシュ。\n首の後ろ・・・・・・埃がついてるぞ。取ってやる。',
-          waitMs: 1900,
-          aschText:
-            '？　・・・・・・何だ。改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
-          aschWaitMs: 2200,
-          expression: 'normal',
-          faceParts: {
-            brow: 'doubt',
-            eyes: 'away',
-            mouth: 'close',
-            effects: [],
-          },
-          secondExpression: 'glare',
-          secondFaceParts: {
-            brow: 'angry',
-            eyes: 'glare',
-            mouth: 'shout',
-            effects: [],
-          },
-          specialEffect: 'destroy',
-          extraRallies: [
-            {
-              speaker: 'ASCH',
-              text: '・・・・・・っ、が・・・・・・イ・・・・・・？',
-              expression: 'shock',
-              faceParts: {
-                brow: 'pain',
-                eyes: 'wide',
-                mouth: 'gasp',
-                effects: ['sweat', 'pale'],
-              },
-              voiceEffect: 'tremble_glitch',
-              waitMs: 1900,
-            },
-            {
-              speaker: 'ASCH',
-              text: 'な、にを・・・・・・し、て・・・・・・',
-              expression: 'empty',
-              faceParts: {
-                brow: 'pain',
-                eyes: 'empty',
-                mouth: 'gasp',
-                effects: ['shadow', 'tears'],
-              },
-              secondExpression: 'pain',
-              secondFaceParts: {
-                brow: 'sad',
-                eyes: 'close',
-                mouth: 'close',
-                effects: ['shadow', 'tears'],
-              },
-              voiceEffect: 'tremble_glitch',
-              waitMs: 2700,
-              specialEffect: 'collapse',
-            },
-            {
-              speaker: 'GUY',
-              text: '・・・・・・これで、いいんだ。',
-              waitMs: 2400,
-            },
-          ],
-          endingTransition: {
-            waitBeforeExitMs: 1800,
-            aschAction: 'none',
-            doorAction: 'none',
-            waitAfterDoorMs: 1600,
-          },
+          spokenText: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.spokenText,
+          waitMs: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.guyWaitMs,
+          aschText: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.aschText,
+          aschWaitMs: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.aschWaitMs,
+          expression: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.expression,
+          faceParts: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.faceParts,
+          secondExpression: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.secondExpression,
+          secondFaceParts: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.secondFaceParts,
+          voiceEffects: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.voiceEffects,
+          extraRallies: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.extraRallies?.map((r) => ({
+            speaker: r.speaker,
+            text: r.text,
+            expression: r.expression,
+            faceParts: r.faceParts,
+            secondExpression: r.secondExpression,
+            secondFaceParts: r.secondFaceParts,
+            voiceEffect: r.voiceEffect,
+            waitMs: r.waitMs,
+          })),
+          endingTransition: FINAL_DECISION_STAGES.END_PHASE3_MERCY_DESTROY.endingTransition,
         },
         {
           id: 'decision_opt_end10',
@@ -800,7 +802,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       });
     });
 
-    // --- 4. データ端末 SEC-00 〜 SEC-20 ---
+    // --- 4. データ端末 SEC-00 〜 SEC-26 ---
     INITIAL_MEMORY_SECTORS.forEach((sec) => {
       list.push({
         id: `sec_${sec.id}`,
@@ -829,6 +831,38 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
     });
 
     // --- 5. 特殊リアクション ---
+    // 執拗な頭部接触に対する排斥（手を払う）
+    list.push({
+      id: 'reaction_head_pat_slap',
+      category: 'REACTION',
+      categoryLabel: '接触排斥',
+      title: '執拗な頭部接触への排斥（手を払う）',
+      subtitle: 'いい加減にしろ！ 何度も触るなと言っているだろうが！',
+      tags: ['接触', '手払い', '不機嫌'],
+      lines: [
+        {
+          speaker: 'ASCH',
+          text: 'いい加減にしろ！ 何度も触るなと言っているだろうが！',
+          expression: 'glare',
+          faceParts: {
+            brow: 'angry',
+            eyes: 'glare',
+            mouth: 'shout',
+            effects: ['shadow'],
+          },
+          voiceEffect: 'shout',
+          note: '頭部接触4回目以降（反射的排斥行動）',
+        },
+      ],
+      oralInfo: {
+        id: 'oral-head-pat-rejection',
+        category: '情動反応',
+        title: '頭部接触に対する反射的排斥行動',
+        content:
+          '対象（ガイ・セシル）による執拗な頭部接触に対し、腕部駆動アクチュエータによる排斥行動が自動発動。\n人工表皮への接触刺激に対し、本来の肉体時との解離から生じる強い不快感を検知。\n排斥直後、警戒プロトコルの段階引き上げと情動スコアの低下が記録された。',
+      },
+    });
+
     ANGRY_COOLDOWN_REACTIONS.forEach((react, rIdx) => {
       list.push({
         id: `reaction_cooldown_${rIdx + 1}`,
@@ -847,6 +881,13 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
             note: react.logMessage,
           },
         ],
+        oralInfo: {
+          id: 'oral-calm-down-silence',
+          category: '情動反応',
+          title: '刺激途絶に伴う情動波形の自然冷却',
+          content:
+            '激昂・威嚇状態への移行後、対象からの言語的・物理的刺激が途絶（無言待機状態が約30秒継続）したことにより、音素循環の乱れが自律的に減衰。\n視認センサーによる断続的な動向確認を経て、対象に積極的な敵意・悪意が存在しないと判定。\n不機嫌パラメータが通常警戒域まで自然冷却された形跡。',
+        },
       });
     });
 
@@ -1453,7 +1494,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
               title={isPlayingCurrent ? '停止 [Space]' : '現在のシーンを再生 [Space]'}
               className={`px-3 py-1 text-[11.5px] font-bold cursor-pointer transition-colors border flex items-center gap-1.5 shadow-sm ${
                 isPlayingCurrent
-                  ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-800 animate-pulse'
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-zinc-950 animate-pulse'
                   : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border-zinc-950'
               }`}
             >
@@ -1478,7 +1519,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                   : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300 border-zinc-500'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${isAutoPlay ? 'bg-emerald-400 animate-ping' : 'bg-zinc-500'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${isAutoPlay ? 'bg-zinc-100 animate-ping' : 'bg-zinc-500'}`} />
               <span>連続: {isAutoPlay ? 'ON' : 'OFF'}</span>
             </button>
           </div>
@@ -1745,6 +1786,20 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                         </span>
                       </div>
 
+                      {activeItem.oralInfo && (
+                        <div className="p-2.5 border border-zinc-400 bg-white text-left text-[11px] space-y-1 shadow-sm">
+                          <div className="flex items-center gap-1.5 font-bold text-zinc-950">
+                            <span className="px-1.5 py-0.2 bg-zinc-200 border border-zinc-400 text-zinc-800 text-[10px]">
+                              端末記録：{activeItem.oralInfo.category}
+                            </span>
+                            <span className="font-zen text-[11.5px]">{activeItem.oralInfo.title}</span>
+                          </div>
+                          <div className="text-zinc-800 whitespace-pre-wrap leading-relaxed text-[11.5px] font-zen bg-zinc-50 p-2 border border-zinc-300">
+                            {activeItem.oralInfo.content}
+                          </div>
+                        </div>
+                      )}
+
                       {activeItem.lines.map((line, lIdx) => {
                         const isAsch = line.speaker === 'ASCH';
                         const facePartsDesc = line.faceParts;
@@ -1773,7 +1828,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                                 </span>
 
                                 {line.voiceEffect && line.voiceEffect !== 'normal' && (
-                                  <span className="px-1.5 py-0.2 text-[9.5px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                  <span className="px-1.5 py-0.2 text-[9.5px] font-bold bg-zinc-200 text-zinc-800 border border-zinc-400">
                                     声: {line.voiceEffect}
                                   </span>
                                 )}
@@ -1847,7 +1902,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                                   </span>
                                 )}
                                 {facePartsDesc?.effects && facePartsDesc.effects.length > 0 && (
-                                  <span className="px-1.5 py-0.2 bg-rose-100 text-rose-900 border border-rose-300 font-bold">
+                                  <span className="px-1.5 py-0.2 bg-zinc-200 text-zinc-800 border border-zinc-400 font-bold">
                                     エフェクト:{' '}
                                     {facePartsDesc.effects
                                       .map(
@@ -2017,6 +2072,20 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                                       {r.text}
                                     </div>
                                   ))}
+                                </div>
+                              )}
+
+                              {opt.oralInfo && (
+                                <div className="p-2 border border-zinc-300 bg-white text-left text-[11px] space-y-1 shadow-xs">
+                                  <div className="flex items-center gap-1.5 font-bold text-zinc-950">
+                                    <span className="px-1.5 py-0.2 bg-zinc-200 border border-zinc-400 text-zinc-800 text-[10px]">
+                                      端末記録：{opt.oralInfo.category}
+                                    </span>
+                                    <span className="font-zen text-[11px]">{opt.oralInfo.title}</span>
+                                  </div>
+                                  <div className="text-zinc-800 whitespace-pre-wrap leading-relaxed text-[11px] font-zen bg-zinc-50 p-1.5 border border-zinc-300">
+                                    {opt.oralInfo.content}
+                                  </div>
                                 </div>
                               )}
                             </div>

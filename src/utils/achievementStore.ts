@@ -32,7 +32,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_02',
     numberLabel: '02',
     title: 'なにをみてる？',
-    description: '管理端末を何度も覗き込んで、上限回数まで怪しまれた',
+    description: '管理端末を何度も覗き込んで、怪しまれた',
   },
   {
     id: 'ach_03',
@@ -197,7 +197,7 @@ export const ENDING_ARCHIVE_LIST: EndingArchiveItem[] = [
 ];
 
 export const NATURAL_UNLOCKABLE_SECTOR_IDS: string[] = INITIAL_MEMORY_SECTORS.filter(
-  (s) => s.id !== 'SEC-00' && s.id !== 'SEC-19' && s.id !== 'SEC-20'
+  (s) => /^SEC-(0[1-9]|1[0-8])$/.test(s.id)
 ).map((s) => s.id);
 
 // 方式B（エフェクト含む全パーツ制）：眉6種・目9種・口7種・エフェクト5種の計27パーツキー

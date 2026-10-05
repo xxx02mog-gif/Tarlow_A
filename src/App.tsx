@@ -1099,6 +1099,27 @@ export default function App() {
     [nextOrderStamp]
   );
 
+  const unlockSectorDirectly = useCallback((sectorId: string) => {
+    setReadSectorIds((prev) =>
+      prev.includes(sectorId) ? prev : [...prev, sectorId]
+    );
+    setHasUnreadSector(true);
+    setSectors((prev) =>
+      prev.map((s) =>
+        s.id === sectorId
+          ? {
+              ...s,
+              discovered: true,
+              discoveredAt: Date.now(),
+              unlocked: true,
+              unlockedAt: Date.now(),
+              unlockedMethod: 'DIALOGUE' as const,
+            }
+          : s
+      )
+    );
+  }, []);
+
   const clearPendingSequence = useCallback(() => {
     if (activeTimeoutRef.current !== null) {
       window.clearTimeout(activeTimeoutRef.current);
@@ -2016,6 +2037,14 @@ export default function App() {
           'RESPONSE TIMEOUT // AUTONOMOUS QUERY PROTOCOL SUSPENDED'
         );
         unlockAchievements('ach_13');
+        unlockSectorDirectly('SEC-21');
+        addOralInfo({
+          id: 'oral-autonomous-query-abort',
+          category: '情動反応',
+          title: '自発的問いかけの破棄',
+          content:
+            '対象（ガイ・セシル）への能動的質問プロトコル実行時、無応答状態が継続したため、中枢コアが「拒絶」と判定して質問を自律破棄。\n「忘れてくれ」という発声とともに、以降の自律的質問プロトコルをすべて閉鎖した。\n本来の肉体時における自尊心の高さと、他者からの無視・拒絶に対する過剰な防衛反応が観測される。',
+        });
         playAschReactionLines(
           '・・・・・・\nいや、いい。なんでもない。忘れてくれ',
           'look_away',
@@ -2061,7 +2090,15 @@ export default function App() {
             ANGRY_COOLDOWN_REACTIONS[cooldownIdx] ??
             ANGRY_COOLDOWN_REACTIONS[ANGRY_COOLDOWN_REACTIONS.length - 1];
           unlockAchievements('ach_12');
+          unlockSectorDirectly('SEC-23');
           appendLog('INFO', cooldownReaction.logMessage);
+          addOralInfo({
+            id: 'oral-calm-down-silence',
+            category: '情動反応',
+            title: '刺激途絶に伴う情動波形の自然冷却',
+            content:
+              '激昂・威嚇状態への移行後、対象からの言語的・物理的刺激が途絶（無言待機状態が約30秒継続）したことにより、音素循環の乱れが自律的に減衰。\n視認センサーによる断続的な動向確認を経て、対象に積極的な敵意・悪意が存在しないと判定。\n不機嫌パラメータが通常警戒域まで自然冷却された形跡。',
+          });
           playAschReactionLines(
             cooldownReaction.text,
             cooldownReaction.expression,
@@ -3870,11 +3907,19 @@ export default function App() {
       // フェーズ1でも4回目以降は手を払われ、不機嫌ポイント（mood -1）が付く！
       if (currentCount >= 3) {
         unlockAchievements('ach_11');
+        unlockSectorDirectly('SEC-22');
         soundEngine.playHandSlap();
         setReplayPulse((p) => p + 1);
         setIsScreenShaking(true);
         setTimeout(() => setIsScreenShaking(false), 200);
         updateMood(-1);
+        addOralInfo({
+          id: 'oral-head-pat-rejection',
+          category: '情動反応',
+          title: '頭部接触に対する反射的排斥行動',
+          content:
+            '対象（ガイ・セシル）による執拗な頭部接触に対し、腕部駆動アクチュエータによる排斥行動が自動発動。\n人工表皮への接触刺激に対し、本来の肉体時との解離から生じる強い不快感を検知。\n排斥直後、警戒プロトコルの段階引き上げと情動スコアの低下が記録された。',
+        });
 
         // 警告がすでに出ている状態でさらに触ったら、その場で研究所へ帰還（ゲームオーバー）！
         if (moodWarningGivenRef.current) {
@@ -3971,11 +4016,19 @@ export default function App() {
     // 4回目以上（currentCount >= 3）：どの機嫌であっても手を払われ、不機嫌になる
     if (currentCount >= 3) {
       unlockAchievements('ach_11');
+      unlockSectorDirectly('SEC-22');
       soundEngine.playHandSlap();
       setReplayPulse((p) => p + 1);
       setIsScreenShaking(true);
       setTimeout(() => setIsScreenShaking(false), 200);
       updateMood(-1);
+      addOralInfo({
+        id: 'oral-head-pat-rejection',
+        category: '情動反応',
+        title: '頭部接触に対する反射的排斥行動',
+        content:
+          '対象（ガイ・セシル）による執拗な頭部接触に対し、腕部駆動アクチュエータによる排斥行動が自動発動。\n人工表皮への接触刺激に対し、本来の肉体時との解離から生じる強い不快感を検知。\n排斥直後、警戒プロトコルの段階引き上げと情動スコアの低下が記録された。',
+      });
 
       // 警告がすでに出ている状態でさらに触ったら、その場で研究所へ帰還（ゲームオーバー）！
       if (moodWarningGivenRef.current) {
@@ -6468,7 +6521,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 1.0.1</span>
+              <span>VERSION 1.1.1</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">

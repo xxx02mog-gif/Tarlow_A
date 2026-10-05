@@ -983,7 +983,7 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
     spokenText:
       '・・・・・・アッシュ。\n首の後ろ・・・・・・埃がついてるぞ。取ってやる',
     aschText:
-      '？　・・・・・・何だ。改まって。\n・・・・・・っ、おい、気安く触るなと言って――',
+      '？　・・・・・・何だ。\n・・・・・・っ、おい、気安く触るなと言って――',
     expression: 'normal',
     faceParts: {
       brow: 'doubt',
@@ -1035,6 +1035,16 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
         voiceEffect: 'tremble_glitch',
         waitMs: 2700,
         specialEffect: 'collapse',
+      },
+      {
+        speaker: 'GUY',
+        text: '・・・・・・',
+        waitMs: 1600,
+      },
+      {
+        speaker: 'GUY',
+        text: 'これで・・・・・・',
+        waitMs: 1800,
       },
       {
         speaker: 'GUY',
@@ -1464,7 +1474,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: '――そうだ。それできっと、全部がうまくいく',
+        text: '――そうだ。それできっと、全部うまくいく',
       },
     ],
     summaryText:
@@ -1491,7 +1501,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: '――そうだ。それできっと、全部がうまくいく',
+        text: '――そうだ。それできっと、全部うまくいく',
       },
     ],
     summaryText:
@@ -1518,7 +1528,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: 'そうだ。それできっと、全部がうまくいく',
+        text: 'そうだ。それできっと、全部うまくいく',
       },
     ],
     summaryText:
@@ -1533,11 +1543,15 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
     dialogues: [
       {
         speaker: 'GUY',
-        text: 'アッシュにああいわせたのは、あいつのためなんかじゃない\nただ、俺自身が耐えられなかっただけだ。',
+        text: 'きっとあいつは誰かに「アッシュ」だと\n認められたかったんだろう',
       },
       {
         speaker: 'GUY',
-        text: '――それからというもの、あいつは堂々としている',
+        text: 'それを、俺は、俺のためだけに\nあいつ自身に「アッシュ」だと言わせてしまった',
+      },
+      {
+        speaker: 'GUY',
+        text: '――あれからというもの、あいつは堂々としている',
       },
       {
         speaker: 'GUY',
@@ -1545,18 +1559,18 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: 'これで、よかったはずなんだ',
+        text: 'これでよかったんだ',
       },
       {
         speaker: 'GUY',
-        text: '・・・・・・それなのに',
+        text: '何度自分にそう言い聞かせても',
       },
       {
         speaker: 'GUY',
-        text: 'あの記録の文字が、頭にこびりついて離れない',
+        text: '――あの記録の文字が、頭にこびりついて離れない',
       },
     ],
     summaryText:
-      'あいつに『自分はアッシュだ』と言わせたのは、あいつのためなんかじゃない。ただ、俺自身が耐えられなかっただけだ。皆が涙を流して再会を喜ぶ中、ガイの脳裏からはあの記録の文字がこびりついて離れなかった',
+      'きっとあいつは誰かに認められたかったはずなのに、ガイは自分のためだけにあいつ自身に「アッシュ」と言わせてしまった。皆が涙を流して再会を喜ぶ中、何度自分に言い聞かせても、脳裏からはあの記録の文字が離れなかった',
   },
 };
