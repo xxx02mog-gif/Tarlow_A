@@ -86,7 +86,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     capturedQuote:
       '「・・・・・・2ヶ月前まで、俺は本当に『タルロウA』という50センチくらいの小型機体に入っていた。」',
     capturedContext: '2ヶ月前まで小型機体タルロウAに入っていたと明かした際の発言',
-    unlockedTitle: '機体換装履歴（小型機体→予備機体）',
+    unlockedTitle: '機体換装履歴',
     unlockedCategory: '機体仕様',
     unlockedContent:
       '1年前から2ヶ月前まで、全高約50cmの小型譜業『タルロウA』として稼働。\n2ヶ月前に同機体が大破したため、11年前にレプリカ生成の場繋ぎ用として保管されていた予備機体（10歳当時のアッシュを模した機体）へ中枢コアが移設された。',
@@ -154,7 +154,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'EM-004',
     capturedQuote: '「・・・・・・別に。」',
     capturedContext: '仲間たちの近況について話題を振られた際の発言',
-    unlockedTitle: '外部通信反復照会ログ（タタル渓谷）',
+    unlockedTitle: '外部通信反復照会ログ',
     unlockedCategory: '情動観測',
     unlockedContent:
       '研究所内のサブ端末に残された通信アクセス履歴。\nキムラスカ王国やマルクト帝国関連の通信網とあわせ、1年前のタタル渓谷における生体帰還報告（ルーク・フォン・ファブレ関連記録）へのアクセスおよび即時切断が計38回記録されている。',
@@ -359,7 +359,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'DP-002',
     capturedQuote: '「・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。」',
     capturedContext: 'エルドラントから1年前までの「空白の2年間」について尋ねた際の発言',
-    unlockedTitle: '記憶分離依頼ログ（20歳時点・放浪期）',
+    unlockedTitle: '記憶分離依頼ログ',
     unlockedCategory: '深層解凍',
     unlockedContent:
       '【管理者権限ロック】\nエルドラントでの大爆発により、ルークとアッシュの記憶が混ざり合った状態で1つの身体に定着。\nその後2年間の放浪を経た1年前（20歳時点）、その身体を「ルーク」としてタタル渓谷へ帰すため、アッシュ自らがディストの研究所を訪れ分離処置を依頼した記録。\n管理者は分離したアッシュ側の記憶を廃棄せず、プラネットストーム停止下で希少な高純度第七音素の確保、および自律稼働実験の生体記憶サンプルとして小型譜業『タルロウA』へ移植した。',
