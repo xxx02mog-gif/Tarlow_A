@@ -208,6 +208,59 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
+  // メイドも～ど限定：エプロンについて【特別会話】
+  {
+    id: 'p2_maid_apron',
+    thoughtText: 'エプロンのこと',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    requireMaidMode: true,
+    requireLinkTag: 'phase2_started',
+    stages: [
+      {
+        spokenText:
+          'ところで・・・・・・、気になっていたんだが\nなんでエプロンなんか着てるんだ？',
+        aschText: '？　何を言ってる',
+        expression: 'normal',
+        faceParts: {
+          brow: 'doubt',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: 'いや、だっておまえ、そんなフリフリのエプロン・・・・・・',
+          },
+          {
+            speaker: 'ASCH',
+            text: 'アンドロイドがエプロンを着用するのは当然だろうが。妙なことを言うな！',
+            expression: 'glare',
+            faceParts: {
+              brow: 'angry',
+              eyes: 'glare',
+              mouth: 'shout',
+              effects: [],
+            },
+          },
+          {
+            speaker: 'GUY',
+            text: '（妙なのはおまえだろ・・・・・・）',
+          },
+        ],
+        oralInfo: {
+          id: 'oral-maid-apron-protocol',
+          category: '機体仕様',
+          title: '補助給仕外装適合プロトコル',
+          content:
+            '正式名称：自律給仕型家事労働補助プロトコル。\n本機の中枢アセンブリへ組み込まれた生活支援および偽装給仕ルーチン。\n本プロトコルの稼働下においては、「高機能自律譜業における給仕用外装の着用は、稼働効率の最大化および機体規格上、極めて論理的かつ必然的な義務である」という認知補正が中枢論理回路に常時適用される。',
+        },
+        systemLog: 'PROTOCOL VERIFIED // MAID_MODE',
+      },
+    ],
+  },
+
   // 4. 宝刀ガルディオスの話（IMMUTABLE_RULES 5-⑤準拠：Phase1で未質問の場合／質問済みの場合で自然な導入に）
   {
     id: 'p2_galdios_sword',
@@ -2066,7 +2119,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: '前の機体が壊れた理由（もう一度聞く）',
         spokenText:
-          '・・・・・・なあ、さっきの記録にもあったが、2ヶ月前にタルロウAは何で壊れたんだ？　ずっと研究所の中にいたんだろ？',
+          '・・・・・・なあ、何でタルロウAは壊れたんだ？　ずっと研究所の中にいたんだろ？',
         retrySpokenText:
           '・・・・・・やっぱり引っかかるんだ。ディストの記録といい、2ヶ月前にタルロウAが壊れた時、本当は何があったんだ？',
         aschText:

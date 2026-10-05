@@ -104,6 +104,7 @@ const MAX_VISIBLE_BUBBLES = 3;
 
 const DEFAULT_ROOT_FILES = [
   'base.png',
+  'base2.png',
   'brow_angry.png',
   'brow_doubt.png',
   'brow_normal.png',
@@ -836,6 +837,17 @@ export default function App() {
   const [achievementSave, setAchievementSave] = useState<AchievementSaveData>(
     () => loadAchievementSave()
   );
+  const [isMaidMode, setIsMaidMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      localStorage.removeItem('asch_maid_mode');
+    } catch {}
+  }, []);
+
+  const handleToggleMaidMode = useCallback(() => {
+    setIsMaidMode((prev) => !prev);
+  }, []);
   const [achievementToasts, setAchievementToasts] = useState<
     {
       toastId: string;
@@ -3091,14 +3103,17 @@ export default function App() {
       !isAngryNow && isGoodMoodNow && Boolean(currentStage.goodMoodResponse);
 
     const isBackedOffOnce = linkTags.includes(`backed_off_${topic.id}`);
-    const effectiveSpokenText =
-      (useCustomBadMood && currentStage.badMoodResponse?.spokenText) ||
-      (useCustomGoodMood && currentStage.goodMoodResponse?.spokenText) ||
-      (isBackedOffOnce && currentStage.retrySpokenText) ||
-      currentStage.spokenText;
-    const effectiveStageAschText =
-      (isBackedOffOnce && currentStage.retryAschText) ||
-      currentStage.aschText;
+    const isMaidTea = isMaidMode && topic.id === 'p2_tea_and_taste';
+    const effectiveSpokenText = isMaidTea
+      ? 'そうだ。紅茶でも淹れようか'
+      : (useCustomBadMood && currentStage.badMoodResponse?.spokenText) ||
+        (useCustomGoodMood && currentStage.goodMoodResponse?.spokenText) ||
+        (isBackedOffOnce && currentStage.retrySpokenText) ||
+        currentStage.spokenText;
+    const effectiveStageAschText = isMaidTea
+      ? '待て。俺がやる'
+      : (isBackedOffOnce && currentStage.retryAschText) ||
+        currentStage.aschText;
 
     // 本題の冒頭にすでに「・・・・・・」や「さっき」「そういえば」「なあ」等の導入がある場合は、二重に言い淀みを重ねない
     const alreadyHasNaturalLeadIn =
@@ -3258,23 +3273,27 @@ export default function App() {
             .join('\n') || baseResolvedAschText
         : baseResolvedAschText;
 
-    const resolvedExpression: ExpressionId = isRefusedByBadMood
-      ? refusalTemplate.expression
-      : useCustomBadMood
-        ? currentStage.badMoodResponse!.expression
-        : useCustomGoodMood
-          ? currentStage.goodMoodResponse!.expression
-          : currentStage.expression;
+    const resolvedExpression: ExpressionId = isMaidTea
+      ? 'look_away'
+      : isRefusedByBadMood
+        ? refusalTemplate.expression
+        : useCustomBadMood
+          ? currentStage.badMoodResponse!.expression
+          : useCustomGoodMood
+            ? currentStage.goodMoodResponse!.expression
+            : currentStage.expression;
 
-    const resolvedFaceParts: Partial<FaceParts> | undefined = isRefusedByBadMood
-      ? refusalTemplate.faceParts
-      : useCustomBadMood
-        ? currentStage.badMoodResponse!.faceParts
-        : useCustomGoodMood
-          ? currentStage.goodMoodResponse!.faceParts
-          : isPhase1RewriteSlip && chosenPhase1SlipVariant?.correctedFaceParts
-            ? chosenPhase1SlipVariant.correctedFaceParts
-            : currentStage.faceParts;
+    const resolvedFaceParts: Partial<FaceParts> | undefined = isMaidTea
+      ? { brow: 'doubt', eyes: 'glare', mouth: 'close', effects: [] }
+      : isRefusedByBadMood
+        ? refusalTemplate.faceParts
+        : useCustomBadMood
+          ? currentStage.badMoodResponse!.faceParts
+          : useCustomGoodMood
+            ? currentStage.goodMoodResponse!.faceParts
+            : isPhase1RewriteSlip && chosenPhase1SlipVariant?.correctedFaceParts
+              ? chosenPhase1SlipVariant.correctedFaceParts
+              : currentStage.faceParts;
 
     const resolvedSecondExpression: ExpressionId | undefined = isRefusedByBadMood
       ? undefined
@@ -3607,21 +3626,39 @@ export default function App() {
             }
 
 
-            const infoToRecord = useCustomGoodMood
-              ? (currentStage.goodMoodResponse?.oralInfo ??
-                currentStage.oralInfo)
-              : useCustomBadMood
-                ? currentStage.badMoodResponse?.oralInfo
-                : shouldAdvanceStage
-                  ? currentStage.oralInfo
-                  : undefined;
+            const infoToRecord = isMaidTea
+              ? {
+                  id: 'oral-maid-tea-intervention',
+                  category: '機体ログ' as const,
+                  title: '給仕行動介入プロトコル',
+                  content:
+                    '対象生体による給仕動作（茶の調合・給湯）を検知した際、本機内部の給仕プロトコルが自動起動し、動作の主導権を確保しようとする介入要求を出力。\n外部からの制止を受け動作は中断されたが、中枢論理回路に「不完全なタスク実行」としての不満反応が記録されている。',
+                }
+              : useCustomGoodMood
+                ? (currentStage.goodMoodResponse?.oralInfo ??
+                  currentStage.oralInfo)
+                : useCustomBadMood
+                  ? currentStage.badMoodResponse?.oralInfo
+                  : shouldAdvanceStage
+                    ? currentStage.oralInfo
+                    : undefined;
 
             if (infoToRecord) {
               addOralInfo(infoToRecord);
             }
 
-            if (shouldAdvanceStage && currentStage.systemLog) {
-              appendLog('INFO', currentStage.systemLog);
+            if (
+              shouldAdvanceStage &&
+              (isMaidTea
+                ? 'INTERVENTION DETECTED // PROTOCOL: MAID_BEVERAGE_SERVICE'
+                : currentStage.systemLog)
+            ) {
+              appendLog(
+                'INFO',
+                isMaidTea
+                  ? 'INTERVENTION DETECTED // PROTOCOL: MAID_BEVERAGE_SERVICE'
+                  : currentStage.systemLog!
+              );
             }
 
             const unlockSecId = useCustomGoodMood
@@ -3692,6 +3729,7 @@ export default function App() {
 
             // ステージに複数反応選択肢（replyOptions）がある場合は、その話題の反応選択肢を表示
             if (
+              !isMaidTea &&
               currentStage.replyOptions &&
               currentStage.replyOptions.length > 0
             ) {
@@ -3723,12 +3761,32 @@ export default function App() {
       });
     });
 
-    if (currentStage.extraExchanges && currentStage.extraExchanges.length > 0) {
+    const effectiveExtraExchanges: ExtraDialogueExchange[] = isMaidTea
+      ? [
+          {
+            speaker: 'GUY',
+            text: 'ん？　いや、おまえは客なんだからゆっくりしてろよ',
+          },
+          {
+            speaker: 'ASCH',
+            text: '・・・・・・',
+            expression: 'look_away',
+            faceParts: {
+              brow: 'sad',
+              eyes: 'away',
+              mouth: 'frown',
+              effects: [],
+            },
+          },
+        ]
+      : (currentStage.extraExchanges ?? []);
+
+    if (effectiveExtraExchanges.length > 0) {
       let prevSpeaker: 'ASCH' | 'GUY' = aschLines.length > 0 ? 'ASCH' : 'GUY';
       let prevText: string =
         aschLines.length > 0 ? aschLines[aschLines.length - 1] : '';
 
-      currentStage.extraExchanges.forEach((ex: ExtraDialogueExchange) => {
+      effectiveExtraExchanges.forEach((ex: ExtraDialogueExchange) => {
         const exLines = ex.text
           .split('\n')
           .map((s: string) => s.trim())
@@ -5941,6 +5999,7 @@ export default function App() {
       if (t.requireBothAngry && (mood >= 0 || guyMood >= 0)) return false;
       if (isHatredMode && t.positiveTopic) return false;
       if (!isHatredMode && t.hatredOnly) return false;
+      if (t.requireMaidMode && !isMaidMode) return false;
       if (
         t.forbidLinkTags &&
         t.forbidLinkTags.some((tag) => linkTags.includes(tag))
@@ -6002,7 +6061,7 @@ export default function App() {
       }
       return true;
     },
-    [mood, guyMood, isHatredMode, linkTags, sectors, readSectorIds, trustLevel]
+    [mood, guyMood, isHatredMode, linkTags, sectors, readSectorIds, trustLevel, isMaidMode]
   );
 
   // 現在進行中の話題（1段階目に入った後、まだ最終段階や反応選択肢が完了していない話題）
@@ -6038,11 +6097,15 @@ export default function App() {
     'phase2_started'
   )
     ? CONVERSATION_TOPICS.filter(
-        (t) => t.id.startsWith('p1_') && !phase1AskedTopicIds.includes(t.id)
+        (t) =>
+          t.id.startsWith('p1_') &&
+          !phase1AskedTopicIds.includes(t.id) &&
+          (!t.requireMaidMode || isMaidMode)
       )
     : CONVERSATION_TOPICS.filter(
         (t) =>
           isPhase2TopicUnlocked(t) &&
+          (!t.requireMaidMode || isMaidMode) &&
           (topicAskCounts[t.id] ?? 0) < t.stages.length
       );
 
@@ -6466,6 +6529,7 @@ export default function App() {
               customTestPngSrc={customTestPng}
               customPartMap={customPartMap}
               onSelectTestPngFile={() => {}}
+              isMaidMode={isMaidMode}
             />
           </div>
         )}
@@ -6711,6 +6775,8 @@ export default function App() {
             setIsAchievementModalOpen(false);
             handleOpenScenarioInspector();
           }}
+          isMaidMode={isMaidMode}
+          onToggleMaidMode={handleToggleMaidMode}
         />
 
         {/* === 4. メイン対話画面 === */}
@@ -6943,7 +7009,8 @@ export default function App() {
                       const phase1Topics = CONVERSATION_TOPICS.filter(
                         (t) =>
                           t.id.startsWith('p1_') &&
-                          t.id !== 'p1_touch_shoulder'
+                          t.id !== 'p1_touch_shoulder' &&
+                          (!t.requireMaidMode || isMaidMode)
                       );
                       const remainingQuestions = Math.max(
                         0,
@@ -7639,6 +7706,7 @@ export default function App() {
                   motionTuning={motionTuning}
                   replayPulse={replayPulse}
                   eyeGlitchPulse={eyeGlitchPulse}
+                  isMaidMode={isMaidMode}
                 />
 
                 {/* 頭部インタラクション（触る・撫でるタップ判定） */}

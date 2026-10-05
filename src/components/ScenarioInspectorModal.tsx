@@ -399,6 +399,21 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
           });
         });
 
+        if (stage.extraExchanges && stage.extraExchanges.length > 0) {
+          stage.extraExchanges.forEach((ex: ExtraDialogueExchange) => {
+            lines.push({
+              speaker: ex.speaker,
+              text: ex.text,
+              expression: ex.expression,
+              faceParts: ex.faceParts,
+              secondExpression: ex.secondExpression,
+              secondFaceParts: ex.secondFaceParts,
+              voiceEffect: ex.voiceEffect ?? 'normal',
+              note: `追加掛け合い（${ex.speaker === 'ASCH' ? 'アッシュ' : 'ガイ'}）`,
+            });
+          });
+        }
+
         const aschQuestion = stage.triggersAschQuestion;
         const replies = stage.replyOptions ?? aschQuestion?.options;
         let extraOptions: ScenarioInspectorItem['extraOptions'];

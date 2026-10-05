@@ -136,6 +136,7 @@ interface AschPortraitProps {
   motionTuning?: PortraitMotionTuning;
   replayPulse?: number;
   eyeGlitchPulse?: number;
+  isMaidMode?: boolean;
 }
 
 export const AschPortrait: React.FC<AschPortraitProps> = ({
@@ -150,6 +151,7 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
   motionTuning = DEFAULT_MOTION_TUNING,
   replayPulse = 0,
   eyeGlitchPulse = 0,
+  isMaidMode = false,
 }) => {
   const [isResettingAnim, setIsResettingAnim] = React.useState(false);
   const [isEyeGlitching, setIsEyeGlitching] = React.useState(false);
@@ -196,8 +198,9 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
     return null;
   };
 
-  // 1. パーツ合成用ベース素体 (base.png) の有無を確認
-  const basePartSrc = resolvePartSrc('base.png');
+  // 1. パーツ合成用ベース素体 (base2.png または base.png) の有無を確認
+  const baseFileName = isMaidMode ? 'base2.png' : 'base.png';
+  const basePartSrc = resolvePartSrc(baseFileName) || resolvePartSrc('base.png');
 
   // 2. 1枚絵フォールバック (test_*.png -> test.png)
   const expFile = EXPRESSION_SINGLE_FILENAME[expression] || 'test.png';

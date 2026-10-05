@@ -272,6 +272,7 @@ export interface ConversationTopic {
   awkwardSilenceTopic?: boolean;   // trueの場合、話題に詰まっている気まずい選択肢として出現
   sensitiveToBadMood?: boolean;    // trueの場合、不機嫌時に振ると答えてくれず（未消化のまま残り、機嫌が直るとまた聞ける）
   calmsAnger?: boolean;            // trueの場合、不機嫌時に振ると機嫌を和らげる効果がある（お茶を淹れる等）
+  requireMaidMode?: boolean;       // trueの場合、メイドアンドロイドも～どON時のみ出現
   stages: TopicExchangeStage[];    // 各段階のやり取り（最後まで見たら消化済みとなり繰り返されない）
 }
 

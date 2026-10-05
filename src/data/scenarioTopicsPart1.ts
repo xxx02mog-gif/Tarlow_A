@@ -517,7 +517,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'あのディストが作った機体なんだろ？ 人間の食事も摂れるんじゃないのか？ 美味いタコ料理を出す店があるんだが、どうだ？',
+          'あのディストが作った機体なら、人間の食事も摂れるんじゃないのか？\n美味いタコ料理を出す店があるんだが、どうだ？',
         aschText:
           '俺は譜業だから食事は摂らない。音素の供給さえあれば稼働に問題はない',
         expression: 'normal',

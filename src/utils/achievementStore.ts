@@ -56,13 +56,13 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_06',
     numberLabel: '06',
     title: 'ご機嫌取り',
-    description: '1回のプレイ中にアッシュの機嫌を最大（上機嫌）まで上げた',
+    description: '1回のプレイ中にアッシュの機嫌を最高にした',
   },
   {
     id: 'ach_07',
     numberLabel: '07',
     title: '隠す気ある？',
-    description: 'フェーズ1で最短（質問3回）でボロを見抜いて正体を認めさせた',
+    description: 'フェーズ1で三回以内の質問でボロを見抜いて正体を認めさせた',
   },
   {
     id: 'ach_08',
@@ -86,7 +86,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
     id: 'ach_11',
     numberLabel: '11',
     title: 'なでなでマスター',
-    description: 'アッシュの頭を限界まで撫でた',
+    description: 'アッシュの頭をいっぱい撫でた',
   },
   {
     id: 'ach_12',

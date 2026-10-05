@@ -21,6 +21,8 @@ interface AchievementArchiveModalProps {
   onOpenBonusViewer?: () => void;
   canOpenScenarioInspector?: boolean;
   onOpenScenarioInspector?: () => void;
+  isMaidMode?: boolean;
+  onToggleMaidMode?: () => void;
 }
 
 export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = ({
@@ -32,6 +34,8 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
   onOpenBonusViewer,
   canOpenScenarioInspector = false,
   onOpenScenarioInspector,
+  isMaidMode = false,
+  onToggleMaidMode,
 }) => {
   const [activeTab, setActiveTab] = useState<'ENDINGS' | 'ACHIEVEMENTS' | 'DATA'>('ENDINGS');
   const [selectedEndingKey, setSelectedEndingKey] = useState<string | null>(null);
@@ -64,6 +68,8 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     100,
     Math.round((unlockedAchievementsCount / totalAchievementsCount) * 100)
   );
+
+  const canAccessMaidMode = saveData.unlockedAchievementIds.includes('ach_11');
 
   const handleCopyExportCode = async () => {
     soundEngine.playTerminalTab();
@@ -510,47 +516,60 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
         </div>
 
         {/* 下部フッター */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0 relative min-h-[34px]">
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-400 shrink-0 min-h-[34px]">
           <span className="text-[10px] text-zinc-500 font-mono">
             Ghost in the mASCHine
           </span>
 
-          {/* 下部中央：表情鑑賞・シナリオ台本ボタン */}
-          {(canOpenBonusViewer || canOpenScenarioInspector) && (
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-              {canOpenBonusViewer && onOpenBonusViewer && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundEngine.playTerminalTab();
-                    onOpenBonusViewer();
-                  }}
-                  className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
-                  title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
-                >
-                  表情鑑賞
-                </button>
-              )}
+          {/* 右寄せ：表情鑑賞・シナリオ台本・メイドアンドロイドも～どボタン */}
+          <div className="flex items-center gap-2">
+            {canOpenBonusViewer && onOpenBonusViewer && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  onOpenBonusViewer();
+                }}
+                className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
+                title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
+              >
+                表情鑑賞
+              </button>
+            )}
 
-              {canOpenScenarioInspector && onOpenScenarioInspector && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundEngine.playTerminalTab();
-                    onOpenScenarioInspector();
-                  }}
-                  className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
-                  title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
-                >
-                  シナリオ台本
-                </button>
-              )}
-            </div>
-          )}
+            {canOpenScenarioInspector && onOpenScenarioInspector && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  onOpenScenarioInspector();
+                }}
+                className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
+                title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
+              >
+                シナリオ台本
+              </button>
+            )}
 
-          <span className="text-[10px] text-zinc-500">
-            RECORD ARCHIVE SYSTEM
-          </span>
+            {canAccessMaidMode && onToggleMaidMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playTerminalTab();
+                  onToggleMaidMode();
+                }}
+                className={`w-[108px] py-0.5 text-[10.5px] font-bold border transition-colors cursor-pointer inline-flex items-center justify-center shrink-0 ${
+                  isMaidMode
+                    ? 'bg-zinc-900 text-zinc-100 border-zinc-950 shadow-sm'
+                    : 'bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border-zinc-500'
+                }`}
+                title="実績11（なでなでマスター）解放ご褒美：立ち絵のベース素体をメイド姿（base2.png）に切り替えます"
+              >
+                <span>メイドも～ど:</span>
+                <span className="inline-block w-6 text-center">{isMaidMode ? 'ON' : 'OFF'}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
