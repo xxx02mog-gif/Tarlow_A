@@ -24,6 +24,7 @@ import {
   FINAL_DECISION_STAGES,
   PHASE3_WHO_AM_I_OPTIONS,
 } from '../data/scenarioEndingsAndSpecial';
+import { DIST_ENDING_COMMENTS } from '../data/distComments';
 import {
   ANGRY_COOLDOWN_REACTIONS,
   ANGRY_GLANCE_CAUGHT_LINES,
@@ -40,13 +41,18 @@ import {
 import { soundEngine } from '../utils/chiptuneAudio';
 
 export interface ScriptLinePreview {
-  speaker: 'GUY' | 'ASCH';
+  speaker: 'GUY' | 'ASCH' | 'DIST';
   text: string;
   voiceEffect?: BubbleVoiceEffect;
   expression?: ExpressionId;
   faceParts?: Partial<FaceParts>;
   secondExpression?: ExpressionId;
   secondFaceParts?: Partial<FaceParts>;
+  distParts?: {
+    brow: 'nomal' | 'angry' | 'stunned' | 'none';
+    eye: 'open' | 'close' | 'away' | 'none';
+    mouth: 'nomal' | 'close' | 'smile' | 'laugh' | 'angry' | 'none';
+  };
   note?: string;
   moodDelta?: number;
   trustDelta?: number;
@@ -56,6 +62,7 @@ export interface ScriptLinePreview {
 
 export type ScenarioInspectorCategory =
   | 'ALL'
+  | 'PROLOGUE'
   | 'P1_TOPIC'
   | 'P1_SLIP'
   | 'P2_TOPIC'
@@ -117,7 +124,7 @@ interface ScenarioInspectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPreviewLine: (
-    speaker: 'GUY' | 'ASCH',
+    speaker: 'GUY' | 'ASCH' | 'DIST',
     text: string,
     voiceEffect?: BubbleVoiceEffect,
     expression?: ExpressionId,
@@ -128,6 +135,8 @@ interface ScenarioInspectorModalProps {
     onComplete?: () => void,
     endingTransition?: EndingTransitionConfig
   ) => void;
+  onPreviewEndingScreen?: (scenarioKey: string) => void;
+  onPreviewPrologueScreen?: () => void;
   onStopPlayback?: () => void;
   onSkipAdvance?: () => void;
   onApplyFaceOnly: (
@@ -148,10 +157,11 @@ interface ScenarioInspectorModalProps {
 
 const CATEGORY_TABS: { id: ScenarioInspectorCategory; label: string }[] = [
   { id: 'ALL', label: 'すべて' },
+  { id: 'PROLOGUE', label: 'プロローグ' },
   { id: 'P1_TOPIC', label: 'P1・序盤会話' },
   { id: 'P1_SLIP', label: 'P1・ボロ言い直し' },
-  { id: 'P2_TOPIC', label: 'P2・本格会話' },
-  { id: 'P2_QUESTION', label: '逆質問ラリー' },
+  { id: 'P2_TOPIC', label: 'P2・通常会話' },
+  { id: 'P2_QUESTION', label: 'P2・選択肢あり' },
   { id: 'CLIMAX_ED', label: '決断・全ED' },
   { id: 'SECTOR', label: '端末SEC' },
   { id: 'REACTION', label: '特殊反応' },
@@ -162,6 +172,8 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
   onClose,
   onPreviewLine,
   onPreviewSequence,
+  onPreviewEndingScreen,
+  onPreviewPrologueScreen,
   onStopPlayback,
   onSkipAdvance,
   onApplyFaceOnly,
@@ -196,7 +208,44 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
   const allScenarioItems = useMemo<ScenarioInspectorItem[]>(() => {
     const list: ScenarioInspectorItem[] = [];
 
-    // --- 0. プロローグ & オープニング ---
+    // --- 0. プロローグ（ガイの独白） ---
+    list.push({
+      id: 'p0_prologue',
+      category: 'PROLOGUE',
+      categoryLabel: 'プロローグ',
+      title: 'プロローグ // 1年前の帰還と研究所の邂逅',
+      subtitle: 'ガイの独白（ゲーム本編前の導入物語）',
+      tags: ['プロローグ', 'ガイ独白', '導入'],
+      lines: [
+        {
+          speaker: 'GUY',
+          text: 'ルークがタタル渓谷へ帰ってきてから1年が経った、ある日。',
+          voiceEffect: 'normal',
+        },
+        {
+          speaker: 'GUY',
+          text: '俺がディストの研究所を訪ねると、部屋の隅に見覚えのある子どもがいた。',
+          voiceEffect: 'normal',
+        },
+        {
+          speaker: 'GUY',
+          text: 'ディストにどういうことなのか尋ねても、\n奴は管理用の端末を差し出して不気味に笑うだけだった。',
+          voiceEffect: 'normal',
+        },
+        {
+          speaker: 'GUY',
+          text: '何が何やらわからないが、放置することもできない。',
+          voiceEffect: 'normal',
+        },
+        {
+          speaker: 'GUY',
+          text: '俺は、半ば強引にそいつを連れ帰ることにした。',
+          voiceEffect: 'normal',
+        },
+      ],
+    });
+
+    // --- 1. オープニング ---
     const openingLines = OPENING_ASCH_TEXT.split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
@@ -352,7 +401,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       }
     });
 
-    // --- 2. Phase 2 本格会話 (not p1_) ---
+    // --- 2. Phase 2 通常会話 (not p1_) ---
     const phase2Topics = CONVERSATION_TOPICS.filter(
       (t: ConversationTopic) => !t.id.startsWith('p1_')
     );
@@ -479,13 +528,13 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         list.push({
           id: `${t.id}_stage_${sIdx + 1}`,
           category: aschQuestion || replies ? 'P2_QUESTION' : 'P2_TOPIC',
-          categoryLabel: aschQuestion || replies ? '逆質問' : 'P2・話題',
+          categoryLabel: aschQuestion || replies ? '選択肢あり' : 'P2・会話',
           title: `${t.thoughtText} (段階 ${sIdx + 1}/${t.stages.length})`,
           subtitle: stage.spokenText.slice(0, 38) + '...',
           tags: [
             'Phase2',
             t.id,
-            aschQuestion || replies ? '逆質問あり' : '通常会話',
+            aschQuestion || replies ? '選択肢あり' : '通常会話',
             ...(t.requireSectorUnlocked ? [t.requireSectorUnlocked] : []),
           ],
           lines,
@@ -546,10 +595,10 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       list.push({
         id: `milestone_q_${q.id}`,
         category: 'P2_QUESTION',
-        categoryLabel: '逆質問',
-        title: `逆質問：${q.promptSummary} (${mq.turnCount}T〜)`,
+        categoryLabel: '選択肢あり',
+        title: `【選択肢】${q.promptSummary} (${mq.turnCount}T〜)`,
         subtitle: mq.questionLine.slice(0, 42) + '...',
-        tags: ['Phase2', '逆質問', `${mq.turnCount}ターン以降`, q.id],
+        tags: ['Phase2', '選択肢あり', `${mq.turnCount}ターン以降`, q.id],
         lines: scriptLines,
         extraOptions,
       });
@@ -805,6 +854,38 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
         });
       });
 
+      const distData = DIST_ENDING_COMMENTS[key] || DIST_ENDING_COMMENTS[ed.id];
+      if (distData) {
+        distData.lines.forEach((line, lIdx) => {
+          const brow =
+            lIdx >= 2 && distData.thirdBrow
+              ? distData.thirdBrow
+              : lIdx >= 1 && distData.secondBrow
+                ? distData.secondBrow
+                : distData.brow;
+          const eye =
+            lIdx >= 2 && distData.thirdEye
+              ? distData.thirdEye
+              : lIdx >= 1 && distData.secondEye
+                ? distData.secondEye
+                : distData.eye;
+          const mouth =
+            lIdx >= 2 && distData.thirdMouth
+              ? distData.thirdMouth
+              : lIdx >= 1 && distData.secondMouth
+                ? distData.secondMouth
+                : distData.mouth;
+          edLines.push({
+            speaker: 'DIST',
+            text: line,
+            voiceEffect: 'normal',
+            distParts: { brow, eye, mouth },
+            waitMs: 1400,
+            note: `【ディスト総括（${lIdx + 1}/${distData.lines.length}）】(眉:${brow} 目:${eye} 口:${mouth})`,
+          });
+        });
+      }
+
       list.push({
         id: `ed_${key}`,
         category: 'CLIMAX_ED',
@@ -817,7 +898,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
       });
     });
 
-    // --- 4. データ端末 SEC-00 〜 SEC-26 ---
+    // --- 4. データ端末 SEC-00 〜 SEC-20 ---
     INITIAL_MEMORY_SECTORS.forEach((sec) => {
       list.push({
         id: `sec_${sec.id}`,
@@ -1248,6 +1329,10 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
     setIsAutoPlay(false);
     setIsPlayingCurrent(false);
     soundEngine.unlockOnUserInteraction();
+    if (line.speaker === 'DIST') {
+      soundEngine.playProtectCaptured();
+      return;
+    }
     onPreviewLine(
       line.speaker,
       line.text,
@@ -1762,6 +1847,29 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                         </button>
                       )}
 
+                      {activeItem.id.startsWith('ed_') && onPreviewEndingScreen && (
+                        <button
+                          onClick={() => {
+                            const scenarioKey = activeItem.id.replace('ed_', '');
+                            onPreviewEndingScreen(scenarioKey);
+                          }}
+                          className="px-2.5 py-0.8 text-[11px] font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-950 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+                          title="本番の黒背景・暗転ED画面＋ディスト演出で再生します"
+                        >
+                          <span>暗転ED再生</span>
+                        </button>
+                      )}
+
+                      {activeItem.id === 'p0_prologue' && onPreviewPrologueScreen && (
+                        <button
+                          onClick={onPreviewPrologueScreen}
+                          className="px-2.5 py-0.8 text-[11px] font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-950 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+                          title="本番の暗転画面でプロローグを再生します"
+                        >
+                          <span>本番プロローグ再生</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={handlePlayCurrentScene}
                         disabled={isPlayingCurrent}
@@ -1817,6 +1925,7 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
 
                       {activeItem.lines.map((line, lIdx) => {
                         const isAsch = line.speaker === 'ASCH';
+                        const isDist = line.speaker === 'DIST';
                         const facePartsDesc = line.faceParts;
                         const hasFace = Boolean(line.expression || line.faceParts);
 
@@ -1824,9 +1933,11 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                           <div
                             key={lIdx}
                             className={`p-2.5 border text-left flex flex-col gap-1.5 shadow-sm ${
-                              isAsch
-                                ? 'bg-white/95 border-zinc-300'
-                                : 'bg-[#f4f5f8] border-zinc-300'
+                              isDist
+                                ? 'bg-[#eff0f4] border-zinc-400'
+                                : isAsch
+                                  ? 'bg-white/95 border-zinc-300'
+                                  : 'bg-[#f4f5f8] border-zinc-300'
                             }`}
                           >
                             {/* 発話者・ボイスエフェクト・再生ボタン */}
@@ -1834,12 +1945,14 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span
                                   className={`px-2 py-0.5 text-[10.5px] font-bold ${
-                                    isAsch
-                                      ? 'bg-zinc-900 text-zinc-100 border border-zinc-950'
-                                      : 'bg-zinc-200 text-zinc-900 border border-zinc-400'
+                                    isDist
+                                      ? 'bg-zinc-800 text-zinc-100 border border-zinc-900'
+                                      : isAsch
+                                        ? 'bg-zinc-900 text-zinc-100 border border-zinc-950'
+                                        : 'bg-zinc-200 text-zinc-900 border border-zinc-400'
                                   }`}
                                 >
-                                  {isAsch ? 'ASCH (アッシュ)' : 'GUY (ガイ)'}
+                                  {isDist ? 'DIST (ディスト)' : isAsch ? 'ASCH (アッシュ)' : 'GUY (ガイ)'}
                                 </span>
 
                                 {line.voiceEffect && line.voiceEffect !== 'normal' && (
@@ -1888,8 +2001,40 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                             </div>
 
                             {/* セリフ本文 */}
-                            <div className="p-2 bg-white border border-zinc-300 text-zinc-900 text-[13px] leading-relaxed whitespace-pre-wrap break-words font-zen">
-                              {line.text}
+                            <div className="p-2 bg-white border border-zinc-300 flex items-start gap-2.5">
+                              {line.distParts && (
+                                <div className="relative w-12 h-12 shrink-0 border border-zinc-700 bg-zinc-950 overflow-hidden rounded-xs shadow-xs">
+                                  <img
+                                    src="/images/dist_chara/dist_base.png"
+                                    alt="ディスト"
+                                    className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                                  />
+                                  {line.distParts.brow && line.distParts.brow !== 'none' && (
+                                    <img
+                                      src={`/images/dist_chara/dist_brow_${line.distParts.brow}.png`}
+                                      alt="眉"
+                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                                    />
+                                  )}
+                                  {line.distParts.eye && line.distParts.eye !== 'none' && (
+                                    <img
+                                      src={`/images/dist_chara/dist_eye_${line.distParts.eye}.png`}
+                                      alt="目"
+                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                                    />
+                                  )}
+                                  {line.distParts.mouth && line.distParts.mouth !== 'none' && (
+                                    <img
+                                      src={`/images/dist_chara/dist_mouse_${line.distParts.mouth}.png`}
+                                      alt="口"
+                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                                    />
+                                  )}
+                                </div>
+                              )}
+                              <div className="flex-1 text-zinc-900 text-[13px] leading-relaxed whitespace-pre-wrap break-words font-zen">
+                                {line.text}
+                              </div>
                             </div>
 
                             {/* 表情タグ */}

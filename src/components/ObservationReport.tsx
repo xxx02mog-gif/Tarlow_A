@@ -4,6 +4,7 @@ import {
   EndingDisposition,
   MemorySector,
   ObservationStats,
+  OralInfoEntry,
 } from '../types/game';
 import {
   ENDING_SCENARIOS,
@@ -16,12 +17,25 @@ import {
   ENDING_ARCHIVE_LIST,
 } from '../utils/achievementStore';
 
+// 観測ログ（INFO）の集計対象ID（通常時5件、メイドモード時6件）
+export const TARGET_ORAL_INFO_IDS = [
+  'oral-tea-sensory',
+  'oral-sleep-mode-unimplemented',
+  'oral-mansion-unspoken-text',
+  'oral-hands-feeling-bloodless',
+  'oral-two-years-protect-trace',
+] as const;
+
+export const MAID_ORAL_INFO_ID = 'oral-maid-tea-apron';
+
 interface ObservationReportProps {
   endingDisposition: EndingDisposition;
   endingApproach: EndingApproach;
   customEndingKey?: string | null;
   stats: ObservationStats;
   sectors: MemorySector[];
+  oralInfos?: OralInfoEntry[];
+  isMaidMode?: boolean;
   achievementSave?: AchievementSaveData;
   onResetSession: () => void;
   onOpenAchievements?: () => void;
@@ -33,6 +47,8 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   customEndingKey,
   stats,
   sectors,
+  oralInfos,
+  isMaidMode,
   achievementSave,
   onResetSession,
 }) => {
@@ -41,16 +57,36 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   const [selectedEndingKey, setSelectedEndingKey] = useState<string | null>(null);
   const [selectedAchId, setSelectedAchId] = useState<string | null>(null);
 
-  const totalSectors = sectors.length;
-  const naturalUnlockedCount = sectors.filter(
+  // 観測ログ（INFO）の集計：通常時5件＋メイド時1件（計5〜6件）
+  const targetOralInfoIds =
+    isMaidMode || oralInfos?.some((info) => info.id === MAID_ORAL_INFO_ID)
+      ? [...TARGET_ORAL_INFO_IDS, MAID_ORAL_INFO_ID]
+      : TARGET_ORAL_INFO_IDS;
+
+  const totalOralCount = targetOralInfoIds.length;
+  const unlockedOralCount = oralInfos
+    ? oralInfos.filter((info) =>
+        (targetOralInfoIds as readonly string[]).includes(info.id)
+      ).length
+    : 0;
+  const remainingOralCount = Math.max(0, totalOralCount - unlockedOralCount);
+
+  // 重要セクター（SEC-01〜SEC-20の20件）
+  const relevantSectors = sectors.filter((s) => s.id !== 'SEC-00');
+  const naturalSectorCount = relevantSectors.filter(
     (s) => s.unlocked && s.unlockedMethod === 'DIALOGUE'
   ).length;
-  const forcedUnlockedCount =
+  const forcedSectorCount =
     stats?.overrideCount ??
-    sectors.filter(
-      (s) => s.id !== 'SEC-00' && s.unlocked && s.unlockedMethod === 'OVERRIDE'
+    relevantSectors.filter(
+      (s) => s.unlocked && s.unlockedMethod === 'OVERRIDE'
     ).length;
-  const remainingLockedCount = sectors.filter((s) => !s.unlocked).length;
+  const remainingSectorCount = relevantSectors.filter((s) => !s.unlocked).length;
+
+  // 案B合算集計：端末データ開示（セクター20件 ＋ 観測ログ5〜6件 ＝ 計25〜26件）
+  const naturalUnlockedCount = naturalSectorCount + unlockedOralCount;
+  const forcedUnlockedCount = forcedSectorCount;
+  const remainingLockedCount = remainingSectorCount + remainingOralCount;
 
   const avgResponseSec =
     stats.totalTurns > 0
@@ -97,18 +133,18 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       </div>
 
       {/* 中央メインエリア：左（案1：カテゴリ別3分割） ＆ 右（実績・記録アーカイブ） */}
-      <div className="flex-1 w-full flex items-stretch gap-6 my-2 min-h-0 overflow-hidden">
+      <div className="flex-1 w-full flex items-stretch gap-4 my-2 min-h-0 overflow-hidden">
         {/* 左側：セッション結果（右側のデザインに合わせた3カテゴリ分割） */}
-        <div className="w-[43%] shrink-0 flex flex-col justify-between py-1">
+        <div className="w-[37%] shrink-0 flex flex-col justify-between py-1">
           {/* 1. 対話の記録 */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5">
               <span>▼ 対話の記録</span>
             </div>
             <div className="divide-y divide-zinc-300 text-[11.5px]">
-              <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600 font-medium">到達エンディング</span>
-                <span className="font-bold text-zinc-950 text-right truncate">
+              <div className="py-1 flex items-baseline justify-between gap-2">
+                <span className="text-zinc-600 font-medium shrink-0">到達エンディング</span>
+                <span className="font-bold text-zinc-950 text-right leading-tight">
                   {dispositionLabel}
                 </span>
               </div>
@@ -183,7 +219,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         </div>
 
         {/* 右側：実績・記録（白黒統一・ヒントツールチップ方式） */}
-        <div className="flex-1 flex flex-col justify-between border-l border-zinc-300 pl-6 min-h-0">
+        <div className="flex-1 flex flex-col justify-between border-l border-zinc-300 pl-4 min-h-0">
           {/* タブ切り替え（下線スタイル） */}
           <div className="flex items-center justify-between border-b border-zinc-300/80 pt-1 pb-1 shrink-0">
             <div className="flex items-center gap-4">
@@ -230,7 +266,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
           {/* リスト領域（上部途切れ防止：overflow-visible + 上段ツールチップは下向き表示） */}
           <div className="flex-1 min-h-0 pt-3 pb-1 overflow-visible relative flex flex-col justify-center">
             {activeTab === 'ENDINGS' && (
-              <div className="w-full grid grid-cols-2 grid-rows-5 gap-x-6 gap-y-2.5 items-center">
+              <div className="w-full grid grid-cols-2 grid-rows-5 gap-x-3 gap-y-2.5 items-center">
                 {ENDING_ARCHIVE_LIST.map((item, idx) => {
                   const isSubItem = Boolean(item.subKeys && item.subKeys.length > 0);
                   const isReachedA = item.subKeys
@@ -273,7 +309,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                         );
                         setSelectedAchId(null);
                       }}
-                      className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-center gap-2 transition-colors cursor-pointer"
+                      className="relative w-full text-left py-1.5 border-b border-zinc-300/80 hover:border-zinc-500 flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       {/* ヒントツールチップ（1行目は下方向、2行目以降は上方向へ展開して途切れを防止） */}
                       {isSelected && (
@@ -287,23 +323,23 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                       )}
 
                       <span
-                        className={`text-[11px] font-mono shrink-0 flex items-center gap-1.5 ${
+                        className={`text-[10.5px] font-mono shrink-0 flex items-center gap-1 ${
                           isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >
-                        <span className={isAllReached ? 'text-zinc-950' : isReached ? 'text-zinc-700' : 'text-zinc-400 text-[9px]'}>
+                        <span className={isAllReached ? 'text-zinc-950' : isReached ? 'text-zinc-700' : 'text-zinc-400 text-[8.5px]'}>
                           {isReached ? '●' : '○'}
                         </span>
                         <span>{item.numberLabel}</span>
                       </span>
                       <span
-                        className={`text-[11.5px] whitespace-nowrap overflow-visible flex items-center ${
+                        className={`text-[11px] whitespace-nowrap overflow-visible flex items-center ${
                           isReached ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >
                         <span>{cleanTitle}</span>
                         {isSubItem && (
-                          <span className="inline-flex items-center gap-1.5 ml-2 font-mono text-[11px]">
+                          <span className="inline-flex items-center gap-1 ml-1.5 font-mono text-[10.5px]">
                             <span
                               className={
                                 isReachedA
@@ -381,7 +417,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                         {isUnlocked ? '●' : ach.numberLabel}
                       </span>
                       <span
-                        className={`text-[11.5px] truncate ${
+                        className={`text-[11.5px] leading-tight break-words ${
                           isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >

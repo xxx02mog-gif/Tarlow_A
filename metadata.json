@@ -1,7 +1,6 @@
 {
   "name": "Ghost in the mASCHine",
-  "description": "アッシュ対話型シミュレーション",
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "description": "OBSERVATION DIALOGUE ADV - 非公式ファンメイド対話型アドベンチャーゲーム",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

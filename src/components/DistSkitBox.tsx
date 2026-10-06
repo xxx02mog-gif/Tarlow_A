@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { DistCommentData } from '../data/distComments';
 import { soundEngine } from '../utils/chiptuneAudio';
+import { getAssetUrl } from '../utils/assetPath';
 
 interface DistSkitBoxProps {
   data: DistCommentData;
@@ -46,27 +47,27 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
       {/* スキット顔グラフィック（左右中央寄せ・正方形枠） */}
       <div className="relative w-[130px] h-[130px] rounded border border-zinc-700 bg-zinc-950 shadow-lg overflow-hidden shrink-0">
         <img
-          src="/images/dist/dist_base.png"
+          src={getAssetUrl('images/dist_chara/dist_base.png')}
           alt="ディスト"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
         />
         {brow && brow !== 'none' && (
           <img
-            src={`/images/dist/dist_brow_${brow}.png`}
+            src={getAssetUrl(`images/dist_chara/dist_brow_${brow}.png`)}
             alt="眉"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
         )}
         {eye && eye !== 'none' && (
           <img
-            src={`/images/dist/dist_eye_${eye}.png`}
+            src={getAssetUrl(`images/dist_chara/dist_eye_${eye}.png`)}
             alt="目"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
         )}
         {mouth && mouth !== 'none' && (
           <img
-            src={`/images/dist/dist_mouse_${mouth}.png`}
+            src={getAssetUrl(`images/dist_chara/dist_mouse_${mouth}.png`)}
             alt="口"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />

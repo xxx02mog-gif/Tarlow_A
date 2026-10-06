@@ -123,6 +123,34 @@ button:focus:not(:focus-visible) {
   animation: bubbleEnterFromBottom 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* プロローグ用スチル出現アニメーション（一拍置いてからふわっと出現） */
+.animate-still-in {
+  opacity: 0;
+  animation: stillEnterFromBottom 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+}
+
+/* プロローグ用テキスト出現アニメーション（スチルの後を追って少し遅れて出る演出） */
+.animate-prologue-text-in {
+  opacity: 0;
+  animation: bubbleEnterFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both;
+}
+
+.animate-prologue-text-in-2 {
+  opacity: 0;
+  animation: bubbleEnterFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.76s both;
+}
+
+@keyframes stillEnterFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .animate-bubble-out {
   animation: bubbleExitToTop 0.26s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   pointer-events: none;
