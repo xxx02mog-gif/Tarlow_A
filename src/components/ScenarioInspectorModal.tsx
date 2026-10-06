@@ -39,6 +39,7 @@ import {
   PortraitMotionTuning,
 } from './AschPortrait';
 import { soundEngine } from '../utils/chiptuneAudio';
+import { getAssetUrl } from '../utils/assetPath';
 
 export interface ScriptLinePreview {
   speaker: 'GUY' | 'ASCH' | 'DIST';
@@ -2005,28 +2006,36 @@ export const ScenarioInspectorModal: React.FC<ScenarioInspectorModalProps> = ({
                               {line.distParts && (
                                 <div className="relative w-12 h-12 shrink-0 border border-zinc-700 bg-zinc-950 overflow-hidden rounded-xs shadow-xs">
                                   <img
-                                    src="/images/dist_chara/dist_base.png"
+                                    src={getAssetUrl('images/dist_chara/dist_base.png')}
                                     alt="ディスト"
+                                    loading="eager"
+                                    decoding="sync"
                                     className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
                                   />
                                   {line.distParts.brow && line.distParts.brow !== 'none' && (
                                     <img
-                                      src={`/images/dist_chara/dist_brow_${line.distParts.brow}.png`}
+                                      src={getAssetUrl(`images/dist_chara/dist_brow_${line.distParts.brow}.png`)}
                                       alt="眉"
+                                      loading="eager"
+                                      decoding="sync"
                                       className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
                                     />
                                   )}
                                   {line.distParts.eye && line.distParts.eye !== 'none' && (
                                     <img
-                                      src={`/images/dist_chara/dist_eye_${line.distParts.eye}.png`}
+                                      src={getAssetUrl(`images/dist_chara/dist_eye_${line.distParts.eye}.png`)}
                                       alt="目"
+                                      loading="eager"
+                                      decoding="sync"
                                       className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
                                     />
                                   )}
                                   {line.distParts.mouth && line.distParts.mouth !== 'none' && (
                                     <img
-                                      src={`/images/dist_chara/dist_mouse_${line.distParts.mouth}.png`}
+                                      src={getAssetUrl(`images/dist_chara/dist_mouse_${line.distParts.mouth}.png`)}
                                       alt="口"
+                                      loading="eager"
+                                      decoding="sync"
                                       className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
                                     />
                                   )}

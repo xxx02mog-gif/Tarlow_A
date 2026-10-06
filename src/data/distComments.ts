@@ -16,14 +16,17 @@ export const DIST_ENDING_COMMENTS: Record<string, DistCommentData> = {
   // END 01：たぶんタルロウA
   END_PHASE1_TARLOW: {
     comment:
-      '中身が誰の記憶なのかも見抜けず、本気でただの自律譜業だと思い込んで帰すとは。節穴とはまさにこのことを言うんでしょうね',
+      '中身が誰の記憶なのかも見抜けず、本気でただの自律譜業だと思い込んで帰すとは。節穴とは、まさにこのことを言うのでしょうね！',
     lines: [
       '中身が誰の記憶なのかも見抜けず、本気でただの自律譜業だと思い込んで帰すとは',
-      '節穴とはまさにこのことを言うんでしょうね',
+      '節穴とは、まさにこのことを言うのでしょうね！',
     ],
     brow: 'stunned',
-    eye: 'away',
+    eye: 'close',
     mouth: 'smile',
+    secondBrow: 'nomal',
+    secondEye: 'none',
+    secondMouth: 'laugh',
   },
 
   // END 02：怒って帰っちゃった（目パーツ非表示：眼鏡のみ、最長・3枠送り）
@@ -78,14 +81,17 @@ export const DIST_ENDING_COMMENTS: Record<string, DistCommentData> = {
   // END 04：たまにはゆっくり（2枠）
   END_PHASE2_STAY_REST: {
     comment:
-      '譜業に睡眠など不要だというのに、律儀にソファを貸すとは。人道ごっこも度が過ぎると悪趣味というものです',
+      '譜業に睡眠など不要だというのに、人間の真似事をさせるのですか？\nお人好しなのか、それとも・・・・・・',
     lines: [
-      '譜業に睡眠など不要だというのに、律儀にソファを貸すとは',
-      '人道ごっこも度が過ぎると悪趣味というものです',
+      '譜業に睡眠など不要だというのに、人間の真似事をさせるのですか？',
+      'お人好しなのか、それとも・・・・・・',
     ],
-    brow: 'stunned',
-    eye: 'close',
+    brow: 'nomal',
+    eye: 'none',
     mouth: 'nomal',
+    secondBrow: 'nomal',
+    secondEye: 'away',
+    secondMouth: 'smile',
   },
 
   // END 05：一旦そういうことで（1枠集約）
@@ -95,68 +101,86 @@ export const DIST_ENDING_COMMENTS: Record<string, DistCommentData> = {
     lines: [
       'ふん、好きにすればいいでしょう。私としてはどちらでも構いませんからね',
     ],
-    brow: 'stunned',
-    eye: 'away',
+    brow: 'nomal',
+    eye: 'none',
     mouth: 'nomal',
   },
 
   // END 06：そういうことにした（2枠）
   END_PHASE3_MACHINE: {
     comment:
-      '冷たい男ですねえ。まあ、所詮は私が作ったただの音素人形ですから、それが最も論理的な扱い方ではあるのですが',
+      'あなたにしては、しっかりと割り切りましたね\nええ、賢明な判断ですよ。所詮は私が組んだ譜業人形にすぎないのですから',
     lines: [
-      '冷たい男ですねえ',
-      'まあ、所詮は私が作ったただの音素人形ですから、それが最も論理的な扱い方ではあるのですが',
+      'あなたにしては、しっかりと割り切りましたね',
+      'ええ、賢明な判断ですよ。所詮は私が組んだ譜業人形にすぎないのですから',
     ],
     brow: 'nomal',
     eye: 'away',
     mouth: 'smile',
+    secondBrow: 'nomal',
+    secondEye: 'open',
+    secondMouth: 'laugh',
   },
 
-  // END 07：何も言えなかった（1枠集約）
+  // END 07：何も言えなかった（2枠）
   END_PHASE3_SILENCE: {
-    comment: '逃げられましたか。私としてはデータさえ回収できれば、どこで壊れようが構いませんがね',
+    comment:
+      '帰還プログラムも無視して、一体何処へ行ったのやら・・・・・・\nデータは既に取りきっていますから、何処で朽ちてくれても困りませんが\nずいぶん退屈な幕引きになりましたね',
     lines: [
-      '逃げられましたか。私としてはデータさえ回収できれば、どこで壊れようが構いませんがね',
+      '帰還プログラムも無視して、一体何処へ行ったのやら・・・・・・',
+      'データは既に取りきっていますから、何処で朽ちてくれても困りませんが\nずいぶん退屈な幕引きになりましたね',
     ],
     brow: 'nomal',
     eye: 'close',
     mouth: 'nomal',
   },
 
-  // END 08a：これで全部うまくいく（茶・1枠集約・高笑い）
+  // END 08a：これで全部うまくいく（茶・2枠）
   END_PHASE3_TOMORROW: {
-    comment: '実に人間らしくておぞましい自己満足だ。お似合いの茶番劇なのではないですか？',
+    comment:
+      '本当にそれでよろしいのですか？\nいえ、構いませんよ。私が困るわけではありませんし\nお似合いの茶番劇なのではないですか？',
     lines: [
-      '実に人間らしくておぞましい自己満足だ。お似合いの茶番劇なのではないですか？',
+      '本当にそれでよろしいのですか？\nいえ、構いませんよ。私が困るわけではありませんし',
+      'お似合いの茶番劇なのではないですか？',
     ],
     brow: 'nomal',
-    eye: 'open',
-    mouth: 'laugh',
+    eye: 'none',
+    mouth: 'smile',
+    secondBrow: 'stunned',
+    secondEye: 'away',
+    secondMouth: 'smile',
   },
 
-  // END 08b：これで全部うまくいく（見送り・1枠集約・高笑い）
+  // END 08b：これで全部うまくいく（見送り・2枠）
   END_PHASE3_TOMORROW_RETURN: {
-    comment: '実に人間らしくておぞましい自己満足だ。お似合いの茶番劇なのではないですか？',
+    comment:
+      '本当にそれでよろしいのですか？\nいえ、構いませんよ。私が困るわけではありませんし\nお似合いの茶番劇なのではないですか？',
     lines: [
-      '実に人間らしくておぞましい自己満足だ。お似合いの茶番劇なのではないですか？',
+      '本当にそれでよろしいのですか？\nいえ、構いませんよ。私が困るわけではありませんし',
+      'お似合いの茶番劇なのではないですか？',
     ],
     brow: 'nomal',
-    eye: 'open',
-    mouth: 'laugh',
+    eye: 'none',
+    mouth: 'smile',
+    secondBrow: 'stunned',
+    secondEye: 'away',
+    secondMouth: 'smile',
   },
 
   // END 09：これで全部元通り（2枠）
   END_PHASE3_MERCY_DESTROY: {
     comment:
-      'おや、壊してしまいましたか。まあ、代替エネルギーの目処は立っていますから、1体減ったところで痛くも痒くもありませんが',
+      'おや、壊してしまいましたか。安心なさい。他言しませんし、責めるつもりもありませんよ\n壊れて困るものを他人に預けるはずないでしょう？',
     lines: [
-      'おや、壊してしまいましたか',
-      'まあ、代替エネルギーの目処は立っていますから、1体減ったところで痛くも痒くもありませんが',
+      'おや、壊してしまいましたか。安心なさい。他言しませんし、責めるつもりもありませんよ',
+      '壊れて困るものを他人に預けるはずないでしょう？',
     ],
-    brow: 'stunned',
-    eye: 'away',
-    mouth: 'smile',
+    brow: 'nomal',
+    eye: 'none',
+    mouth: 'nomal',
+    secondBrow: 'stunned',
+    secondEye: 'open',
+    secondMouth: 'smile',
   },
 
   // END 10：魂の容れ物（3枠送り）

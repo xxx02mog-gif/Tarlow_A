@@ -49,12 +49,16 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
         <img
           src={getAssetUrl('images/dist_chara/dist_base.png')}
           alt="ディスト"
+          loading="eager"
+          decoding="sync"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
         />
         {brow && brow !== 'none' && (
           <img
             src={getAssetUrl(`images/dist_chara/dist_brow_${brow}.png`)}
             alt="眉"
+            loading="eager"
+            decoding="sync"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
         )}
@@ -62,6 +66,8 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
           <img
             src={getAssetUrl(`images/dist_chara/dist_eye_${eye}.png`)}
             alt="目"
+            loading="eager"
+            decoding="sync"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
         )}
@@ -69,13 +75,15 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
           <img
             src={getAssetUrl(`images/dist_chara/dist_mouse_${mouth}.png`)}
             alt="口"
+            loading="eager"
+            decoding="sync"
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
         )}
       </div>
 
-      {/* その下に1行表示のセリフ（クリックで1行ずつ進行） */}
-      <div className="w-full px-4 text-center min-h-[30px] flex items-center justify-center">
+      {/* その下にセリフ（2行表示時も画像の上下位置がズレないよう高さを固定保持） */}
+      <div className="w-full px-4 text-center h-[56px] flex items-start justify-center">
         <p
           key={lineIndex}
           className="text-[14px] leading-relaxed tracking-wider text-zinc-100 whitespace-pre-wrap select-none font-sans animate-bubble-in"

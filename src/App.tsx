@@ -598,6 +598,25 @@ export default function App() {
     preloadUrl(getAssetUrl('images/stills/stills03.png'));
     DEFAULT_ROOT_FILES.forEach((f) => preloadUrl(getAssetUrl(`images/${f}`)));
 
+    // ディスト顔グラフィック全パーツの同期プリロード
+    const DIST_IMAGE_FILES = [
+      'dist_base.png',
+      'dist_brow_angry.png',
+      'dist_brow_nomal.png',
+      'dist_brow_stunned.png',
+      'dist_eye_away.png',
+      'dist_eye_close.png',
+      'dist_eye_open.png',
+      'dist_mouse_angry.png',
+      'dist_mouse_close.png',
+      'dist_mouse_laugh.png',
+      'dist_mouse_nomal.png',
+      'dist_mouse_smile.png',
+    ];
+    DIST_IMAGE_FILES.forEach((f) =>
+      preloadUrl(getAssetUrl(`images/dist_chara/${f}`))
+    );
+
     fetch('/api/available-assets')
       .then((res) => res.json())
       .then(
