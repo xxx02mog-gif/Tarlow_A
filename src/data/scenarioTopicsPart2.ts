@@ -166,6 +166,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           trustDelta: 1,
         },
         grantsLinkTags: ['tea_served'],
+        naturalUnlockSectorId: 'SEC-25',
         oralInfo: {
           id: 'oral-tea-and-taste',
           category: '機体ログ',
@@ -561,20 +562,22 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           faceParts: { brow: 'sad', eyes: 'close', mouth: 'close', effects: [] },
           moodDelta: 0,
         },
-        extraExchanges: [
+        replyOptions: [
           {
-            speaker: 'GUY',
-            text: '似合ってるじゃないか',
-          },
-          {
-            speaker: 'ASCH',
-            text: 'まじまじ見るな',
+            id: 'p2_clothes_reply_suits_you',
+            thoughtText: '似合ってるじゃないか',
+            spokenText:
+              '似合ってるじゃないか',
+            aschText:
+              'まじまじ見るな',
             expression: 'look_away',
             faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: ['blush'] },
+            moodDelta: 1,
+            trustDelta: 1,
+            naturalUnlockSectorId: 'SEC-11',
+            grantsLinkTags: ['talked_clothes', 'hint_manor_parents'],
           },
         ],
-        naturalUnlockSectorId: 'SEC-11',
-        grantsLinkTags: ['talked_clothes', 'hint_manor_parents'],
       },
     ],
   },
@@ -1252,14 +1255,14 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         },
         systemLog:
           'SPEC RECORDED // CODE: [MC-SLEEP_MODE]',
-        extraExchanges: [
+        replyOptions: [
           {
-            speaker: 'GUY',
-            text: 'そうか・・・・・・。目が覚めた時、変な感じがしないか？',
-          },
-          {
-            speaker: 'ASCH',
-            text: '意識が戻るたびに、体の奥から音機関が回る音がしやがる。\nいつまで経っても、慣れないもんだな',
+            id: 'p2_sleep_reply_wake_feeling',
+            thoughtText: '目が覚めた時、変な感じはしないか？',
+            spokenText:
+              'そうか・・・・・・。目が覚めた時、変な感じがしないか？',
+            aschText:
+              '意識が戻るたびに、体の奥から音機関が回る音がしやがる。\nいつまで経っても、慣れないもんだな',
             expression: 'look_away',
             faceParts: {
               brow: 'pain',
@@ -1273,9 +1276,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               mouth: 'frown',
               effects: [],
             },
+            trustDelta: 2,
+            grantsLinkTags: ['hint_sleep_dreams'],
+            completesTopic: true,
           },
         ],
-        completesTopic: true,
       },
     ],
   },
@@ -1301,15 +1306,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           mouth: 'close',
           effects: [],
         },
-        trustDelta: 2,
-        extraExchanges: [
+        trustDelta: 1,
+        replyOptions: [
           {
-            speaker: 'GUY',
-            text: 'じゃあ、どこか他に身を寄せる当てでもあるのか？',
-          },
-          {
-            speaker: 'ASCH',
-            text: '・・・・・・ない。\nこんな身体で、どこへ行けと言うんだ',
+            id: 'p2_future_reply_other_place',
+            thoughtText: '他に身を寄せる当てでもあるのか？',
+            spokenText:
+              'じゃあ、どこか他に身を寄せる当てでもあるのか？',
+            aschText:
+              '・・・・・・ない。\nこんな身体で、どこへ行けと言うんだ',
             expression: 'look_away',
             faceParts: {
               brow: 'pain',
@@ -1323,11 +1328,12 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               mouth: 'frown',
               effects: [],
             },
+            trustDelta: 2,
+            systemLog:
+              'RESPONSE LOGGED // TOPIC: FUTURE_WHEREABOUTS',
+            completesTopic: true,
           },
         ],
-        systemLog:
-          'RESPONSE LOGGED // TOPIC: FUTURE_WHEREABOUTS',
-        completesTopic: true,
       },
     ],
   },
@@ -1354,17 +1360,16 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           mouth: 'close',
           effects: [],
         },
-        trustDelta: 2,
+        trustDelta: 1,
         grantsLinkTags: ['hint_manor_parents'],
-        extraExchanges: [
+        replyOptions: [
           {
-            speaker: 'GUY',
-            text:
+            id: 'p2_manor_reply_past_revenge',
+            thoughtText: 'あの頃の俺はずっと復讐の機会を窺っていた',
+            spokenText:
               'ああ。あの頃の俺は、おまえたちファブレ一族を恨んで、\n隙あらば復讐しようとずっと機会を窺っていた。\n・・・・・・まさか何年も経って、あの時と同じ姿のおまえと向き合うことになるとはね',
-          },
-          {
-            speaker: 'ASCH',
-            text: 'おまえは・・・・・・\n・・・・・・いや、いい',
+            aschText:
+              'おまえは・・・・・・\n・・・・・・いや、いい',
             expression: 'normal',
             faceParts: {
               brow: 'sad',
@@ -1379,18 +1384,21 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               mouth: 'close',
               effects: [],
             },
+            moodDelta: 0,
+            trustDelta: 2,
+            grantsLinkTags: ['hint_manor_parents'],
+            oralInfo: {
+              id: 'oral-manor-unsaid-words',
+              category: '情動反応',
+              title: '屋敷時代の話題における発声中断と未出力テキスト',
+              content:
+                '屋敷時代の因縁に関する対話中、「おまえは・・・・・・」の後続として言語野で『今でも俺が憎いんだろう』という音声バッファが形成されたが、声帯ユニットへの出力直前に破棄され、「・・・・・・いや、いい」へ差し替えられた履歴',
+            },
+            systemLog:
+              'SPEECH BUFFER ABORTED // CODE: [EM-UNSAID_QUERY]',
+            completesTopic: true,
           },
         ],
-        oralInfo: {
-          id: 'oral-manor-unsaid-words',
-          category: '情動反応',
-          title: '屋敷時代の話題における発声中断と未出力テキスト',
-          content:
-            '屋敷時代の因縁に関する対話中、「おまえは・・・・・・」の後続として言語野で『今でも俺が憎いんだろう』という音声バッファが形成されたが、声帯ユニットへの出力直前に破棄され、「・・・・・・いや、いい」へ差し替えられた履歴',
-        },
-        systemLog:
-          'SPEECH BUFFER ABORTED // CODE: [EM-UNSAID_QUERY]',
-        completesTopic: true,
       },
     ],
   },
@@ -1678,6 +1686,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
                 '本機は痛覚受容回路が遮断されており外傷による機能低下は生じないが、本機自身は「出血しないこと」に強い疎外感を抱いており、自己同一性を損なう主要因となっていることが判明。',
             },
             systemLog: 'PAIN SENSOR STATUS // CODE: [MC-NO_PAIN_OMIT]',
+            naturalUnlockSectorId: 'SEC-24',
             completesTopic: true,
           },
           {
@@ -1921,15 +1930,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           effects: ['pale', 'sweat', 'noise'],
         },
         voiceEffects: ['tremble_glitch', 'normal'],
-        extraExchanges: [
+        replyOptions: [
           {
-            speaker: 'GUY',
-            text:
+            id: 'p2_dp002_reply_why_hide',
+            thoughtText: 'おまえ、本当に覚えていないのか？',
+            spokenText:
               '・・・・・・なあ、おまえ、本当に何も覚えていないのか？\nエルドラントのあと・・・・・・ディストのところへ行くまでのこと',
-          },
-          {
-            speaker: 'ASCH',
-            text:
+            aschText:
               '・・・・・・知るかそんなもの・・・・・・ッ！！\n・・・・・・何なんだよ、おまえは・・・・・・！\n・・・・・・俺を疑って、何を探ろうとしているんだ・・・・・・っ！',
             expression: 'glare',
             faceParts: {
@@ -1938,33 +1945,58 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               mouth: 'shout',
               effects: ['pale', 'sweat'],
             },
-            voiceEffect: 'shout_glitch',
-          },
-          {
-            speaker: 'ASCH',
-            text:
-              '・・・・・・っ、ハァ・・・・・・ハァ・・・・・・っ！\nもういい、喋るな・・・・・・！　これ以上、過去の話をする気はない・・・・・・っ！',
-            expression: 'pain',
-            faceParts: {
-              brow: 'pain',
+            secondExpression: 'look_away',
+            secondFaceParts: {
+              brow: 'sad',
               eyes: 'away',
               mouth: 'grit',
-              effects: ['pale', 'sweat', 'noise'],
+              effects: ['sweat'],
             },
-            voiceEffect: 'tremble_glitch',
-            waitMs: 2500,
+            voiceEffects: ['shout_glitch', 'tremble'],
+            extraExchanges: [
+              {
+                speaker: 'ASCH',
+                text: '・・・・・・っ、ハァ・・・・・・ハァ・・・・・・っ！\nもういい、喋るな・・・・・・！　これ以上、過去の話をする気はない・・・・・・っ！',
+                expression: 'pain',
+                faceParts: {
+                  brow: 'pain',
+                  eyes: 'away',
+                  mouth: 'grit',
+                  effects: ['pale', 'sweat', 'noise'],
+                },
+                voiceEffect: 'tremble_glitch',
+                waitMs: 2500,
+              },
+            ],
+            grantsLinkTags: ['asked_about_dp002'],
+            oralInfo: {
+              id: 'oral-dp002-memory-defense',
+              category: '情動反応',
+              title: '記憶防衛プロテクト強制励起の形跡',
+              content:
+                '空白の2年間に言及された際、言語野の音声出力がグリッチ状に乱壊。\n激しい拒絶反応とともに、中枢コアの自壊を防ぐための緊急メモリ封鎖が作動した。',
+            },
+            systemLog: 'PROTECT RESISTANCE DETECTED // CODE: [EM-MEMORY_DEFENSE]',
+            naturalUnlockSectorId: 'SEC-26',
+            completesTopic: true,
+          },
+          {
+            id: 'p2_dp002_reply_back_off',
+            thoughtText: 'すまない、俺の気のせいかもしれない',
+            spokenText:
+              '・・・・・・すまない。俺の気のせいかもしれない。少し動転してたみたいだ',
+            aschText:
+              '・・・・・・っ。　へ、平気だ・・・・・・',
+            expression: 'look_away',
+            faceParts: {
+              brow: 'doubt',
+              eyes: 'away',
+              mouth: 'frown',
+              effects: [],
+            },
+            resetsTopicProgress: true,
           },
         ],
-        grantsLinkTags: ['asked_about_dp002'],
-        oralInfo: {
-          id: 'oral-dp002-memory-defense',
-          category: '情動反応',
-          title: '記憶防衛プロテクト強制励起の形跡',
-          content:
-            '空白の2年間に言及された際、言語野の音声出力がグリッチ状に乱壊。\n激しい拒絶反応とともに、中枢コアの自壊を防ぐための緊急メモリ封鎖が作動した。',
-        },
-        systemLog: 'PROTECT RESISTANCE DETECTED // CODE: [EM-MEMORY_DEFENSE]',
-        completesTopic: true,
       },
     ],
   },

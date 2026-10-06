@@ -318,7 +318,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
     '  ・END 07 // 何も言えなかった ： 何も答えない',
     '■ DP-002 / DP-003 を解放したルート',
     '  ・END 08 // これで全部うまくいく ： 秘密を問い詰めずに肯定する',
-    '  ・END 09 // これで全部元通り ： 秘密を問い詰めずに殺す',
+    '  ・END 09 // これでぜんぶ元通り ： 秘密を問い詰めずに殺す',
     '  ・END 10 // 魂の容れ物 ： 秘密を問い詰める（Ghost in the mASCHine）',
     '',
     '====================================',
@@ -619,7 +619,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 </div>
                 <div className="text-stone-200">
                   <span className="text-rose-500 font-bold">END 09：</span>
-                  問い詰めずに殺す（これで全部元通り）
+                  問い詰めずに殺す（これでぜんぶ元通り）
                 </div>
                 <div className="text-stone-200">
                   <span className="text-rose-300 font-bold">END 10：</span>

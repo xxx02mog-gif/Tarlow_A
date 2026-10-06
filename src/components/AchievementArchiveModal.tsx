@@ -400,7 +400,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                       {isUnlocked ? '●' : ach.numberLabel}
                     </span>
                     <span
-                      className={`text-[11.5px] leading-tight break-words ${
+                      className={`text-[11.5px] truncate ${
                         isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
