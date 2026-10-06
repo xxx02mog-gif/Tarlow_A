@@ -93,6 +93,8 @@ import {
 import { soundEngine } from './utils/chiptuneAudio';
 import { getAssetUrl } from './utils/assetPath';
 import { formatBubbleText, formatParagraphText } from './utils/japaneseLineWrap';
+import { DIST_ENDING_COMMENTS } from './data/distComments';
+import { DistSkitBox } from './components/DistSkitBox';
 import './game.css';
 
 // 実績17（百面相）で表情鑑賞、実績18（もう寝よう）でシナリオ台本が解放されます
@@ -139,21 +141,37 @@ const DEFAULT_ROOT_FILES = [
 const STORAGE_KEY_TEST_PNG = 'asch_asset_test_png_v3';
 const STORAGE_KEY_TANMATU_PNG = 'asch_asset_tanmatu_png_v3';
 
-const PROLOGUE_PAGES: string[][] = [
-  [
-    'ルークがタタル渓谷へ帰ってきてから1年が経った、ある日。',
-    '俺がディストの研究所を訪ねると、部屋の隅に見覚えのある子どもがいた。',
-    'ディストにどういうことなのか尋ねても、奴は管理用の端末を差し出して不気味に笑うだけだった。',
-  ],
-  [
-    '何が何やらわからないが、放置することもできない。',
-    '俺は、半ば強引にそいつを連れ帰ることにした。',
-  ],
+interface PrologueStepData {
+  image?: string;
+  lines: string[];
+  singleLine?: boolean;
+}
+
+const PROLOGUE_STEPS: PrologueStepData[] = [
+  {
+    image: getAssetUrl('images/stills/stills01.png'),
+    lines: ['ルークがタタル渓谷へ帰ってきてから1年が経った、ある日。'],
+  },
+  {
+    image: getAssetUrl('images/stills/stills02.png'),
+    lines: ['俺がディストの研究所を訪ねると、部屋の隅に見覚えのある子どもがいた。'],
+    singleLine: true,
+  },
+  {
+    image: getAssetUrl('images/stills/stills03.png'),
+    lines: [
+      'ディストにどういうことなのか尋ねても、',
+      '奴は管理用の端末を差し出して不気味に笑うだけだった。',
+    ],
+  },
+  {
+    lines: [
+      '何が何やらわからないが、放置することもできない。',
+      '俺は、半ば強引にそいつを連れ帰ることにした。',
+    ],
+  },
 ];
-const TOTAL_PROLOGUE_LINES = PROLOGUE_PAGES.reduce(
-  (sum, page) => sum + page.length,
-  0
-);
+const TOTAL_PROLOGUE_STEPS = PROLOGUE_STEPS.length;
 
 const resolveVoiceEffectWithGlitch = (
   baseEffect: BubbleVoiceEffect,
@@ -512,6 +530,10 @@ export default function App() {
   const [isCompactViewport, setIsCompactViewport] = useState<boolean>(false);
   const [isScenarioInspectorOpen, setIsScenarioInspectorOpen] =
     useState<boolean>(false);
+  const [isInspectorEndingPreview, setIsInspectorEndingPreview] =
+    useState<boolean>(false);
+  const [isInspectorProloguePreview, setIsInspectorProloguePreview] =
+    useState<boolean>(false);
   const [inspectorViewMode, setInspectorViewMode] =
     useState<InspectorViewMode>('dock');
   const previousPhaseBeforeInspectorRef = useRef<GamePhaseState | null>(null);
@@ -571,6 +593,9 @@ export default function App() {
 
     preloadUrl(getAssetUrl('images/test.png'));
     preloadUrl(getAssetUrl('images/tanmatu.png'));
+    preloadUrl(getAssetUrl('images/stills/stills01.png'));
+    preloadUrl(getAssetUrl('images/stills/stills02.png'));
+    preloadUrl(getAssetUrl('images/stills/stills03.png'));
     DEFAULT_ROOT_FILES.forEach((f) => preloadUrl(getAssetUrl(`images/${f}`)));
 
     fetch('/api/available-assets')
@@ -1342,7 +1367,7 @@ export default function App() {
       });
 
       const steps: QueuedStep[] = [];
-      let lastSpeaker: 'GUY' | 'ASCH' | null = null;
+      let lastSpeaker: 'GUY' | 'ASCH' | 'DIST' | null = null;
       let lastLineText = '';
       const isEndingScene = Boolean(endingTransition);
 
@@ -1439,12 +1464,16 @@ export default function App() {
               }));
             }
             if (line.text.trim()) {
-              pushScreenBubble(
-                line.speaker,
-                line.text,
-                line.voiceEffect ?? 'normal',
-                false
-              );
+              if (line.speaker === 'DIST') {
+                soundEngine.playProtectCaptured();
+              } else {
+                pushScreenBubble(
+                  line.speaker,
+                  line.text,
+                  line.voiceEffect ?? 'normal',
+                  false
+                );
+              }
             }
           },
           isBubble: true,
@@ -1578,13 +1607,17 @@ export default function App() {
 
   const handlePreviewInspectorSingleLine = useCallback(
     (
-      speaker: 'GUY' | 'ASCH',
+      speaker: 'GUY' | 'ASCH' | 'DIST',
       text: string,
       voiceEffect: BubbleVoiceEffect = 'normal',
       expression?: ExpressionId,
       faceParts?: Partial<FaceParts>
     ) => {
       soundEngine.unlockOnUserInteraction();
+      if (speaker === 'DIST') {
+        soundEngine.playProtectCaptured();
+        return;
+      }
       if (gamePhase !== 'PLAYING') {
         setGamePhase('PLAYING');
         soundEngine.setPlayingPhase(true);
@@ -2049,7 +2082,6 @@ export default function App() {
           'RESPONSE TIMEOUT // AUTONOMOUS QUERY PROTOCOL SUSPENDED'
         );
         unlockAchievements('ach_13');
-        unlockSectorDirectly('SEC-21');
         addOralInfo({
           id: 'oral-autonomous-query-abort',
           category: '情動反応',
@@ -2102,7 +2134,6 @@ export default function App() {
             ANGRY_COOLDOWN_REACTIONS[cooldownIdx] ??
             ANGRY_COOLDOWN_REACTIONS[ANGRY_COOLDOWN_REACTIONS.length - 1];
           unlockAchievements('ach_12');
-          unlockSectorDirectly('SEC-23');
           appendLog('INFO', cooldownReaction.logMessage);
           addOralInfo({
             id: 'oral-calm-down-silence',
@@ -3965,7 +3996,6 @@ export default function App() {
       // フェーズ1でも4回目以降は手を払われ、不機嫌ポイント（mood -1）が付く！
       if (currentCount >= 3) {
         unlockAchievements('ach_11');
-        unlockSectorDirectly('SEC-22');
         soundEngine.playHandSlap();
         setReplayPulse((p) => p + 1);
         setIsScreenShaking(true);
@@ -4074,7 +4104,6 @@ export default function App() {
     // 4回目以上（currentCount >= 3）：どの機嫌であっても手を払われ、不機嫌になる
     if (currentCount >= 3) {
       unlockAchievements('ach_11');
-      unlockSectorDirectly('SEC-22');
       soundEngine.playHandSlap();
       setReplayPulse((p) => p + 1);
       setIsScreenShaking(true);
@@ -6585,7 +6614,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 1.1.1</span>
+              <span>VERSION 1.2.1</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
@@ -6667,80 +6696,181 @@ export default function App() {
         )}
 
         {/* === 1. プロローグ画面 === */}
-        {gamePhase === 'PROLOGUE' && (
-          <div
-            onClick={() => {
-              soundEngine.unlockOnUserInteraction();
-              soundEngine.playTextAdvance();
-              if (prologueStep < TOTAL_PROLOGUE_LINES - 1) {
-                setPrologueStep((prev) => prev + 1);
-              } else {
-                startPlayingPhase();
-              }
-            }}
-            className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-center px-12 cursor-pointer"
-          >
-            <div className="max-w-[460px] w-full space-y-4">
-              {(() => {
-                let remaining = prologueStep;
-                let pageIdx = 0;
-                while (
-                  pageIdx < PROLOGUE_PAGES.length - 1 &&
-                  remaining >= PROLOGUE_PAGES[pageIdx].length
-                ) {
-                  remaining -= PROLOGUE_PAGES[pageIdx].length;
-                  pageIdx += 1;
+        {gamePhase === 'PROLOGUE' && (() => {
+          const currentStepData =
+            PROLOGUE_STEPS[prologueStep] || PROLOGUE_STEPS[0];
+          return (
+            <div
+              onClick={() => {
+                soundEngine.unlockOnUserInteraction();
+                soundEngine.playTextAdvance();
+                if (prologueStep < TOTAL_PROLOGUE_STEPS - 1) {
+                  setPrologueStep((prev) => prev + 1);
+                } else {
+                  if (isInspectorProloguePreview) {
+                    setIsInspectorProloguePreview(false);
+                    setGamePhase('PLAYING');
+                    setIsScenarioInspectorOpen(true);
+                  } else {
+                    startPlayingPhase();
+                  }
                 }
-                const currentPageLines = PROLOGUE_PAGES[pageIdx].slice(
-                  0,
-                  remaining + 1
-                );
-                return currentPageLines.map((line, idx) => (
-                  <p
-                    key={`p-${pageIdx}-${idx}`}
-                    className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
+              }}
+              className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-center px-8 cursor-pointer select-none relative"
+            >
+              {isInspectorProloguePreview && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundEngine.playTerminalTab();
+                    setIsInspectorProloguePreview(false);
+                    setGamePhase('PLAYING');
+                    setIsScenarioInspectorOpen(true);
+                  }}
+                  className="fixed top-4 left-4 z-50 px-3 py-1 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 text-[11px] font-zen flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
+                  title="台本一覧に戻ります"
+                >
+                  <span>◀</span>
+                  <span>台本に戻る</span>
+                </button>
+              )}
+              {currentStepData.image ? (
+                /* スチルあり：スチルとテキスト1行目をひとかたまりとして上下中央寄せ（2行目があってもスチル位置は不変） */
+                <div className="relative flex flex-col items-center justify-center max-w-[620px] w-full text-center">
+                  <div
+                    key={`prologue-still-${prologueStep}`}
+                    className="-mt-[34px] mb-3 flex justify-center animate-still-in"
                   >
-                    {formatParagraphText(line, 30.5)}
-                  </p>
-                ));
-              })()}
+                    <img
+                      src={currentStepData.image}
+                      alt="プロローグスチル"
+                      className="w-[400px] max-w-[85vw] aspect-[1166/674] object-cover pointer-events-none"
+                    />
+                  </div>
+
+                  <div className="relative flex flex-col items-center w-full">
+                    <p
+                      key={`p-line-${prologueStep}-0`}
+                      className={`text-[14px] leading-relaxed tracking-wider text-zinc-200 text-center animate-prologue-text-in ${
+                        currentStepData.singleLine
+                          ? 'whitespace-nowrap'
+                          : 'whitespace-pre-line'
+                      }`}
+                    >
+                      {currentStepData.singleLine
+                        ? currentStepData.lines[0]
+                        : formatParagraphText(currentStepData.lines[0], 35)}
+                    </p>
+
+                    {/* 2行目がある場合：1行目の下に絶対配置し、スチル＋1行目の中心位置を変化させない */}
+                    {currentStepData.lines.length > 1 && (
+                      <div className="absolute top-full left-0 right-0 pt-2 flex justify-center">
+                        <p
+                          key={`p-line-${prologueStep}-1`}
+                          className="text-[14px] leading-relaxed tracking-wider text-zinc-200 text-center whitespace-pre-line animate-prologue-text-in-2"
+                        >
+                          {formatParagraphText(currentStepData.lines[1], 35)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* スチルなし（残りのテキスト）：全体を上下中央寄せ */
+                <div
+                  key={`prologue-text-${prologueStep}`}
+                  className="space-y-3 animate-bubble-in max-w-[620px] w-full text-center"
+                >
+                  {currentStepData.lines.map((line, idx) => (
+                    <p
+                      key={`p-line-${prologueStep}-${idx}`}
+                      className="text-[14px] leading-relaxed tracking-wider text-zinc-200 text-center whitespace-pre-line"
+                    >
+                      {formatParagraphText(line, 35)}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* === 2. エンディング画面（リザルト提示前） === */}
-        {gamePhase === 'ENDING' && (
-          <div
-            onClick={() => {
-              soundEngine.playTextAdvance();
-              if (endingStep < endingLines.length - 1) {
-                setEndingStep((prev) => prev + 1);
-              } else {
-                setGamePhase('REPORT');
-              }
-            }}
-            className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-center px-12 cursor-pointer"
-          >
-            <div className="max-w-[480px] w-full space-y-4">
-              <div className="border-b border-zinc-800 pb-2 mb-2">
-                <p className="text-[11px] text-zinc-400 tracking-widest">
-                  {currentEndingScenario.subtitle}
-                </p>
-                <h2 className="text-[18px] text-zinc-100 tracking-wider">
-                  {currentEndingScenario.title}
-                </h2>
-              </div>
-              {endingLines.slice(0, endingStep + 1).map((line, idx) => (
-                <p
-                  key={idx}
-                  className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
+        {gamePhase === 'ENDING' && (() => {
+          const distCommentData =
+            DIST_ENDING_COMMENTS[resolvedEndingScenarioKey] ||
+            DIST_ENDING_COMMENTS[currentEndingScenario.id] ||
+            DIST_ENDING_COMMENTS.END_PHASE2_ASCH;
+
+          const distLines =
+            distCommentData.lines && distCommentData.lines.length > 0
+              ? distCommentData.lines
+              : [distCommentData.comment];
+          const totalEndingSteps = endingLines.length + distLines.length;
+          const isDistSkitStep = endingStep >= endingLines.length;
+          const distStepIndex = Math.max(0, endingStep - endingLines.length);
+
+          return (
+            <div
+              onClick={() => {
+                soundEngine.playTextAdvance();
+                if (endingStep < totalEndingSteps - 1) {
+                  setEndingStep((prev) => prev + 1);
+                } else {
+                  if (isInspectorEndingPreview) {
+                    setIsInspectorEndingPreview(false);
+                    setGamePhase('PLAYING');
+                    setIsScenarioInspectorOpen(true);
+                  } else {
+                    setGamePhase('REPORT');
+                  }
+                }
+              }}
+              className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-center px-12 cursor-pointer relative"
+            >
+              {isInspectorEndingPreview && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundEngine.playTerminalTab();
+                    setIsInspectorEndingPreview(false);
+                    setGamePhase('PLAYING');
+                    setIsScenarioInspectorOpen(true);
+                  }}
+                  className="fixed top-4 left-4 z-50 px-3 py-1 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 text-[11px] font-zen flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
+                  title="台本一覧に戻ります"
                 >
-                  {formatParagraphText(line, 32.0)}
-                </p>
-              ))}
+                  <span>◀</span>
+                  <span>台本に戻る</span>
+                </button>
+              )}
+              {!isDistSkitStep ? (
+                <div className="max-w-[480px] w-full space-y-4">
+                  <div className="border-b border-zinc-800 pb-2 mb-2">
+                    <p className="text-[11px] text-zinc-400 tracking-widest">
+                      {currentEndingScenario.subtitle}
+                    </p>
+                    <h2 className="text-[18px] text-zinc-100 tracking-wider">
+                      {currentEndingScenario.title}
+                    </h2>
+                  </div>
+                  {endingLines.slice(0, endingStep + 1).map((line, idx) => (
+                    <p
+                      key={idx}
+                      className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
+                    >
+                      {formatParagraphText(line, 34.0)}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <DistSkitBox data={distCommentData} lineIndex={distStepIndex} />
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* === 3. リザルト画面（OBSERVATION REPORT） === */}
         {gamePhase === 'REPORT' && (
@@ -6750,6 +6880,8 @@ export default function App() {
             customEndingKey={customEndingKey}
             stats={stats}
             sectors={sectors}
+            oralInfos={oralInfos}
+            isMaidMode={isMaidMode}
             achievementSave={achievementSave}
             onResetSession={handleResetSession}
             onOpenAchievements={() => setIsAchievementModalOpen(true)}
@@ -7859,6 +7991,23 @@ export default function App() {
         onClose={handleCloseScenarioInspector}
         onPreviewLine={handlePreviewInspectorSingleLine}
         onPreviewSequence={handlePreviewInspectorSequence}
+        onPreviewEndingScreen={(scenarioKey) => {
+          setIsInspectorEndingPreview(true);
+          setIsScenarioInspectorOpen(false);
+          setCustomEndingKey(scenarioKey);
+          setEndingStep(0);
+          setGamePhase('ENDING');
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
+        }}
+        onPreviewPrologueScreen={() => {
+          setIsInspectorProloguePreview(true);
+          setIsScenarioInspectorOpen(false);
+          setPrologueStep(0);
+          setGamePhase('PROLOGUE');
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
+        }}
         onStopPlayback={handleStopInspectorPlayback}
         onSkipAdvance={handleSkipCurrentDelay}
         onApplyFaceOnly={(expr, parts) => {

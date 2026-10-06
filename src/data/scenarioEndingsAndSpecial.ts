@@ -1321,7 +1321,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・もう少し落ち着いて話せばよかったな',
+        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・\nもう少し落ち着いて話せばよかったな',
       },
     ],
     summaryText:
@@ -1340,7 +1340,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・もう少し落ち着いて話せばよかったな',
+        text: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・\nもう少し落ち着いて話せばよかったな',
       },
     ],
     summaryText:
@@ -1511,7 +1511,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   // END 09：DP-002, DP-003を解放した上で、問い詰めずに殺す
   END_PHASE3_MERCY_DESTROY: {
     id: 'END_PHASE3_MERCY_DESTROY',
-    title: 'END 09 // これでぜんぶ元通り',
+    title: 'END 09 // これで全部元通り',
     subtitle: 'DEAD END // NOTHING HAPPENED HERE',
     dialogues: [
       {
@@ -1563,11 +1563,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
       },
       {
         speaker: 'GUY',
-        text: '何度自分にそう言い聞かせても',
-      },
-      {
-        speaker: 'GUY',
-        text: '――あの記録の文字が、頭にこびりついて離れない',
+        text: '何度、自分にそう言い聞かせても\nあの記録の文字が、頭にこびりついて離れない',
       },
     ],
     summaryText:

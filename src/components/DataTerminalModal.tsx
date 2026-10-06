@@ -257,8 +257,10 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
         timestamp: sec.discoveredAt ?? 0,
       };
     }),
-    // 口頭・自動観測ログ
-    ...oralInfos.map((info) => {
+    // 口頭・自動観測ログ（セクターと同一タイトルの重複表示を防止）
+    ...oralInfos
+      .filter((info) => !unlockedSectors.some((sec) => sec.unlockedTitle === info.title))
+      .map((info) => {
       return {
         id: `oral-${info.id}`,
         code: oralCodeMap[info.id] ?? 'EM-008',
