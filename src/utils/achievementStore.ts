@@ -11,6 +11,7 @@ import {
   PHASE3_WHO_AM_I_OPTIONS,
   TURN_MILESTONE_QUESTIONS,
 } from '../data/prototypeScenario';
+import { THINKING_RECIPES } from '../data/thinkingData';
 
 export const ACHIEVEMENT_STORAGE_KEY = 'gitm_achievement_save_v1';
 
@@ -25,7 +26,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: 'ach_01',
     numberLabel: '01',
-    title: '端末いらず',
+    title: 'プライバシー保護',
     description: '一度も管理端末を開かずにエンディングまで到達した',
   },
   {
@@ -43,8 +44,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: 'ach_04',
     numberLabel: '04',
-    title: 'プライバシー保護',
-    description: 'フェーズ1で端末を開かず、強制解除を一度も使わずにエンディングを迎えた',
+    title: '話上手',
+    description: '累計ですべての追加話題をひらめいた',
   },
   {
     id: 'ach_05',
@@ -313,6 +314,7 @@ export interface AchievementSaveData {
   reachedEndingKeys: string[];
   unlockedAchievementIds: string[];
   showEndingHints: boolean;
+  discoveredRecipeIds?: string[];
 }
 
 export const createDefaultAchievementSave = (): AchievementSaveData => ({
@@ -323,6 +325,7 @@ export const createDefaultAchievementSave = (): AchievementSaveData => ({
   reachedEndingKeys: [],
   unlockedAchievementIds: [],
   showEndingHints: false,
+  discoveredRecipeIds: [],
 });
 
 export const sanitizeAchievementSave = (
@@ -402,6 +405,15 @@ export const sanitizeAchievementSave = (
     : [];
 
   const showEndingHints = Boolean(raw.showEndingHints);
+  const discoveredRecipeIds = Array.isArray(raw.discoveredRecipeIds)
+    ? Array.from(
+        new Set(
+          raw.discoveredRecipeIds.filter(
+            (s): s is string => typeof s === 'string'
+          )
+        )
+      )
+    : [];
 
   const next: AchievementSaveData = {
     seenLines,
@@ -411,16 +423,27 @@ export const sanitizeAchievementSave = (
     reachedEndingKeys,
     unlockedAchievementIds,
     showEndingHints,
+    discoveredRecipeIds,
   };
 
   return evaluateMilestoneAchievements(next);
 };
 
-// 累計系実績（17: 百面相 / 18: もう寝よう）の自動再計算
+// 累計系実績（04: 話上手 / 17: 百面相 / 18: もう寝よう）の自動再計算
 export const evaluateMilestoneAchievements = (
   data: AchievementSaveData
 ): AchievementSaveData => {
   const achSet = new Set(data.unlockedAchievementIds);
+
+  // 04: 累計ですべての追加話題をひらめいた（話上手）※メイドモード専用レシピは除外
+  const baseRecipes = THINKING_RECIPES.filter((r) => r.id !== 'recipe_joke_tarlow_apron');
+  if (
+    data.discoveredRecipeIds &&
+    baseRecipes.length > 0 &&
+    baseRecipes.every((r) => data.discoveredRecipeIds?.includes(r.id))
+  ) {
+    achSet.add('ach_04');
+  }
 
   // 17: 累計でアッシュのすべての表情差分（眉・目・口・エフェクト全28パーツ）を見た
   if (

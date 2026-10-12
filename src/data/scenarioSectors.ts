@@ -152,7 +152,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
   {
     id: 'SEC-07',
     code: 'EM-004',
-    capturedQuote: '「・・・・・・別に。」',
+    capturedQuote: '「・・・・・・関係のないことだ。」',
     capturedContext: '仲間たちの近況について話題を振られた際の発言',
     unlockedTitle: '外部通信反復照会ログ',
     unlockedCategory: '情動観測',
@@ -304,11 +304,11 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     code: 'MC-008',
     capturedQuote:
       '「・・・・・・当たり前だ。11年前に造られた予備機体だからな。」',
-    capturedContext: '掌や腕に剣ダコや傷跡がないことについて触れた際の発言',
+    capturedContext: '掌や腕に傷跡がないことについて触れた際の発言',
     unlockedTitle: '人工表皮初期状態・右掌接触動作記録',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '11年前に製造された未使用の予備機体につき、人工表皮に鍛錬による剣ダコおよび外傷痕は存在しない。\n機体換装以降、待機中に左親指で右掌中央（生体時に剣ダコが存在した部位）を擦る動作を断続的に記録。',
+      '11年前に製造された未使用の予備機体につき、人工表皮に鍛錬による痕跡および外傷痕は存在しない。\n機体換装以降、待機中に左親指で右掌中央（生体時に傷跡が存在した部位）を擦る動作を断続的に記録。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',

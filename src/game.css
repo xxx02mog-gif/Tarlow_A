@@ -502,6 +502,26 @@ button:focus:not(:focus-visible) {
   animation: portraitSighOnce 0.55s ease-in-out 1 both;
 }
 
+/* 5b. ひらめき・納得でコクッと小さく頷く（1回のみ） */
+@keyframes portraitNodOnce {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(3.5px);
+  }
+  65% {
+    transform: translateY(-0.5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.portrait-react-nod {
+  animation: portraitNodOnce 0.4s cubic-bezier(0.25, 1, 0.5, 1) 1 both;
+}
+
 /* 6. 目・口・眉の微震動：最初の一瞬だけ今の揺れ幅、それ以降は揺れ幅と頻度を抑える */
 @keyframes partMicroTremorBurst {
   0% {

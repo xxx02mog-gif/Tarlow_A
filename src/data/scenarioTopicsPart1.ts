@@ -175,9 +175,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
     variants: [
       {
         type: 'REWRITE',
-        slipPrefixText: '・・・・・・っ、あいつが、ルークと・・・・・・！？',
+        slipPrefixText: '・・・・・・っ、あいつらが、結婚・・・・・・！？',
         slipCorrectedText: '・・・・・・知らん。他国の王族の話など、俺には何の関係もないことだ',
-        flashText: '・・・・・・っ、あいつが、ルークと・・・・・・！？',
+        flashText: '・・・・・・っ、あいつらが、結婚・・・・・・！？',
         slipFaceParts: {
           brow: 'pain',
           eyes: 'wide',
@@ -191,9 +191,9 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: ['shadow'],
         },
         guyPointOutSpoken:
-          'ナタリアが婚約したって話したとき、「あいつが、ルークと！？」って食いついたよな。\n赤の他人の譜業が、なんでそんなに動揺するんだ？',
+          'ナタリアとルークが結婚するって話したとき、「あいつらが、結婚！？」って食いついたよな。\n赤の他人の譜業が、なんでそんなに動揺するんだ？',
         terminalRecordSummary:
-          'ナタリア王女に関する質問時、「あいつが、ルークと！？」という音声出力と最大振幅の波形乱れを記録。直後に発言を修正',
+          'ナタリア王女に関する質問時、「あいつらが、結婚！？」という音声出力と最大振幅の波形乱れを記録。直後に発言を修正',
       },
       {
         type: 'PRE_FACE',
@@ -204,7 +204,7 @@ export const PHASE1_TOPIC_SLIP_CONFIGS: Record<string, Phase1TopicSlipConfig> = 
           effects: ['pale'],
         },
         guyPointOutSpoken:
-          'ナタリアの婚約の話をしたとき、息を呑んで目を伏せたよな。\n赤の他人の譜業なら、そんな顔になるはずがないだろ',
+          'ナタリアとルークの結婚の話をしたとき、息を呑んで目を伏せたよな。\n赤の他人の譜業なら、そんな顔になるはずがないだろ',
         terminalRecordSummary:
           'ナタリア王女に関する質問直後、発話前の0.7秒間に視線降下および音素出力の急激な乱れを記録',
       },
@@ -467,7 +467,7 @@ export const SCENARIO_TOPICS_PART1: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '最近バチカルに行ったんだが、ナタリアが『ルークと婚約して本当に良かった』って幸せそうに笑ってたぞ',
+          '最近バチカルに行ったんだが、ナタリアとルークの結婚の話が本格的に進んでるって聞いたぞ。彼女、すごく嬉しそうだった',
         aschText: '知らん。他国の王族の話など、俺には何の関係もないことだ',
         expression: 'normal',
         faceParts: {
