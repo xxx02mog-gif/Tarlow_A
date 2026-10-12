@@ -353,11 +353,6 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
     }
   };
 
-  // 基本の項目は全て白一色に統一
-  const getCategoryBadgeStyle = () => {
-    return 'border-zinc-500 text-zinc-100 bg-zinc-900/60';
-  };
-
   const tanmatuSrc = customTanmatuSrc || getAssetUrl('images/tanmatu.png');
 
   return (

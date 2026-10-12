@@ -94,4 +94,3 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
     </div>
   );
 };
-

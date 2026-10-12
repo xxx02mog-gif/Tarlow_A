@@ -177,7 +177,7 @@ export const AschPortrait: React.FC<AschPortraitProps> = ({
   }, [eyeGlitchPulse]);
 
   const containerFilterStyle: React.CSSProperties = {
-    transform: 'translateY(8px) scale(1.045)',
+    transform: 'translateY(18px) scale(1.015)',
     transformOrigin: '50% 78%',
     filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
     willChange: blurPx > 0 ? 'filter' : undefined,
