@@ -333,7 +333,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
       : '',
     '',
     '====================================',
-    '【パターンA（DP-003解除で『端末』タブに出現：秘密を問い詰めない ➔ END 08）】',
+    '【パターンA（DP-003解除で話題リストに出現：秘密を問い詰めない ➔ END 08）】',
     '====================================',
     climaxTopicA && stageA
       ? [
@@ -374,7 +374,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
       : '',
     '',
     '====================================',
-    '【DP-003解除で『雑談』タブへ追加される通常話題】',
+    '【DP-003解除で話題リストへ追加される通常話題】',
     '====================================',
     distLockTopic
       ? [
@@ -689,7 +689,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                   <div className="w-full rounded-lg border-2 border-amber-500/70 bg-stone-900 shadow-xl overflow-hidden">
                     <div className="px-3 py-2 bg-amber-950/60 border-b border-amber-500/40 flex flex-wrap items-center justify-between gap-2">
                       <span className="px-2 py-0.5 rounded bg-amber-400/25 border border-amber-400/60 text-amber-200 text-xs font-bold">
-                        パターンA（DP-003解除で『端末』タブに出現）
+                        パターンA（DP-003解除で話題リストに出現）
                       </span>
                       <span className="text-[13px] font-bold text-amber-100">
                         話題選択肢：{climaxTopicA.thoughtText}
@@ -732,7 +732,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                   <div className="w-full rounded-lg border-2 border-rose-500/70 bg-stone-900 shadow-xl overflow-hidden">
                     <div className="px-3 py-2 bg-rose-950/60 border-b border-rose-500/40 flex flex-wrap items-center justify-between gap-2">
                       <span className="px-2 py-0.5 rounded bg-rose-400/25 border border-rose-400/60 text-rose-200 text-xs font-bold">
-                        パターンC（DP-002解除で『端末』タブに出現）
+                        パターンC（DP-002解除で話題リストに出現）
                       </span>
                       <span className="text-[13px] font-bold text-rose-100">
                         話題選択肢：{climaxTopicC.thoughtText}
@@ -764,7 +764,7 @@ export const ClimaxFlowchartModal: React.FC<ClimaxFlowchartModalProps> = ({
                 <div className="rounded-lg border border-emerald-600/50 bg-stone-900 overflow-hidden shadow-lg">
                   <div className="px-3 py-2 bg-emerald-950/50 border-b border-emerald-600/40 flex items-center justify-between">
                     <span className="text-xs font-bold text-emerald-200">
-                      【パターンA完了後に『雑談』タブへ追加される通常話題】
+                      【パターンA完了後に話題リストへ追加される通常話題】
                     </span>
                     <span className="text-xs font-bold text-amber-200">
                       話題：{distLockTopic.thoughtText}
