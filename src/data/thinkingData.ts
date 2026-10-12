@@ -1126,6 +1126,7 @@ export const THINKING_RECIPES: ThinkingRecipe[] = [
       eyes: 'half',
       mouth: 'open',
       ex: 'EX1',
+      effects: ['shadow'],
     },
     guyReaction: 'sigh',
     unlockedTopicId: 'p2_deep_truth_confront',
@@ -1442,7 +1443,7 @@ export const THINKING_RECIPES: ThinkingRecipe[] = [
     targetType: 'existing',
     existingTopicId: 'p2_jade_suspicion',
     guyEpiphany:
-      'あのジェイドが研究所に出入りしてて、気づいてねえはずがねえ。・・・・・・ちょっとカマをかけてみるか',
+      'あのジェイドが気付いてないなんてこと、あるのか・・・・・・？\nわざと見逃されてるってことか？',
     unlockedTopicId: 'p2_jade_suspicion',
     descriptionOrReaction:
       'ガイ「研究所には大佐もよく出入りしていただろ。よく今まで気づかれずにいられたな」／アッシュ「・・・・・・あの眼鏡の話をするな。あいつが来た時は、ただの譜業のフリをしてやり過ごしていた」',
