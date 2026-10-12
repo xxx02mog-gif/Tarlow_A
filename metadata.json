@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Ghost in the mASCHine",
+  "description": "Ghost in the mASCHine - アッシュ（機体/生体サンプル）の生体モニタリングおよび対話情報端末シミュレーションゲーム。",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
