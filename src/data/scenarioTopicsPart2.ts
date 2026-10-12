@@ -29,7 +29,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_tarlow_past_reply_why_silent',
             thoughtText: 'なぜ声をかけなかったのか',
             spokenText:
-              'そんな小型譜業に入っていたのか！？\n同じ部屋にいたなら、なんでその時に声をかけてくれなかったんだ！',
+              'あの小型譜業に入っていたのか！？\n同じ部屋にいたなら、なんでその時に声をかけてくれなかったんだ！',
             aschText:
               '・・・・・・俺がこんな譜業になって生き永らえているなどと、\n気付かないならそれに越したことはないだろう。\n今はもうこの姿で見つかってしまったから、隠しても仕方がないがな',
             expression: 'look_away',
@@ -70,7 +70,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '11年前の予備機体ってことは、俺が屋敷にいた頃の背丈そのままなんだな。やっぱり目線が低くて動きづらいか？',
+          'その姿、俺が屋敷にいた頃の背丈そのままなんだな。やっぱり目線が低くて動きづらいか？',
         aschText:
           '身長の話をするな。\n50センチの鉄塊だった頃に比べれば、人間の形になっただけマシだがな',
         expression: 'glare',
@@ -179,7 +179,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_tea_reply_preferences',
             thoughtText: '砂糖は入れないでおく',
             spokenText:
-              'ほら、砂糖は入れないでおいたぞ。おまえ、甘い水とタコだけは昔から絶対に口にしなかったからな',
+              'ほら、砂糖は入れないでおいたぞ。\nおまえ、甘いの苦手だったろ？',
             aschText:
               '余計なことまで覚えているな、おまえは',
             expression: 'normal',
@@ -310,22 +310,21 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
-  // 5. 出力制限と剣の話（ロック会話②：宝刀ガルディオスの話で出現／10歳の姿・背丈の話がヒント）
+  // 5. 出力制限と剣の話（思考レシピ「その機体で剣は振れるのか」で解放）
   {
     id: 'p2_sword_limiter',
-    thoughtText: 'その身体で剣は振れるのか',
+    thoughtText: 'その機体で剣は振れるのか',
     phase2Tab: '追求',
     contextCategory: 'body',
     sensitiveToBadMood: true,
-    requireLinkTag: 'done_p2_galdios',
     relatedTopicIds: ['p2_dist_complaints', 'p2_friends_news'],
     stages: [
       {
-        retryThoughtText: 'その身体での剣のこと（もう一度聞く）',
+        retryThoughtText: 'その機体での剣のこと（もう一度聞く）',
         spokenText:
-          '普段通り歩いたり喋ったりはできているみたいだけど、その身体で剣を振ったりもできるのか？',
+          '普段通り歩いたり喋ったりはできているみたいだけど、その機体で剣を振ったりもできるのか？',
         retrySpokenText:
-          'さっきの剣の話だけど・・・・・・やっぱりその身体、動かす時に制限がかかっているのが気になるのか？',
+          'さっきの剣の話だけど・・・・・・やっぱりその機体、動かす時に制限がかかっているのが気になるのか？',
         aschText:
           '・・・・・・できない。ディストが四肢に出力制限をかけてやがる',
         retryAschText:
@@ -335,7 +334,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         capturedProtect: {
           sectorId: 'SEC-08',
           capturedQuote: '「・・・・・・ディストが四肢に出力制限をかけてやがる。」',
-          capturedContext: '身体の動かしづらさや剣について触れた際の発言',
+          capturedContext: '機体の動かしづらさや剣について触れた際の発言',
         },
         replyOptions: [
           {
@@ -358,7 +357,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             id: 'p2_sword_reply_wrong_giveup',
             thoughtText: '制限がかかっているくらいでちょうどいい',
             spokenText:
-              'その小さな身体じゃ危ないし、制限がかかっているくらいでちょうどいいんじゃないか？',
+              'その小さな機体じゃ危ないし、制限がかかっているくらいでちょうどいいんじゃないか？',
             aschText:
               '・・・・・・おまえまで俺をガキ扱いする気か！',
             expression: 'glare',
@@ -579,10 +578,10 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
-  // 9. 仲間たち（ナタリア・ピオニー・ルーク）の近況（ロック会話③：最初から出現／机の資料の雑談がヒント）
+  // 9. みんなの近況（ロック会話③：最初から出現／机の資料の雑談がヒント）
   {
     id: 'p2_friends_news',
-    thoughtText: 'ナタリアやピオニー陛下たちの近況',
+    thoughtText: 'みんなの近況',
     phase2Tab: '追求',
     contextCategory: 'friends',
     sensitiveToBadMood: true,
@@ -590,15 +589,15 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     relatedTopicIds: ['p2_why_hide_truth'],
     stages: [
       {
-        retryThoughtText: '仲間たちの近況（もう一度聞く）',
+        retryThoughtText: 'みんなの近況（もう一度聞く）',
         spokenText:
-          'ナタリアもバチカルの復興で飛び回っているし、\nピオニー陛下や大佐も相変わらずだ。少しは気になっていたんじゃないか？',
+          'この数年、特に王族の方々はずっと忙しそうだよ\n世界の仕組みが変わったんだから当然っちゃ当然だけどな',
         retrySpokenText:
-          'さっきは興味がないって言っていたけど、\n外の連中のこと、本当は少しくらい気にかけているんじゃないのか？',
+          'さっきは興味がないって言っていたけど、\nみんなのこと・・・・・・ナタリアのことだって、本当は少し気にかけているんじゃないのか？',
         aschText:
-          '・・・・・・別に',
+          '・・・・・・そう、だろうな\n俺にはもう、関係のないことだ',
         retryAschText:
-          '外の連中のことなど、俺には関係ないと言っているだろうが',
+          'あいつらのことなど、俺には関係ないと言っているだろうが',
         expression: 'look_away',
         faceParts: {
           brow: 'sad',
@@ -608,17 +607,17 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         },
         capturedProtect: {
           sectorId: 'SEC-07',
-          capturedQuote: '「・・・・・・別に。」',
-          capturedContext: '仲間たちの近況について話題を振られた際の発言',
+          capturedQuote: '「・・・・・・関係のないことだ。」',
+          capturedContext: 'みんなの近況について話題を振られた際の発言',
         },
         replyOptions: [
           {
             id: 'p2_friends_reply_correct_comms',
-            thoughtText: 'みんなの様子を調べていたんじゃないか',
+            thoughtText: 'ナタリアの様子を調べていたんじゃないか',
             spokenText:
-              'そう言いつつ、研究所にある通信機でみんなの動向くらいは見ていたんじゃないか？',
+              'そう言いつつ、研究所にある通信機でナタリアの動向くらいは見ていたんじゃないか？',
             aschText:
-              '暇つぶしに通信網を覗いていただけだ。元気にやっているなら、それでいい',
+              '暇つぶしに通信網を覗いていただけだ。あいつが無事なら、それでいい',
             expression: 'look_away',
             faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: ['blush'] },
             moodDelta: 0,
@@ -728,7 +727,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // 10-2. 端末連動トピック群（【表記案A：略称-ログ番号】・短め1往復完結・アコーディオン既読後に解放）
   {
     id: 'p2_term_sec00_blush',
-    thoughtText: '【MC-001】顔が赤くなる仕組み',
+    thoughtText: '顔が赤くなる仕組み',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -749,7 +748,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec01_zura',
-    thoughtText: '【MC-002】『〜ズラ』語尾と壊した端末',
+    thoughtText: '『〜ズラ』語尾と壊した端末',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -772,7 +771,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec04_stepstool',
-    thoughtText: '【EM-002】高い棚と『踏み台』の記録',
+    thoughtText: '高い棚と『踏み台』の記録',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -795,7 +794,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec05_pepper',
-    thoughtText: '【MC-004】飲食できる身体の仕様',
+    thoughtText: '飲食できる機体の仕様',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -804,9 +803,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'その身体、栄養にはならなくても食事はできる仕様なんだって？　今度、好物のチキンでも用意しようか？',
+          'その機体、栄養にはならなくても食事はできる仕様なんだって？　今度、好物のチキンでも用意しようか？',
         aschText:
-          '・・・・・・余計な気を使うな。腹も減らない身体で食ったところで、虚しくなるだけだろうが',
+          '・・・・・・余計な気を使うな。腹も減らない機体で食ったところで、虚しくなるだけだろうが',
         expression: 'look_away',
         faceParts: { brow: 'sad', eyes: 'down', mouth: 'frown', effects: [] },
         moodDelta: 0,
@@ -816,7 +815,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec07_night_search',
-    thoughtText: '【EM-004】タタル渓谷の帰還記録',
+    thoughtText: 'タタル渓谷の帰還記録',
     phase2Tab: '端末',
     contextCategory: 'friends',
     sensitiveToBadMood: true,
@@ -839,7 +838,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec08_swing_fall',
-    thoughtText: '【MC-005】空き部屋での素振りの記録',
+    thoughtText: '空き部屋での素振りの記録',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -859,7 +858,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec09_rejected_names',
-    thoughtText: '【EM-005】機体名のボツ案リスト',
+    thoughtText: '機体名のボツ案リスト',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -882,7 +881,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec10_alley_lost',
-    thoughtText: '【EM-006】部屋の隅で固まっていた記録',
+    thoughtText: '部屋の隅で固まっていた記録',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -903,7 +902,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec11_button_struggle',
-    thoughtText: '【MC-006】着替えに手こずっていた記録',
+    thoughtText: '着替えに手こずっていた記録',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -924,7 +923,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec13_chess_cheat',
-    thoughtText: '【EM-008】1人チェスの記録',
+    thoughtText: '1人チェスの記録',
     phase2Tab: '端末',
     contextCategory: 'daily',
     sensitiveToBadMood: true,
@@ -945,7 +944,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec14_pen_talk',
-    thoughtText: '【MC-007】2日間筆談で通した記録',
+    thoughtText: '2日間筆談で通した記録',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -966,7 +965,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec15_mother_avoid',
-    thoughtText: '【EM-009】公爵夫妻に対する感情波形',
+    thoughtText: '公爵夫妻に対する感情波形',
     phase2Tab: '端末',
     contextCategory: 'past',
     sensitiveToBadMood: true,
@@ -988,7 +987,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec16_palm_habit',
-    thoughtText: '【MC-008】右の掌をこする癖',
+    thoughtText: '右の掌をこする癖',
     phase2Tab: '端末',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -1010,7 +1009,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
   {
     id: 'p2_term_sec17_jade_smile',
-    thoughtText: '【EM-010】大佐の様子',
+    thoughtText: '大佐の様子',
     phase2Tab: '端末',
     contextCategory: 'friends',
     sensitiveToBadMood: true,
@@ -1045,7 +1044,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
       {
         retryThoughtText: 'みんなの元へ戻らない理由（もう一度聞く）',
         spokenText:
-          '・・・・・・なあ。どうしてバチカルへ帰らないんだ？',
+          '・・・・・・なあ。どうしてみんなのところへ帰らないんだ？ ナタリアも、ルークも待ってるっていうのに',
         retrySpokenText:
           '・・・・・・さっきは引いたけど、これだけは聞かせてくれ。どうして誰にも会わずに研究所に身を隠しているんだ？',
         aschText:
@@ -1142,7 +1141,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // 【軸A-1】なぜよりによって「10歳の姿」なのか（予備機体の皮肉・ロック会話②のヒント）
   {
     id: 'p2_why_10yo_body',
-    thoughtText: 'どうしてその10歳の姿なのか',
+    thoughtText: 'どうしてその機体なのか',
     phase2Tab: '追求',
     contextCategory: 'body',
     sensitiveToBadMood: true,
@@ -1150,9 +1149,9 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          'それにしても・・・・・・なんでよりによって、その『10歳の頃の姿』なんだ？',
+          'なぜ、その機体なんだ？ あいつの気まぐれか？',
         aschText:
-          '・・・・・・俺が選んだわけじゃない。\n昔、万が一レプリカの生成が滞った時の『場繋ぎ』として造られていた予備の機体だ。\nディストの研究所に転がっていたのが、これしかなかっただけだ',
+          '・・・・・・俺が選んだわけじゃない。\nレプリカの生成が滞った時の『場繋ぎ』として残されていた機体だ。\n研究所にこれしかなかっただけだ',
         expression: 'look_away',
         faceParts: {
           brow: 'angry',
@@ -1617,7 +1616,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
-  // ロック会話⑩（SEC-16）：剣ダコも傷跡もない人工皮膚の手（眠り・休止の話がヒント）
+  // ロック会話⑩（SEC-16）：傷跡もない人工皮膚の手（眠り・休止の話がヒント）
   {
     id: 'p2_unscarred_hands',
     thoughtText: '傷のない体',
@@ -1631,7 +1630,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '・・・・・・その身体には、傷跡ひとつないんだな',
         retrySpokenText:
-          'さっきの掌の話だけど・・・・・・やっぱり、剣ダコや傷跡がなくなっているのは気になるのか？',
+          'さっきの掌の話だけど・・・・・・やっぱり、戦ってきた傷跡がなくなっているのは気になるのか？',
         aschText:
           '・・・・・・当たり前だ。11年前に造られた予備機体だからな',
         retryAschText:
@@ -1642,7 +1641,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           sectorId: 'SEC-16',
           capturedQuote:
             '「・・・・・・当たり前だ。11年前に造られた予備機体だからな。」',
-          capturedContext: '掌や腕に剣ダコや傷跡がないことについて触れた際の発言',
+          capturedContext: '掌や腕に傷跡がないことについて触れた際の発言',
         },
         replyOptions: [
           {
@@ -1774,7 +1773,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
 
   // ==========================================
-  // 【裏の秘密への段階的導入①：エルドラントの最期と空白の2年間（ロック会話⑤：DP-001自動解凍／問うとSEC-19浮上）】
+  // 【裏の秘密への段階的導入①：エルドラントの最期と空白の2年間（SEC-18解凍・キーワード『空白の2年』獲得）】
   // ==========================================
   {
     id: 'p2_eldrant_and_blank',
@@ -1809,76 +1808,55 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         naturalUnlockSectorId: 'SEC-18',
         systemLog:
           'DIALOGUE UNLOCK // SECTOR: [DP-001 / SEC-18]',
-        replyOptions: [
-          {
-            id: 'p2_eldrant_reply_step_in',
-            thoughtText: 'ロックをかけられている？',
-            spokenText:
-              'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、\nディストにロックをかけられているんじゃないか？',
-            aschText:
-              '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の記憶をどう弄ったかなど知るか・・・・・・っ',
-            expression: 'pain',
-            faceParts: {
-              brow: 'pain',
-              eyes: 'pain',
-              mouth: 'grit',
-              effects: ['pale', 'sweat'],
-            },
-            secondExpression: 'glare',
-            secondFaceParts: {
-              brow: 'pain',
-              eyes: 'glare',
-              mouth: 'frown',
-              effects: ['sweat'],
-            },
-            voiceEffects: ['tremble', 'normal'],
-            capturedProtect: {
-              sectorId: 'SEC-19',
-              capturedQuote:
-                '「・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。」',
-              capturedContext:
-                'エルドラントから1年前までの「空白の2年間」について尋ねた際の発言',
-            },
-            grantsLinkTags: ['talked_eldrant_blank'],
-            systemLog:
-              'WARNING // ADMIN LOCK DETECTED: [DP-002 / SEC-19]',
-            completesTopic: true,
-          },
-          {
-            id: 'p2_eldrant_reply_wrong_hiding',
-            thoughtText: '言いたくなくて隠しているだけじゃないのか？',
-            spokenText:
-              '本当は覚えているのに、俺に言いたくなくて隠しているだけじゃないのか？',
-            aschText:
-              '・・・・・・言いがかりをつけるな！',
-            expression: 'glare',
-            faceParts: {
-              brow: 'angry',
-              eyes: 'glare',
-              mouth: 'shout',
-              effects: ['blush'],
-            },
-            voiceEffects: ['shout'],
-            moodDelta: -2,
-            resetsTopicProgress: true,
-          },
-          {
-            id: 'p2_eldrant_reply_back_off',
-            thoughtText: '思い出させようとして悪かった',
-            spokenText:
-              '・・・・・・そうか。思い出させようとして悪かったよ',
-            aschText:
-              '・・・・・・',
-            expression: 'look_away',
-            faceParts: {
-              brow: 'sad',
-              eyes: 'away',
-              mouth: 'close',
-              effects: [],
-            },
-            resetsTopicProgress: true,
-          },
-        ],
+        grantsLinkTags: ['heard_blank_years'],
+        completesTopic: true,
+      },
+    ],
+  },
+
+  // ==========================================
+  // 【裏の秘密への段階的導入①-B：記憶のロックについて（思考「ロックをかけられている？」ひらめきで出現 → SEC-19浮上）】
+  // ==========================================
+  {
+    id: 'p2_ask_about_memory_lock',
+    thoughtText: 'ロックをかけられている？',
+    phase2Tab: '追求',
+    contextCategory: 'past',
+    sensitiveToBadMood: true,
+    prioritySlot1: true,
+    requireLinkTag: 'heard_blank_years',
+    stages: [
+      {
+        spokenText:
+          'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、\nディストにロックをかけられているんじゃないか？',
+        aschText:
+          '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の記憶をどう弄ったかなど知るか・・・・・・っ',
+        expression: 'pain',
+        faceParts: {
+          brow: 'pain',
+          eyes: 'pain',
+          mouth: 'grit',
+          effects: ['pale', 'sweat'],
+        },
+        secondExpression: 'glare',
+        secondFaceParts: {
+          brow: 'pain',
+          eyes: 'glare',
+          mouth: 'frown',
+          effects: ['sweat'],
+        },
+        voiceEffects: ['tremble', 'normal'],
+        capturedProtect: {
+          sectorId: 'SEC-19',
+          capturedQuote:
+            '「・・・・・・だが、1年前に目覚める前までのことは何も・・・・・・。」',
+          capturedContext:
+            'エルドラントから1年前までの「空白の2年間」について尋ねた際の発言',
+        },
+        grantsLinkTags: ['talked_eldrant_blank'],
+        systemLog:
+          'WARNING // ADMIN LOCK DETECTED: [DP-002 / SEC-19]',
+        completesTopic: true,
       },
     ],
   },
@@ -2000,6 +1978,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           effects: [],
         },
         moodDelta: 1,
+        grantsLinkTags: ['apologized_to_asch'],
       },
     ],
   },
@@ -2035,6 +2014,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           effects: ['sweat'],
         },
         voiceEffects: ['tremble_glitch', 'normal'],
+        grantsLinkTags: ['checked_asch_headache'],
       },
     ],
   },
@@ -2232,32 +2212,18 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   },
 
   // ==========================================
-  // 【発作・介抱後の端末確認誘導：端末に何か新しい記録が届いているようだ】
+  // 【発作・介抱後の対話手詰まり：これ以上直接話せることはない】
   // ==========================================
   {
     id: 'p2_examine_terminal_clue',
-    thoughtText: '（端末の新しい記録を確認する）',
-    phase2Tab: '端末',
+    thoughtText: '・・・・・・もうこれ以上、話せることはない',
+    disabled: true,
+    phase2Tab: '追求',
     contextCategory: 'core',
-    prioritySlot1: true,
+    prioritySlot1: false,
     requireLinkTag: 'soothed_after_broken',
-    forbidLinkTags: ['sec20_unlocked', 'climax_ready'],
-    stages: [
-      {
-        spokenText:
-          '・・・・・・なあ、アッシュ。さっきから端末のランプが点滅してるんだが',
-        aschText:
-          '・・・・・・好きに見ろ。俺の知ったことじゃない',
-        expression: 'look_away',
-        faceParts: {
-          brow: 'normal',
-          eyes: 'away',
-          mouth: 'close',
-          effects: [],
-        },
-        voiceEffects: ['normal'],
-      },
-    ],
+    forbidLinkTags: ['sec20_unlocked', 'climax_ready', 'p2_dilemma_resolved'],
+    stages: [],
   },
 
   // ==========================================
@@ -2388,7 +2354,6 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
               aschAction: 'stay',
               doorAction: 'none',
               waitAfterDoorMs: 1600,
-              keepBgm: true,
             },
           },
           {
@@ -2736,6 +2701,51 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     ],
   },
 
+  // 【思考ひらめき限定】ルークとナタリアの結婚の話（P1でナタリアの噂を振った場合の誤解解き）
+  {
+    id: 'p2_natalia_rumor_resolve',
+    thoughtText: 'ルークとナタリアの結婚の話',
+    phase2Tab: '雑談',
+    contextCategory: 'friends',
+    sensitiveToBadMood: true,
+    requireLinkTag: 'phase2_started',
+    stages: [
+      {
+        spokenText:
+          'さっき話したルークとナタリアの結婚の話だが・・・・・・あれ、お前を揺さぶるためのウソだ。悪かったな',
+        aschText:
+          '・・・・・・ルークとナタリアは元々婚約者だ。結婚に向けて話が進んでいるのは当然だろう',
+        expression: 'look_away',
+        faceParts: {
+          brow: 'normal',
+          eyes: 'away',
+          mouth: 'close',
+          effects: [],
+        },
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text:
+              '安心しろって。彼女は今、キムラスカの政で東奔西走してるよ。\n結婚どころじゃないし・・・・・・それに、彼女はずっとお前を・・・・・・',
+          },
+          {
+            speaker: 'ASCH',
+            text:
+              '・・・・・・っ、余計なことを言うな。俺はそんなものを望んでいない',
+            expression: 'glare',
+            faceParts: {
+              brow: 'angry',
+              eyes: 'glare',
+              mouth: 'grit',
+              effects: ['blush'],
+            },
+          },
+        ],
+        trustDelta: 1,
+      },
+    ],
+  },
+
   // ==========================================
   // 【機嫌鎮静・不機嫌エスカレート＆冷たい破壊・放置時の雑談トピック（IMMUTABLE_RULES 1・6準拠）】
   // ==========================================
@@ -2898,6 +2908,244 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
           moodDelta: 0,
         },
+      },
+    ],
+  },
+  // --- 【思考ひらめき新規話題】 ---
+  {
+    id: 'p2_hands_and_asch',
+    thoughtText: '消えた傷跡',
+    phase2Tab: '追求',
+    contextCategory: 'body',
+    stages: [
+      {
+        spokenText:
+          '・・・・・・お前が生きて戦ってきた傷跡も、その小さな手からは全部消えているな',
+        aschText: '・・・・・・そうだな',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_tea_memory',
+    thoughtText: '屋敷の紅茶の香り',
+    phase2Tab: '雑談',
+    contextCategory: 'past',
+    stages: [
+      {
+        spokenText:
+          'その姿を見ていると、昔屋敷で淹れてもらった紅茶の香りを思い出すな',
+        aschText:
+          '・・・・・・下らんことを思い出すな。こんな機体で茶なんぞ飲んだところで、何の足しにもならん',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_dist_tea',
+    thoughtText: '研究所の薬品臭いお茶',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText:
+          'ディストの淹れたお茶を飲んだりしなかったのか？\n薬品が混ざってそうで怖いが',
+        aschText:
+          '・・・・・・あいつの淹れた物など口にするか。\n実験用の薬品と給湯用の湯沸かし器を同じ棚に並べる男だぞ',
+        expression: 'look_away',
+        faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: 'うわ、想像以上に危ねえな・・・・・・',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_ask_zura',
+    thoughtText: '一度でいいから',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText: '・・・・・・一回くらい「ズラ」って言ってくれないか？',
+        aschText: '・・・・・・',
+        expression: 'glare',
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'close', effects: [] },
+        moodDelta: -1,
+        trustDelta: 0,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: 'わ、わるかったって',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_tarlow_apron',
+    thoughtText: 'エプロンを着たタルロウ',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText: 'タルロウAの姿でもエプロンを巻いて、給仕なんかしてたのか？',
+        aschText: '・・・・・・貴様、俺を何だと思っている。次くだらん妄想を口にしたら抜刀する',
+        expression: 'glare',
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: [] },
+        moodDelta: -1,
+        trustDelta: 0,
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_cup_break',
+    thoughtText: 'ナタリアの料理',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText: 'ナタリアの料理を食べさせられたら、流石に味覚センサーがショートしそうだよな',
+        aschText: '・・・・・・ナ、ナタリアを侮辱するな！',
+        expression: 'glare',
+        faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['sweat'] },
+        moodDelta: 0,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_asch_age',
+    thoughtText: 'アッシュの年齢',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText: 'なあ。おまえ、自分のこと今いくつだと思ってるんだ？',
+        aschText: '・・・・・・？　21だろう。何故そんなことを聞く',
+        expression: 'normal',
+        faceParts: { brow: 'doubt', eyes: 'normal', mouth: 'close', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: 'いや、なんとなく・・・・・・',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'p2_joke_luke_age',
+    thoughtText: 'ルークの年齢',
+    phase2Tab: '雑談',
+    contextCategory: 'friends',
+    stages: [
+      {
+        spokenText:
+          'ルークの奴、一応21歳ってことになってるが・・・・・・\n2年間の記憶があやふやだとかいって、まだ19歳くらいの感覚だって言ってたな',
+        aschText: 'まだ未成年気分が抜けないと？',
+        expression: 'look_away',
+        faceParts: { brow: 'doubt', eyes: 'away', mouth: 'close', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text:
+              'まあ、11年前に産まれたんだ。\nまだ未成年っちゃ未成年ってことにもなるんじゃないか？',
+          },
+          {
+            speaker: 'ASCH',
+            text: '・・・・・・ふん、相変わらずだな・・・・・・',
+            expression: 'normal',
+            faceParts: { brow: 'smile', eyes: 'away', mouth: 'smile', effects: [] },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'p2_why_dist',
+    thoughtText: 'ディストを頼った理由',
+    phase2Tab: '追求',
+    contextCategory: 'body',
+    stages: [
+      {
+        spokenText:
+          '・・・・・・どうしてディストだったんだ？ 機体の制御まで握られて、好き放題されるって分かってただろうに',
+        aschText:
+          '・・・・・・奴なら、俺が死に損ないだろうが何だろうが気にも留めんからだ。\n気まぐれに実験台にする以外は、放っておいてくれる',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_dist_life',
+    thoughtText: 'ディストとの二人暮らし',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText:
+          'あのディストとずっと二人で暮らしていて、よく息が詰まらなかったな。主電源を握られてちゃ下手に逆らえもしないだろ？',
+        aschText:
+          '奴の関心は自分の研究だけだ。たまに実験や雑用で喚く以外は放置されていた。\n・・・・・・くだらん同情を寄せてくる連中より、よほどマシだ',
+        expression: 'look_away',
+        faceParts: { brow: 'doubt', eyes: 'away', mouth: 'frown', effects: [] },
+        moodDelta: 0,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_dist_rebellion',
+    thoughtText: 'ディストへの小さな反抗',
+    phase2Tab: '雑談',
+    contextCategory: 'daily',
+    stages: [
+      {
+        spokenText:
+          '出力制限をかけられてるとはいえ、あいつが油断してる隙に蹴っ飛ばしたりくらいはしたんじゃないか？',
+        aschText:
+          '・・・・・・一度、背後から椅子の脚を蹴り倒したら『私の繊細な骨盤が！』と半日騒ぎ立てやがった。\n主電源を落とされかけたから、それ以来は無視している',
+        expression: 'look_away',
+        faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['sweat'] },
+        moodDelta: 1,
+        trustDelta: 1,
+      },
+    ],
+  },
+  {
+    id: 'p2_asch_and_luke',
+    thoughtText: 'ルークのこと',
+    phase2Tab: '雑談',
+    contextCategory: 'friends',
+    stages: [
+      {
+        spokenText:
+          '・・・・・・なあ。ルークのことは、今どう思ってるんだ？\nあいつ、バチカルでお前の分まで背負い込んであちこち飛び回ってるぞ',
+        aschText:
+          '・・・・・・あいつのことは、もう俺が口を挟むことじゃない。\nあいつはあいつ自身で選んだ道を進んでいる。\n・・・・・・俺がいちいち指図することじゃねえよ',
+        expression: 'look_away',
+        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        moodDelta: 1,
+        trustDelta: 1,
       },
     ],
   },

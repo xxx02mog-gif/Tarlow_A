@@ -1,6 +1,6 @@
 {
-  "name": "Ghost in the mASCHine",
-  "description": "OBSERVATION DIALOGUE ADV - 非公式ファンメイド対話型アドベンチャーゲーム",
+  "name": "",
+  "description": "",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

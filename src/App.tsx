@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   Award,
@@ -80,6 +80,7 @@ import {
   ScenarioInspectorModal,
   ScriptLinePreview,
 } from './components/ScenarioInspectorModal';
+import { ThinkingInspectorModal } from './components/ThinkingInspectorModal';
 import {
   ACHIEVEMENT_DEFINITIONS,
   AchievementSaveData,
@@ -95,6 +96,14 @@ import { getAssetUrl } from './utils/assetPath';
 import { formatBubbleText, formatParagraphText } from './utils/japaneseLineWrap';
 import { DIST_ENDING_COMMENTS } from './data/distComments';
 import { DistSkitBox } from './components/DistSkitBox';
+import {
+  canCraftRecipeWithKeywords,
+  THINKING_KEYWORDS,
+  THINKING_RECIPES,
+  ThinkingRecipe,
+} from './data/thinkingData';
+import { GuyBodyReaction, GuyFaceParts, GuyPortrait } from './components/GuyPortrait';
+import { ThinkingArea } from './components/ThinkingArea';
 import './game.css';
 
 // 実績17（百面相）で表情鑑賞、実績18（もう寝よう）でシナリオ台本が解放されます
@@ -585,10 +594,15 @@ export default function App() {
   // 起動時（タイトル画面表示中）に存在する全画像・BGMファイルを確認し、事前プリロード・セットする
   useEffect(() => {
     let cancelled = false;
+    const preloadedRefs: HTMLImageElement[] = [];
     const preloadUrl = (url: string) => {
       const img = new Image();
       img.decoding = 'sync';
       img.src = url;
+      if (typeof img.decode === 'function') {
+        img.decode().catch(() => {});
+      }
+      preloadedRefs.push(img);
     };
 
     preloadUrl(getAssetUrl('images/test.png'));
@@ -615,6 +629,32 @@ export default function App() {
     ];
     DIST_IMAGE_FILES.forEach((f) =>
       preloadUrl(getAssetUrl(`images/dist_chara/${f}`))
+    );
+
+    const GUY_IMAGE_FILES = [
+      'guy_base.png',
+      'guy_base2.png',
+      'guy_brow_normal.png',
+      'guy_brow_angry.png',
+      'guy_brow_stunned.png',
+      'guy_brow_serious.png',
+      'guy_eye_normal.png',
+      'guy_eye_open.png',
+      'guy_eye_surprise.png',
+      'guy_eye_close.png',
+      'guy_eye_half.png',
+      'guy_eye_away.png',
+      'guy_eye_smile.png',
+      'guy_mouth_normal.png',
+      'guy_mouth_open.png',
+      'guy_mouth_close.png',
+      'guy_mouth_smile.png',
+      'guy_EX1.png',
+      'guy_EX2.png',
+      'guy_EX_shadow.png',
+    ];
+    GUY_IMAGE_FILES.forEach((f) =>
+      preloadUrl(getAssetUrl(`images/guy_chara/${f}`))
     );
 
     fetch('/api/available-assets')
@@ -863,10 +903,34 @@ export default function App() {
   const [overrideFaceParts, setOverrideFaceParts] = useState<Partial<FaceParts> | null>(null);
   const [hasUnreadSector, setHasUnreadSector] = useState<boolean>(false);
 
+  // === 思考（THINK）モードステート ===
+  const [isThinkingMode, setIsThinkingMode] = useState<boolean>(false);
+  const [isThinkingSupportEnabled, setIsThinkingSupportEnabled] =
+    useState<boolean>(false);
+  const [discoveredThinkingRecipeIds, setDiscoveredThinkingRecipeIds] =
+    useState<string[]>([]);
+  const [unlockedByThinkingTopicIds, setUnlockedByThinkingTopicIds] =
+    useState<string[]>([]);
+
+  // ガイ立ち絵のサイズ・位置（ユーザー指定値: S1.02, Y:-72, X:22）
+  const [guyScale, setGuyScale] = useState<number>(1.02);
+  const [guyOffsetY, setGuyOffsetY] = useState<number>(-72);
+  const [guyOffsetX, setGuyOffsetX] = useState<number>(22);
+
+  // ガイの思考モード表情・動きステート
+  const [thinkingGuyFace, setThinkingGuyFace] = useState<GuyFaceParts>({
+    base: 'base2',
+    brow: 'normal',
+    eyes: 'normal',
+    mouth: 'close',
+  });
+  const [thinkingGuyReaction, setThinkingGuyReaction] = useState<GuyBodyReaction>('none');
+
   // === モーダル開閉ステート ===
   const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
   const [isDialogueLogOpen, setIsDialogueLogOpen] = useState<boolean>(false);
   const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+  const [isThinkingViewerOpen, setIsThinkingViewerOpen] = useState<boolean>(false);
   const [isDebugViewerOpen, setIsDebugViewerOpen] = useState<boolean>(false);
   const [debugPreviewState, setDebugPreviewState] = useState<{
     expression: ExpressionId;
@@ -881,7 +945,172 @@ export default function App() {
   const [achievementSave, setAchievementSave] = useState<AchievementSaveData>(
     () => loadAchievementSave()
   );
+
+  const handleUpdateAchievementSave = useCallback(
+    (
+      updater:
+        | AchievementSaveData
+        | ((prev: AchievementSaveData) => AchievementSaveData)
+    ) => {
+      setAchievementSave((prev) => {
+        const rawNext =
+          typeof updater === 'function' ? updater(prev) : updater;
+        const evaluated = evaluateMilestoneAchievements(rawNext);
+        persistAchievementSave(evaluated);
+        return evaluated;
+      });
+    },
+    []
+  );
   const [isMaidMode, setIsMaidMode] = useState<boolean>(false);
+  const [isAllKeywordsUnlockedDebug, setIsAllKeywordsUnlockedDebug] = useState<boolean>(false);
+
+  // 獲得済み思考キーワード一覧（複数経路・OR判定に対応：会話、端末SEC、選択肢、口頭証言）
+  const unlockedThinkingKeywordIds = useMemo(() => {
+    if (isAllKeywordsUnlockedDebug) {
+      return THINKING_KEYWORDS.map((kw) => kw.id);
+    }
+    return THINKING_KEYWORDS.filter((kw) => {
+      const triggers =
+        kw.unlockTriggers && kw.unlockTriggers.length > 0
+          ? kw.unlockTriggers
+          : [kw.unlockTrigger];
+
+      return triggers.some((tr) => {
+        if (tr.type === 'initial') {
+          return true;
+        }
+        if (tr.type === 'topic') {
+          return (
+            (topicAskCounts[tr.targetId] ?? 0) > 0 ||
+            phase1AskedTopicIds.includes(tr.targetId)
+          );
+        }
+        if (tr.type === 'sector') {
+          return (
+            readSectorIds.includes(tr.targetId) &&
+            sectors.some((s) => s.id === tr.targetId && s.unlocked)
+          );
+        }
+        if (tr.type === 'oralInfo') {
+          return oralInfos.some(
+            (o) => o.id === tr.targetId || o.content.includes(tr.targetId)
+          );
+        }
+        if (tr.type === 'question') {
+          return answeredQuestionIds.includes(tr.targetId);
+        }
+        if (tr.type === 'choice') {
+          return (
+            (topicAskCounts[tr.targetId] ?? 0) > 0 ||
+            oralInfos.some(
+              (o) => o.id === tr.targetId || o.content.includes(tr.targetId)
+            )
+          );
+        }
+        return false;
+      });
+    }).map((kw) => kw.id);
+  }, [
+    topicAskCounts,
+    phase1AskedTopicIds,
+    sectors,
+    oralInfos,
+    readSectorIds,
+    answeredQuestionIds,
+    isAllKeywordsUnlockedDebug,
+  ]);
+
+  // 深層記憶（DP-002/003）解放後・緊迫・真相解明フェーズ：日常雑談や初期端末話題を抑止し、真相追求に絞る
+  const isDeepTruthPhase =
+    (linkTags.includes('asked_about_dp002') ||
+      linkTags.includes('climax_ready') ||
+      linkTags.includes('sec19_unlocked') ||
+      linkTags.includes('sec20_unlocked') ||
+      sectors.some(
+        (s) =>
+          (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
+          s.unlocked
+      )) &&
+    !linkTags.includes('p2_dilemma_resolved');
+
+  // DP-003（自壊の記録）解放後、または自壊キーワード所持時の極限推理フェーズ
+  const isFinalTruthPhase =
+    linkTags.includes('sec20_unlocked') ||
+    sectors.some(
+      (s) => (s.id === 'SEC-20' || s.code === 'DP-003') && s.unlocked
+    ) ||
+    unlockedThinkingKeywordIds.includes('kw_self_destruct');
+
+  // 手持ちキーワードで新たにひらめき可能な未発見レシピが存在するか判定（「考える」ボタンの赤丸通知バッジ用）
+  const hasAvailableThinkingRecipe = useMemo(() => {
+    if (isFinalTruthPhase) {
+      if (discoveredThinkingRecipeIds.includes('recipe_deep_truth_confront')) {
+        return false;
+      }
+      return (
+        unlockedThinkingKeywordIds.includes('kw_self_destruct') &&
+        unlockedThinkingKeywordIds.includes('kw_memory_separation')
+      );
+    }
+    return THINKING_RECIPES.some((recipe) => {
+      if (discoveredThinkingRecipeIds.includes(recipe.id)) return false;
+      return canCraftRecipeWithKeywords(
+        recipe,
+        unlockedThinkingKeywordIds,
+        phase1AskedTopicIds,
+        isAllKeywordsUnlockedDebug
+      );
+    });
+  }, [
+    isFinalTruthPhase,
+    discoveredThinkingRecipeIds,
+    unlockedThinkingKeywordIds,
+    phase1AskedTopicIds,
+    isAllKeywordsUnlockedDebug,
+  ]);
+
+  const handleRecipeDiscovered = useCallback(
+    (recipe: ThinkingRecipe) => {
+      setDiscoveredThinkingRecipeIds((prev) =>
+        prev.includes(recipe.id) ? prev : [...prev, recipe.id]
+      );
+      setUnlockedByThinkingTopicIds((prev) =>
+        prev.includes(recipe.unlockedTopicId)
+          ? prev
+          : [...prev, recipe.unlockedTopicId]
+      );
+      setTopicAskCounts((prev) => ({
+        ...prev,
+        [recipe.unlockedTopicId]: 0,
+      }));
+      handleUpdateAchievementSave((prev) => {
+        const merged = Array.from(
+          new Set([...(prev.discoveredRecipeIds ?? []), recipe.id])
+        );
+        return evaluateMilestoneAchievements({
+          ...prev,
+          discoveredRecipeIds: merged,
+        });
+      });
+    },
+    [handleUpdateAchievementSave]
+  );
+
+  const thinkingOpenedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isThinkingMode) {
+      thinkingOpenedAtRef.current = Date.now();
+    } else if (thinkingOpenedAtRef.current) {
+      const elapsed = Date.now() - thinkingOpenedAtRef.current;
+      setStats((prev) => ({
+        ...prev,
+        terminalTotalDurationMs: prev.terminalTotalDurationMs + elapsed,
+      }));
+      thinkingOpenedAtRef.current = null;
+    }
+  }, [isThinkingMode]);
 
   useEffect(() => {
     try {
@@ -961,22 +1190,6 @@ export default function App() {
     });
   }, [achievementSave.unlockedAchievementIds, isAchievementModalOpen]);
 
-  const handleUpdateAchievementSave = useCallback(
-    (
-      updater:
-        | AchievementSaveData
-        | ((prev: AchievementSaveData) => AchievementSaveData)
-    ) => {
-      setAchievementSave((prev) => {
-        const rawNext =
-          typeof updater === 'function' ? updater(prev) : updater;
-        const evaluated = evaluateMilestoneAchievements(rawNext);
-        persistAchievementSave(evaluated);
-        return evaluated;
-      });
-    },
-    []
-  );
 
   const unlockAchievements = useCallback(
     (...achIds: string[]) => {
@@ -1974,7 +2187,9 @@ export default function App() {
 
     const idleTimer = window.setInterval(() => {
       if (isSequencingRef.current) return;
-      const idleMs = Date.now() - choiceShownAtRef.current;
+      const rawIdleMs = Date.now() - choiceShownAtRef.current;
+      // 思考中（THINKモード）の時は、無言カウント速度を1/3.5に遅延させて長考を邪魔しない
+      const idleMs = isThinkingMode ? Math.floor(rawIdleMs / 3.5) : rawIdleMs;
       const currentWaitSec = Math.floor(idleMs / 1000);
       setIdleWaitSec(currentWaitSec);
 
@@ -2786,9 +3001,13 @@ export default function App() {
     const decisionStageKey = isStayRefused
       ? 'END_PHASE2_STAY_REFUSED'
       : isDp002Unlocked && disposition === 'KEEP'
-        ? 'END_PHASE3_TOMORROW'
+        ? (isPanickingAfterSecret
+            ? 'END_PHASE3_TOMORROW_PANIC'
+            : 'END_PHASE3_TOMORROW')
         : isDp002Unlocked && disposition === 'RETURN'
-          ? 'END_PHASE3_TOMORROW_RETURN'
+          ? (isPanickingAfterSecret
+              ? 'END_PHASE3_TOMORROW_RETURN_PANIC'
+              : 'END_PHASE3_TOMORROW_RETURN')
           : resolvedKey;
     const decisionData =
       FINAL_DECISION_STAGES[decisionStageKey] ||
@@ -3015,6 +3234,8 @@ export default function App() {
       steps.push({
         delayMs: footstepsTotalMs + Math.max(2600, (trans.waitAfterDoorMs ?? 1200) + 1400),
         action: () => {
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
           setStats((prev) => ({
             ...prev,
             endTime: Date.now(),
@@ -3029,6 +3250,8 @@ export default function App() {
       steps.push({
         delayMs: 2600,
         action: () => {
+          soundEngine.stopBgm();
+          soundEngine.setPlayingPhase(false);
           setStats((prev) => ({
             ...prev,
             endTime: Date.now(),
@@ -3154,12 +3377,26 @@ export default function App() {
 
     const isBackedOffOnce = linkTags.includes(`backed_off_${topic.id}`);
     const isMaidTea = isMaidMode && topic.id === 'p2_tea_and_taste';
-    const effectiveSpokenText = isMaidTea
+    const isKnowingTarlowBroken =
+      (topicAskCounts['p2_why_claimed_tarlow_a'] ?? 0) > 0 ||
+      readSectorIds.includes('SEC-03');
+    let effectiveSpokenText = isMaidTea
       ? 'そうだ。紅茶でも淹れようか'
       : (useCustomBadMood && currentStage.badMoodResponse?.spokenText) ||
         (useCustomGoodMood && currentStage.goodMoodResponse?.spokenText) ||
         (isBackedOffOnce && currentStage.retrySpokenText) ||
         currentStage.spokenText;
+
+    if (
+      topic.id === 'p2_tarlow_broken_reason' &&
+      !isBackedOffOnce &&
+      !isKnowingTarlowBroken &&
+      !useCustomBadMood &&
+      !useCustomGoodMood
+    ) {
+      effectiveSpokenText =
+        '・・・・・・なあ。前の機体に、一体何があったんだ？';
+    }
     const effectiveStageAschText = isMaidTea
       ? '待て。俺がやる'
       : (isBackedOffOnce && currentStage.retryAschText) ||
@@ -5953,6 +6190,9 @@ export default function App() {
     setPrologueStep(0);
     setEndingStep(0);
     setTopicAskCounts({});
+    setDiscoveredThinkingRecipeIds([]);
+    setUnlockedByThinkingTopicIds([]);
+    setIsThinkingMode(false);
     setSessionSeed(Math.floor(Math.random() * 10000));
     setTrustLevel(0);
     setHatredPoints(0);
@@ -6040,7 +6280,16 @@ export default function App() {
   const isPhase2TopicUnlocked = useCallback(
     (t: ConversationTopic): boolean => {
       if (t.id.startsWith('p1_')) return false;
-      if (t.postDecisionFor) return false;
+      // 思考（THINK）限定の話題は、思考で閃いていない限り自動解放させない
+      const isThinkingExclusiveTopic =
+        THINKING_RECIPES.some((r) => r.unlockedTopicId === t.id);
+      if (isThinkingExclusiveTopic && !unlockedByThinkingTopicIds.includes(t.id)) {
+        return false;
+      }
+
+      // 思考で閃いている話題かどうか
+      const isUnlockedByThinking = unlockedByThinkingTopicIds.includes(t.id);
+
       if (t.id === 'topic_41_apologize' && mood >= 0 && guyMood >= 0) return false;
       if (t.requireGuyAngry && guyMood >= 0) return false;
       if (t.hideWhenGuyAngry && guyMood < 0) return false;
@@ -6054,39 +6303,32 @@ export default function App() {
       ) {
         return false;
       }
-      if (t.requireSectorUnlocked) {
-        const sec = sectors.find((s) => s.id === t.requireSectorUnlocked);
-        if (!sec?.unlocked || !readSectorIds.includes(t.requireSectorUnlocked)) {
+
+      // 思考で閃いている場合は、通常ルートの前提条件（requireSectorUnlocked / requireLinkTag / requireTrust 等）をバイパス可能
+      if (!isUnlockedByThinking) {
+        if (t.requireSectorUnlocked) {
+          const sec = sectors.find((s) => s.id === t.requireSectorUnlocked);
+          if (!sec?.unlocked || !readSectorIds.includes(t.requireSectorUnlocked)) {
+            return false;
+          }
+        }
+        if (t.requireLinkTag && !linkTags.includes(t.requireLinkTag)) {
+          return false;
+        }
+        if (
+          t.requireAnyLinkTags &&
+          !t.requireAnyLinkTags.some((tag) => linkTags.includes(tag))
+        ) {
+          return false;
+        }
+        if (t.requireTrust !== undefined && trustLevel < t.requireTrust) {
           return false;
         }
       }
-      if (t.requireLinkTag && !linkTags.includes(t.requireLinkTag)) {
-        return false;
-      }
-      if (
-        t.requireAnyLinkTags &&
-        !t.requireAnyLinkTags.some((tag) => linkTags.includes(tag))
-      ) {
-        return false;
-      }
-      if (t.requireTrust !== undefined && trustLevel < t.requireTrust) {
-        return false;
-      }
-      // 深層記憶（DP-002/003）解放後・緊迫・真相解明フェーズ：日常雑談や初期端末話題（MC-001等）を抑止し、真相追求・状況整理に絞る
-      const isDeepTruthPhase =
-        (linkTags.includes('asked_about_dp002') ||
-          linkTags.includes('climax_ready') ||
-          linkTags.includes('sec19_unlocked') ||
-          linkTags.includes('sec20_unlocked') ||
-          sectors.some(
-            (s) =>
-              (s.id === 'SEC-19' || s.id === 'SEC-20' || s.code === 'DP-002' || s.code === 'DP-003') &&
-              s.unlocked
-          )) &&
-        !linkTags.includes('p2_dilemma_resolved');
 
       if (isDeepTruthPhase) {
         const isAllowedInDeepTruth =
+          t.id === 'p2_ask_about_memory_lock' ||
           t.id === 'p2_tarlow_broken_reason' ||
           t.id === 'p2_soothe_after_broken' ||
           t.id === 'p2_examine_terminal_clue' ||
@@ -6109,7 +6351,7 @@ export default function App() {
       }
       return true;
     },
-    [mood, guyMood, isHatredMode, linkTags, sectors, readSectorIds, trustLevel, isMaidMode]
+    [mood, guyMood, isHatredMode, linkTags, sectors, readSectorIds, trustLevel, isMaidMode, unlockedByThinkingTopicIds, isDeepTruthPhase]
   );
 
   // 現在進行中の話題（1段階目に入った後、まだ最終段階や反応選択肢が完了していない話題）
@@ -6150,12 +6392,21 @@ export default function App() {
           !phase1AskedTopicIds.includes(t.id) &&
           (!t.requireMaidMode || isMaidMode)
       )
-    : CONVERSATION_TOPICS.filter(
-        (t) =>
-          isPhase2TopicUnlocked(t) &&
-          (!t.requireMaidMode || isMaidMode) &&
-          (topicAskCounts[t.id] ?? 0) < t.stages.length
-      );
+    : (() => {
+        const rawUnlocked = CONVERSATION_TOPICS.filter(
+          (t) =>
+            isPhase2TopicUnlocked(t) &&
+            (!t.requireMaidMode || isMaidMode) &&
+            (t.disabled || (topicAskCounts[t.id] ?? 0) < t.stages.length)
+        );
+        const hasOtherActionableTopic = rawUnlocked.some(
+          (t) => t.id !== 'p2_examine_terminal_clue' && !t.disabled
+        );
+        if (hasOtherActionableTopic) {
+          return rawUnlocked.filter((t) => t.id !== 'p2_examine_terminal_clue');
+        }
+        return rawUnlocked;
+      })();
 
   const showDecisionOption =
     shouldShowDecisionEntry || displayedRegularTopics.length === 0;
@@ -6467,13 +6718,6 @@ export default function App() {
     if (stats.terminalOpenCount === 0) {
       bonusAch.push('ach_01');
     }
-    if (
-      linkTags.includes('phase2_started') &&
-      !linkTags.includes('terminal_opened_in_phase1') &&
-      stats.overrideCount === 0
-    ) {
-      bonusAch.push('ach_04');
-    }
 
     handleUpdateAchievementSave((prev) => {
       const mergedEndings = prev.reachedEndingKeys.includes(
@@ -6528,7 +6772,11 @@ export default function App() {
   const getChoiceHesitationHandlers = (_choiceId: string) => ({});
 
   const bgBlurPx =
-    isDialogueLogOpen || isManualOpen ? 6 : isTerminalOpen ? 2 : 0;
+    isDialogueLogOpen || isManualOpen
+      ? 6
+      : isTerminalOpen || isThinkingMode
+        ? 3
+        : 0;
   const isDockActive = isScenarioInspectorOpen && inspectorViewMode === 'dock';
 
   return (
@@ -6626,6 +6874,7 @@ export default function App() {
             onClick={() => {
               soundEngine.unlockOnUserInteraction();
               soundEngine.playTitleStart();
+              handleResetSession();
               setPrologueStep(0);
               setGamePhase('PROLOGUE');
             }}
@@ -6633,7 +6882,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 1.2.1</span>
+              <span>VERSION 2.0.0</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
@@ -6934,7 +7183,7 @@ export default function App() {
         {gamePhase === 'PLAYING' && (
           <>
             {/* 上部黒帯ヘッダー */}
-            <header className="relative z-20 w-full h-[44px] bg-[#08080a] text-zinc-100 flex items-center justify-between px-5 shrink-0">
+            <header className="relative z-40 w-full h-[44px] bg-[#08080a] text-zinc-100 flex items-center justify-between px-5 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="w-4 h-4 rounded-full bg-zinc-100 text-[#08080a] flex items-center justify-center shrink-0">
                   <svg
@@ -6954,10 +7203,12 @@ export default function App() {
                     <circle cx="8" cy="11.85" r="1.2" fill="currentColor" />
                   </svg>
                 </span>
-                <span className="text-[14px] leading-none tracking-wider text-zinc-100">
-                  {isPhase2OrLater
-                    ? 'アッシュと会話する'
-                    : 'タルロウAと会話する'}
+                <span className="text-[14px] leading-none tracking-wider text-zinc-100 font-medium">
+                  {isThinkingMode
+                    ? 'THINK // 考える'
+                    : isPhase2OrLater
+                      ? 'TALK // アッシュと会話する'
+                      : 'TALK // タルロウAと会話する'}
                 </span>
               </div>
 
@@ -6967,6 +7218,7 @@ export default function App() {
                     soundEngine.playTerminalTab();
                     setIsTerminalOpen(false);
                     setIsDebugViewerOpen(false);
+                    setIsThinkingMode(false);
                     setIsDialogueLogOpen((prev) => !prev);
                   }}
                   title="セリフログ"
@@ -7023,6 +7275,7 @@ export default function App() {
                 <button
                   onClick={() => {
                     soundEngine.playTerminalTab();
+                    setIsThinkingMode(false);
                     setIsManualOpen(true);
                   }}
                   className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 bg-zinc-900/80 transition-colors cursor-pointer"
@@ -7036,8 +7289,53 @@ export default function App() {
             {/* 中央メイン領域 */}
             <main
               onClick={handleSkipCurrentDelay}
-              className="relative flex-1 w-full flex items-stretch overflow-hidden"
+              className={`relative flex-1 min-h-0 h-[362px] max-h-[362px] w-full flex items-stretch ${
+                (isThinkingMode && isPhase2OrLater) || isDialogueLogOpen || isManualOpen
+                  ? 'overflow-visible'
+                  : 'overflow-hidden'
+              }`}
             >
+              {/* 思考モード（Phase 2以降限定・対話画面をDOM破棄せず上に重ねることで、アッシュ立ち絵のチラつきを根絶） */}
+              {isThinkingMode && isPhase2OrLater && (
+                <div className="absolute inset-0 z-45 flex items-stretch bg-black/60 transition-colors duration-200">
+                  {/* 左側：ガイの立ち絵（ヘッダー前面に表示・クリックは透過） */}
+                  <div className="relative w-[44%] h-full pointer-events-none flex items-end justify-center overflow-visible">
+                    <GuyPortrait
+                      faceParts={thinkingGuyFace}
+                      bodyReaction={thinkingGuyReaction}
+                      scale={guyScale}
+                      offsetY={guyOffsetY}
+                      offsetX={guyOffsetX}
+                    />
+                  </div>
+
+                  {/* 右側：思考エリア */}
+                  <div className="relative w-[56%] h-full flex flex-col justify-center">
+                    <ThinkingArea
+                      unlockedKeywordIds={unlockedThinkingKeywordIds}
+                      discoveredRecipeIds={discoveredThinkingRecipeIds}
+                      supportEnabled={isThinkingSupportEnabled}
+                      onRecipeDiscovered={handleRecipeDiscovered}
+                      phase1AskedTopicIds={phase1AskedTopicIds}
+                      isAllKeywordsUnlockedDebug={isAllKeywordsUnlockedDebug}
+                      isDeepTruthMode={isFinalTruthPhase}
+                      isDp002Unlocked={
+                        sectors.some(
+                          (s) =>
+                            (s.id === 'SEC-19' || s.code === 'DP-002') &&
+                            s.unlocked
+                        ) || linkTags.includes('sec19_unlocked')
+                      }
+                      onGuyFaceChange={(face, reaction) => {
+                        setThinkingGuyFace(face);
+                        if (reaction) setThinkingGuyReaction(reaction);
+                      }}
+                      isMaidMode={isMaidMode}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* 左側：セリフ枠タイムライン（最大3枠） ＆ ガイの思考選択肢 */}
               <div
                 style={
@@ -7050,7 +7348,7 @@ export default function App() {
                     : undefined
                 }
                 className={`relative z-10 w-[58%] h-full pl-6 pr-0 pt-2.5 pb-3.5 transition-all duration-[130ms] ease-out ${
-                  isTerminalOpen ? 'pointer-events-none select-none' : ''
+                  isTerminalOpen || isThinkingMode ? 'pointer-events-none select-none' : ''
                 }`}
               >
                 {/* 上部：アッシュ（右寄せ）とガイ（左寄せ）のセリフ枠タイムライン（高さ上限200pxで下の選択肢と絶対に重ならない） */}
@@ -7210,50 +7508,62 @@ export default function App() {
                           const unreadTopics = unlockedTopics
                             .filter((t) => {
                               const c = topicAskCounts[t.id] ?? 0;
-                              return c < t.stages.length;
-                            })
-                            .sort((a, b) => {
-                              const getPrio = (t: ConversationTopic) => {
-                                if (
-                                  t.id === 'p2_deep_truth_dilemma' ||
-                                  t.id === 'p2_deep_truth_confront'
-                                ) {
-                                  return 100;
-                                }
-                                if (t.id === 'p2_irritated_clash') {
-                                  return 90;
-                                }
-                                if (
-                                  t.id === 'topic_41_apologize' &&
-                                  (mood < 0 || guyMood < 0)
-                                ) {
-                                  return 85;
-                                }
-                                if (t.calmsAnger && mood < 0) return 80;
-                                if (
-                                  t.requireSectorUnlocked &&
-                                  t.requireSectorUnlocked === lastReadSectorId
-                                ) {
-                                  return 75;
-                                }
-                                if (t.id === 'p2_ask_about_dp002') return 72;
-                                if (t.id === 'p2_tarlow_broken_reason') return 70;
-                                if (
-                                  t.id === 'p2_dp002_apologize' ||
-                                  t.id === 'p2_dp002_headache_worry' ||
-                                  t.id === 'p2_dp002_dist_inquiry'
-                                ) return 68;
-                                if (t.prioritySlot1) return 65;
-                                if (relatedIds.includes(t.id)) return 60;
-                                if (t.requireSectorUnlocked) return 50;
-                                if (t.phase2Tab === '追求') return 40;
-                                if (t.phase2Tab === '端末') return 30;
-                                return 20;
-                              };
-                              return getPrio(b) - getPrio(a);
+                              return t.disabled || c < t.stages.length;
                             });
 
-                          return unreadTopics;
+                          const hasOtherActionable = unreadTopics.some(
+                            (t) => t.id !== 'p2_examine_terminal_clue' && !t.disabled
+                          );
+
+                          const filteredTopics = hasOtherActionable
+                            ? unreadTopics.filter(
+                                (t) => t.id !== 'p2_examine_terminal_clue'
+                              )
+                            : unreadTopics;
+
+                          filteredTopics.sort((a, b) => {
+                            const getPrio = (t: ConversationTopic) => {
+                              if (
+                                t.id === 'p2_deep_truth_dilemma' ||
+                                t.id === 'p2_deep_truth_confront'
+                              ) {
+                                return 100;
+                              }
+                              if (t.id === 'p2_irritated_clash') {
+                                return 90;
+                              }
+                              if (
+                                t.id === 'topic_41_apologize' &&
+                                (mood < 0 || guyMood < 0)
+                              ) {
+                                return 85;
+                              }
+                              if (t.calmsAnger && mood < 0) return 80;
+                              if (unlockedByThinkingTopicIds.includes(t.id)) return 78;
+                              if (
+                                t.requireSectorUnlocked &&
+                                t.requireSectorUnlocked === lastReadSectorId
+                              ) {
+                                return 75;
+                              }
+                              if (t.id === 'p2_ask_about_dp002') return 72;
+                              if (t.id === 'p2_tarlow_broken_reason') return 70;
+                              if (
+                                t.id === 'p2_dp002_apologize' ||
+                                t.id === 'p2_dp002_headache_worry' ||
+                                t.id === 'p2_dp002_dist_inquiry'
+                              ) return 68;
+                              if (t.prioritySlot1) return 65;
+                              if (relatedIds.includes(t.id)) return 60;
+                              if (t.requireSectorUnlocked) return 50;
+                              if (t.phase2Tab === '追求') return 40;
+                              if (t.phase2Tab === '端末') return 30;
+                              return 20;
+                            };
+                            return getPrio(b) - getPrio(a);
+                          });
+
+                          return filteredTopics;
                         })();
 
                     // Phase 1 の決断メニュー項目
@@ -7669,7 +7979,12 @@ export default function App() {
                                   </div>
                                 </button>
 
-                                {linkTags.includes('sec19_unlocked') && (
+                                {(linkTags.includes('sec19_unlocked') ||
+                                  sectors.some(
+                                    (s) =>
+                                      (s.id === 'SEC-19' || s.code === 'DP-002') &&
+                                      s.unlocked
+                                  )) && (
                                   <button
                                     {...getChoiceHesitationHandlers('p2_dec_destroy')}
                                     onClick={(e) => {
@@ -7771,41 +8086,59 @@ export default function App() {
                                   {currentSlice.map((topic) => {
                                     const askCount = topicAskCounts[topic.id] ?? 0;
                                     const isCompleted =
+                                      topic.stages.length > 0 &&
                                       askCount >= topic.stages.length;
-                                    const stageIdx = Math.min(
-                                      topic.stages.length - 1,
-                                      askCount
-                                    );
+                                    const stageIdx =
+                                      topic.stages.length > 0
+                                        ? Math.min(
+                                            topic.stages.length - 1,
+                                            askCount
+                                          )
+                                        : 0;
                                     const isBackedOff = linkTags.includes(
                                       `backed_off_${topic.id}`
                                     );
-                                    const label =
+                                    const isKnowingTarlowBroken =
+                                      (topicAskCounts['p2_why_claimed_tarlow_a'] ?? 0) > 0 ||
+                                      readSectorIds.includes('SEC-03');
+                                    let label =
                                       (isBackedOff &&
                                         topic.stages[stageIdx]?.retryThoughtText) ||
                                       topic.stages[stageIdx]?.thoughtText ||
                                       topic.thoughtText;
 
+                                    if (
+                                      topic.id === 'p2_tarlow_broken_reason' &&
+                                      !isKnowingTarlowBroken
+                                    ) {
+                                      label = isBackedOff
+                                        ? '前の機体に何があったのか（もう一度聞く）'
+                                        : '前の機体に何があったのか';
+                                    }
+
+                                    const isTopicDisabled = isCompleted || Boolean(topic.disabled);
+
                                     return (
                                       <button
                                         key={topic.id}
-                                        disabled={isInteractionBlocked || isCompleted}
-                                        {...(!isCompleted
+                                        disabled={isInteractionBlocked || isTopicDisabled}
+                                        {...(!isTopicDisabled
                                           ? getChoiceHesitationHandlers(topic.id)
                                           : {})}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (isCompleted) return;
+                                          if (isTopicDisabled) return;
                                           handleSelectTopic(topic);
                                         }}
                                         className={`${choiceBtnSizeClass} group text-left flex items-stretch transition-all duration-300 ease-out ${
-                                          isCompleted
-                                            ? 'opacity-35 cursor-default'
+                                          isTopicDisabled
+                                            ? 'opacity-40 cursor-default pointer-events-none'
                                             : 'opacity-100 cursor-pointer hover:translate-x-1'
                                         }`}
                                       >
                                         <div
                                           className={`w-[3px] shrink-0 mr-2.5 transition-colors duration-300 ${
-                                            isCompleted
+                                            isTopicDisabled
                                               ? 'bg-zinc-400'
                                               : 'bg-zinc-900 group-hover:bg-black'
                                           }`}
@@ -7813,7 +8146,7 @@ export default function App() {
                                         <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                           <span
                                             className={`text-[12.5px] leading-snug whitespace-nowrap truncate transition-colors duration-300 ${
-                                              isCompleted
+                                              isTopicDisabled
                                                 ? 'text-zinc-500'
                                                 : 'text-zinc-900 group-hover:text-black'
                                             }`}
@@ -7968,16 +8301,90 @@ export default function App() {
             </main>
 
             {/* 下部黒帯フッター */}
-            <footer className="relative z-30 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
-              <div className="flex items-center">
-                {/* 管理端末ボタン（見た目は上部ボタンと揃えた小ぶりなサイズ・透明タップ判定を周囲に拡大） */}
+            <footer className="relative z-40 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
+              <div className="flex items-center gap-2">
+                {isPhase2OrLater && (
+                  isThinkingMode ? (
+                    <>
+                      {/* ひらめきサポート（思考中のみ表示・絵文字なし） */}
+                      <button
+                        onClick={() => {
+                          soundEngine.playTerminalTab();
+                          setIsThinkingSupportEnabled((prev) => !prev);
+                        }}
+                        title="思考支援：手持ちで組み合わせ不可能な単語を取り消し線で表示"
+                        className={`px-2 py-0.5 text-[10.5px] border transition-colors cursor-pointer ${
+                          isThinkingSupportEnabled
+                            ? 'bg-zinc-800 text-zinc-100 border-zinc-400 font-medium'
+                            : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700 hover:text-zinc-400'
+                        }`}
+                      >
+                        思考支援: {isThinkingSupportEnabled ? 'ON' : 'OFF'}
+                      </button>
+
+                      {/* 対話に戻るボタン */}
+                      <button
+                        onClick={() => {
+                          soundEngine.playTerminalTab();
+                          setIsThinkingMode(false);
+                        }}
+                        title="対話画面に戻る"
+                        className="px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer bg-zinc-200 text-zinc-950 border-zinc-100 font-medium hover:bg-white"
+                      >
+                        対話に戻る
+                      </button>
+                    </>
+                  ) : (
+                    /* 考えるボタン（Phase 2対話中のみ表示） */
+                    <button
+                      onClick={() => {
+                        soundEngine.playTerminalTab();
+                        setIsTerminalOpen(false);
+                        if (isDeepTruthPhase) {
+                          setThinkingGuyFace({
+                            base: 'base2',
+                            brow: 'serious',
+                            eyes: 'away',
+                            mouth: 'close',
+                            ex: 'shadow',
+                          });
+                          setThinkingGuyReaction('sigh');
+                        } else {
+                          setThinkingGuyFace({
+                            base: 'base2',
+                            brow: 'normal',
+                            eyes: 'normal',
+                            mouth: 'close',
+                          });
+                          setThinkingGuyReaction('none');
+                        }
+                        setIsThinkingMode(true);
+                      }}
+                      title="思考整理（考える）画面を開く"
+                      className="relative px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500"
+                    >
+                      考える
+                      {hasAvailableThinkingRecipe && (
+                        <span
+                          className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-zinc-950 pointer-events-none"
+                          title="新しいひらめきが可能です！"
+                        />
+                      )}
+                    </button>
+                  )
+                )}
+
+                {/* 管理端末ボタン（思考モード中はグレーアウト・クリック不可にして位置ずれ防止） */}
                 <button
-                  onClick={handleToggleTerminal}
-                  title="管理端末"
-                  className={`relative after:content-[''] after:absolute after:-inset-y-2.5 after:-inset-x-4 px-2.5 py-0.5 flex items-center gap-1.5 text-[11.5px] border transition-colors cursor-pointer ${
-                    isTerminalOpen
-                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
-                      : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500'
+                  onClick={isThinkingMode ? undefined : handleToggleTerminal}
+                  disabled={isThinkingMode}
+                  title={isThinkingMode ? "思考中は管理端末を開けません" : "管理端末"}
+                  className={`relative px-2.5 py-0.5 flex items-center gap-1.5 text-[11.5px] border transition-colors ${
+                    isThinkingMode
+                      ? 'bg-zinc-950/60 text-zinc-600 border-zinc-800/60 cursor-not-allowed opacity-50'
+                      : isTerminalOpen
+                      ? 'bg-zinc-200 text-zinc-950 border-zinc-100 cursor-pointer'
+                      : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500 cursor-pointer'
                   }`}
                 >
                   <svg
@@ -7993,7 +8400,7 @@ export default function App() {
                   </svg>
                   <span>管理端末</span>
 
-                  {hasUnreadSector && !isTerminalOpen && (
+                  {hasUnreadSector && !isTerminalOpen && !isThinkingMode && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
                   )}
                 </button>
@@ -8003,6 +8410,16 @@ export default function App() {
         )}
         </div>
       </div>
+
+      {/* 思考デバッグモード（対話・演出テスター＆全レシピ確認） */}
+      <ThinkingInspectorModal
+        isOpen={isThinkingViewerOpen}
+        onClose={() => setIsThinkingViewerOpen(false)}
+        isAllKeywordsUnlockedDebug={isAllKeywordsUnlockedDebug}
+        onToggleAllKeywordsUnlocked={() =>
+          setIsAllKeywordsUnlockedDebug((prev) => !prev)
+        }
+      />
 
       {/* シナリオ台本（全セリフ・全表情・全演出の実機プレビュー） */}
       <ScenarioInspectorModal

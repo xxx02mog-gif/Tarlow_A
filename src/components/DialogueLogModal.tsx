@@ -26,7 +26,7 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="absolute inset-0 z-40 bg-black/85 flex flex-col justify-between px-10 py-6 select-none animate-[fadeIn_0.15s_ease-out]"
+      className="absolute -inset-x-0 -top-[44px] -bottom-[44px] z-50 bg-black/90 flex flex-col justify-between px-10 py-6 select-none animate-[fadeIn_0.15s_ease-out]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -48,7 +48,7 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
         {/* 会話ログ一覧：すべて左寄せ、「名前　セリフ」の形式でセリフごとに枠なしで表示 */}
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto py-3 space-y-2 px-1 text-left"
+          className="flex-1 overflow-y-auto pt-3 pb-8 space-y-2 px-1 text-left"
         >
           {entries.length === 0 ? (
             <p className="text-[12px] text-zinc-500">
@@ -72,6 +72,7 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
               ));
             })
           )}
+          <div className="h-4 shrink-0" />
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/75 px-5 py-6 font-zen select-none"
+      className="absolute -inset-x-0 -top-[44px] -bottom-[44px] z-50 flex items-center justify-center bg-black/80 px-5 py-6 font-zen select-none"
       onClick={onClose}
     >
       <div
@@ -67,11 +67,11 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
                 </div>
 
                 <div>
-                  <span className="text-zinc-200 font-semibold">・相手の機嫌</span>
+                  <span className="text-zinc-200 font-semibold">・考える</span>
                   <p className="mt-0.5 pl-3 whitespace-nowrap">
-                    問い詰めすぎると口を閉ざしてしまいます。
+                    右上の［考える］で、関連する手がかりを結びつけると、
                     <br />
-                    話題を変えるか、少し黙って待つと落ち着きます。
+                    新たな話題をひらめきます。
                   </p>
                 </div>
               </div>

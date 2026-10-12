@@ -815,7 +815,6 @@ export const FINAL_DECISION_STAGES: Record<string, DecisionDialogueStage> = {
       aschAction: 'stay',
       doorAction: 'none',
       waitAfterDoorMs: 1600,
-      keepBgm: true,
     },
   },
   END_PHASE3_TOMORROW_PANIC: {
@@ -1458,7 +1457,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   END_PHASE3_TOMORROW: {
     id: 'END_PHASE3_TOMORROW',
     title: 'END 08a // これで全部うまくいく',
-    subtitle: 'SECRET END // LET IT BE UNSAID (TEA)',
+    subtitle: 'SECRET END // LET IT BE UNSAID',
     dialogues: [
       {
         speaker: 'GUY',
@@ -1485,7 +1484,7 @@ export const ENDING_SCENARIOS: Record<string, EndingScenarioData> = {
   END_PHASE3_TOMORROW_RETURN: {
     id: 'END_PHASE3_TOMORROW_RETURN',
     title: 'END 08b // これで全部うまくいく',
-    subtitle: 'SECRET END // LET IT BE UNSAID (FAREWELL)',
+    subtitle: 'SECRET END // LET IT BE UNSAID',
     dialogues: [
       {
         speaker: 'GUY',

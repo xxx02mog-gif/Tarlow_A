@@ -251,7 +251,8 @@ export interface TopicExchangeStage {
 export interface ConversationTopic {
   id: string;
   thoughtText: string;             // 1回目の選択肢テキスト（カッコ書き補足なし）
-  phase2Tab?: '雑談' | '端末' | '追求'; // Phase 2での所属タブ
+  disabled?: boolean;              // trueの場合、選択不可（グレーアウト表示）
+  phase2Tab?: '雑談' | '端末' | '追求'; // 【内部優先度カテゴリ】UI上のタブは廃止済。ソート優先度算出（getPrio）のみに使用
   contextCategory?: TopicContextCategory; // 直後の無言放置反応の文脈カテゴリ
   relatedTopicIds?: string[];      // この話題の直後に「関連する話題」枠へ優先表示するトピックID
   requireLinkTag?: string;         // 出現に必要なフラグ（別の話題を聞いた後に出現する話題）
