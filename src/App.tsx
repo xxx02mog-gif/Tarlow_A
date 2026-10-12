@@ -548,6 +548,10 @@ export default function App() {
   const previousPhaseBeforeInspectorRef = useRef<GamePhaseState | null>(null);
 
   useEffect(() => {
+    document.title = 'Ghost in the mASCHine';
+  }, []);
+
+  useEffect(() => {
     const updateScale = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -7282,31 +7286,6 @@ export default function App() {
                 >
                   <span>?</span>
                   <span>説明書</span>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('./assets_and_components.zip');
-                      if (!res.ok) throw new Error('Download failed: ' + res.status);
-                      const blob = await res.blob();
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'assets_and_components.zip';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      window.URL.revokeObjectURL(url);
-                    } catch (e) {
-                      console.error('Failed to download zip', e);
-                    }
-                  }}
-                  className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] text-amber-300 hover:text-amber-100 border border-amber-600/70 hover:border-amber-400 bg-amber-950/40 transition-colors cursor-pointer"
-                  title="GitHub Pages用の立ち絵・スチル画像・コンポーネント一式（ZIP）をダウンロード"
-                >
-                  <span>📦</span>
-                  <span>画像・コンポーネントZIP保存</span>
                 </button>
               </div>
             </header>
