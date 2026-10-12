@@ -86,6 +86,10 @@ export const GuyPortrait: React.FC<GuyPortraitProps> = ({
     normalizedMouth = 'close';
   }
 
+  const hasShadowEffect =
+    faceParts?.effects?.includes('shadow') ||
+    faceParts?.effects?.includes('EX_shadow');
+
   let normalizedEx: 'EX1' | 'EX2' | 'EX_shadow' | null = null;
   if (faceParts?.ex === 'EX1') {
     normalizedEx = 'EX1';
@@ -114,6 +118,7 @@ export const GuyPortrait: React.FC<GuyPortraitProps> = ({
       normalizedEx === 'EX1' ||
       normalizedEx === 'EX2' ||
       normalizedEx === 'EX_shadow' ||
+      hasShadowEffect ||
       normalizedEyes === 'away' ||
       normalizedEyes === 'close'
     ) {
@@ -122,7 +127,7 @@ export const GuyPortrait: React.FC<GuyPortraitProps> = ({
   }
 
   // 表情やリアクション変更時にアニメーションを1回再生し直す
-  const reactionSignature = `${baseVariant}-${normalizedBrow}-${normalizedEyes}-${normalizedMouth}-${normalizedEx ?? ''}-${calculatedReaction ?? ''}-${replayPulse}`;
+  const reactionSignature = `${baseVariant}-${normalizedBrow}-${normalizedEyes}-${normalizedMouth}-${normalizedEx ?? ''}-${hasShadowEffect ? 'shadow' : ''}-${calculatedReaction ?? ''}-${replayPulse}`;
   const prevSignatureRef = React.useRef(reactionSignature);
 
   React.useEffect(() => {
@@ -331,20 +336,25 @@ export const GuyPortrait: React.FC<GuyPortraitProps> = ({
             </div>
 
             {/* EX差分（EX1: 冷や汗, EX2: 怪訝, EX_shadow: 青褪め・影） */}
-            {exList.map((item) => (
-              <img
-                key={`ex-${item}`}
-                src={getAssetUrl(`images/guy_chara/guy_${item}.png`)}
-                alt=""
-                loading="eager"
-                decoding="sync"
-                aria-hidden={normalizedEx !== item}
-                style={{
-                  visibility: normalizedEx === item ? 'visible' : 'hidden',
-                }}
-                className="absolute inset-0 z-15 w-full h-full object-contain pointer-events-none"
-              />
-            ))}
+            {exList.map((item) => {
+              const isVisible =
+                normalizedEx === item ||
+                (item === 'EX_shadow' && hasShadowEffect);
+              return (
+                <img
+                  key={`ex-${item}`}
+                  src={getAssetUrl(`images/guy_chara/guy_${item}.png`)}
+                  alt=""
+                  loading="eager"
+                  decoding="sync"
+                  aria-hidden={!isVisible}
+                  style={{
+                    visibility: isVisible ? 'visible' : 'hidden',
+                  }}
+                  className="absolute inset-0 z-15 w-full h-full object-contain pointer-events-none"
+                />
+              );
+            })}
           </div>
         </div>
       ) : (

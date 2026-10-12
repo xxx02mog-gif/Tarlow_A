@@ -146,16 +146,37 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
     if (isRestrictedInDeepTruth(kw.id)) return;
     soundEngine.playTerminalTab();
     setSelectedKeywordId(kw.id);
-    setActiveThoughtText(kw.guyThought);
-
-    // ガイの表情・動き通知
-    if (kw.guyFace) {
-      onGuyFaceChange?.(kw.guyFace, kw.guyReaction ?? 'auto');
-    } else {
-      onGuyFaceChange?.({ base: 'base2', brow: 'normal', eyes: 'away', mouth: 'normal' }, 'none');
-    }
 
     if (isSynthesizing) return;
+
+    // スロットが明示的に選択されており、この投入で2枠が揃うか判定
+    const willCompleteSlots =
+      (activeTargetSlot === 1 && slot2KeywordId && slot2KeywordId !== kw.id) ||
+      (activeTargetSlot === 2 && slot1KeywordId && slot1KeywordId !== kw.id);
+
+    if (willCompleteSlots) {
+      // 2枠揃う瞬間：個別セリフを一瞬出さずに、最初から「・・・・・・」（思考中）にしてチラつきを解消
+      setActiveThoughtText('・・・・・・');
+      if (isDeepTruthMode) {
+        onGuyFaceChange?.(
+          { base: 'base2', brow: 'serious', eyes: 'away', mouth: 'close', ex: 'shadow' },
+          'sigh'
+        );
+      } else {
+        onGuyFaceChange?.(
+          { base: 'base2', brow: 'stunned', eyes: 'close', mouth: 'close' },
+          'sigh'
+        );
+      }
+    } else {
+      // 通常時（単なるセリフ閲覧、または1枠目のみの投入時）はキーワード思考セリフを表示
+      setActiveThoughtText(kw.guyThought);
+      if (kw.guyFace) {
+        onGuyFaceChange?.(kw.guyFace, kw.guyReaction ?? 'auto');
+      } else {
+        onGuyFaceChange?.({ base: 'base2', brow: 'normal', eyes: 'away', mouth: 'normal' }, 'none');
+      }
+    }
 
     // スロットが明示的に選択されている場合のみ投入
     if (activeTargetSlot === 1) {
@@ -186,7 +207,25 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
       return;
     soundEngine.playTerminalTab();
     const kw = THINKING_KEYWORDS.find((k) => k.id === kwId);
-    if (kw) {
+
+    const willCompleteSlots =
+      (targetSlot === 1 && slot2KeywordId && slot2KeywordId !== kwId) ||
+      (targetSlot === 2 && slot1KeywordId && slot1KeywordId !== kwId);
+
+    if (willCompleteSlots) {
+      setActiveThoughtText('・・・・・・');
+      if (isDeepTruthMode) {
+        onGuyFaceChange?.(
+          { base: 'base2', brow: 'serious', eyes: 'away', mouth: 'close', ex: 'shadow' },
+          'sigh'
+        );
+      } else {
+        onGuyFaceChange?.(
+          { base: 'base2', brow: 'stunned', eyes: 'close', mouth: 'close' },
+          'sigh'
+        );
+      }
+    } else if (kw) {
       setActiveThoughtText(kw.guyThought);
       if (kw.guyFace) {
         onGuyFaceChange?.(kw.guyFace, kw.guyReaction ?? 'auto');
@@ -361,7 +400,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
             </button>
           </div>
           <span className="text-[9.5px] text-zinc-500 font-mono">
-            {showRecordList ? 'RECIPE ARCHIVE' : 'DRAG & DROP TO SLOT'}
+            {showRecordList ? 'RECIPE ARCHIVE' : 'TAP OR DRAG TO SLOT'}
           </span>
         </div>
 
