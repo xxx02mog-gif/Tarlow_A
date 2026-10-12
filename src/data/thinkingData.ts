@@ -936,6 +936,11 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
         detailLabel: '話題「砂糖は入れないでおく」完了',
       },
       {
+        type: 'topic',
+        targetId: 'p2_tea_and_taste',
+        detailLabel: '話題「お茶でも淹れようか」完了',
+      },
+      {
         type: 'sector',
         targetId: 'SEC-05',
         detailLabel: '端末SEC-05「経口摂取機構仕様・味覚嗜好記録」閲覧',

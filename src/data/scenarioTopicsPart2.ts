@@ -2466,7 +2466,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           brow: 'doubt',
           eyes: 'away',
           mouth: 'close',
-          effects: ['sweat'],
+          effects: ['sweat', 'shadow'],
         },
         extraExchanges: [
           {
