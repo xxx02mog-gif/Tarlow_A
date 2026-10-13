@@ -5460,6 +5460,11 @@ export default function App() {
             setOverrideExpression(option.expression);
             setOverrideFaceParts(option.faceParts ?? null);
 
+            setTopicAskCounts((prev) => ({
+              ...prev,
+              [option.id]: (prev[option.id] ?? 0) + 1,
+            }));
+
             if (option.moodDelta !== undefined) {
               updateMood(option.moodDelta);
             }
@@ -8305,7 +8310,7 @@ export default function App() {
             </main>
 
             {/* 下部黒帯フッター */}
-            <footer className="relative z-40 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
+            <footer className="relative z-48 w-full h-[44px] bg-[#08080a] text-zinc-200 flex items-center justify-end px-5 border-t border-zinc-900 shrink-0">
               <div className="flex items-center gap-2">
                 {isPhase2OrLater && (
                   isThinkingMode ? (
