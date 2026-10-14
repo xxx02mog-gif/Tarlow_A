@@ -183,7 +183,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_height_10yo',
     label: '今の機体',
     guyThought:
-      '・・・・・・ちっこいな。11年前に屋敷で見た姿そのままだ。こんな小さな機体になっちまって・・・・・・',
+      '・・・・・・ちっこいな。11年前に屋敷で見た姿そのままだ',
     sourceDescription:
       '会話「昔を思い出す背丈」「どうしてその10歳の姿なのか」「傷のない体」「今着ている服」完了、または端末SEC-00/03/11/16閲覧後に獲得',
     unlockTrigger: {
@@ -230,7 +230,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
       {
         type: 'sector',
         targetId: 'SEC-00',
-        detailLabel: '端末SEC-00「機体基本仕様・排熱循環系」閲覧',
+        detailLabel: '端末SEC-00「機体基本仕様」閲覧',
       },
       {
         type: 'sector',
@@ -260,18 +260,18 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     ],
     whyAdopted: '現在の視覚的・感情的中心。屋敷の思い出と剣士の歴史喪失を集約する最重要核。',
     guyFace: {
-      base: 'base2',
-      brow: 'troubled',
-      eyes: 'half',
-      mouth: 'close',
+      base: 'base',
+      brow: 'normal',
+      eyes: 'normal',
+      mouth: 'open',
     },
-    guyReaction: 'sigh',
+    guyReaction: 'none',
   },
   {
     id: 'kw_sword_limiter',
     label: '出力制限',
     guyThought:
-      '出力が二割も出ねえのか。そんな制限かけられてたら、\nまともに動くことすらままならないのかもしれない',
+      '出力が二割に制限されてるのか・・・・・・。いや待てよ、二割であれだけ動けるなら、本来の性能ならどれだけ動けたんだ・・・・・・',
     sourceDescription:
       '会話「その機体で剣は振れるのか」完了、または端末SEC-08閲覧後に獲得',
     unlockTrigger: {
@@ -639,7 +639,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_asch_alias',
     label: 'アッシュ',
     guyThought:
-      '目の前にいるこいつは、一体誰なんだ？\n憎まれ口も目つきも昔のあいつのままだが・・・・・・',
+      '目の前にいるこいつは、一体誰なんだ？\n憎まれ口も目つきも以前のあいつのままだが・・・・・・',
     sourceDescription: '最初から所持',
     unlockTrigger: {
       type: 'initial',
@@ -916,7 +916,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_taste',
     label: '味覚',
     guyThought:
-      '腹は減らねえのに味覚センサーだけは付いてるのか。\n昔の味の好みまで照合できるってんだから、ディストの奴も変なところで凝り性だな',
+      '味覚センサーで味を数値化して、水分は気化排熱に回すって・・・・・・内部の配管や熱交換器、どういう構造になってんだ？',
     sourceDescription:
       '会話「食事はとるのか」(P1)や「砂糖は入れないでおく」(P2)完了、または端末SEC-05閲覧後に獲得',
     unlockTrigger: {
@@ -1184,22 +1184,21 @@ export const THINKING_RECIPES: ThinkingRecipe[] = [
   {
     id: 'recipe_hands_and_asch_alias',
     keywordIds: ['kw_height_10yo', 'kw_asch_alias'],
-    label: '消えた傷跡',
+    label: '精巧な機体',
     type: 'core',
     targetType: 'new',
     guyEpiphany:
-      '傷ひとつねえ手・・・・・・。ずっと戦ってきたあいつの手が、こんななわけねえだろ',
+      'ギアも配線どころか、パーツの継ぎ目すら見当たらない・・・・・・\nこうも人間らしいと、こいつを譜業として見る方が難しいな',
     unlockedTopicId: 'p2_hands_and_asch',
     descriptionOrReaction:
-      'ガイ「・・・・・・お前が生きて戦ってきた傷跡も、その小さな手からは全部消えているな」／アッシュ「・・・・・・そうだな」',
+      'ガイ「大体の譜業は、ちょっと見りゃそれなりに構造も分かるんだが・・・・・・おまえの機体は次元を越えちまってるな」／アッシュ「・・・・・・変なことを言うな」',
     guyFace: {
       base: 'base',
-      brow: 'troubled',
-      eyes: 'half',
-      mouth: 'tight',
-      ex: 'EX2',
+      brow: 'serious',
+      eyes: 'normal',
+      mouth: 'open',
     },
-    guyReaction: 'sigh',
+    guyReaction: 'none',
   },
 
   // --- 【雑談・心情系】 ---
@@ -1544,7 +1543,7 @@ export const ALL_EXAMINED_SOURCES: ExaminedSourceItem[] = [
   // --- 【端末SECログ（全21件）】 ---
   {
     id: 'SEC-00',
-    name: '機体基本仕様・排熱循環系',
+    name: '機体基本仕様',
     sourceType: '端末SECログ',
     status: '採用',
     category: '単体思考キー',

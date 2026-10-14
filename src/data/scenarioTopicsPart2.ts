@@ -736,13 +736,25 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '顔が赤いぞ？　どういう仕組みなんだ？',
+          '顔が赤いぞ？ もしかして、排熱させてるのか？\nにしても、わざわざ顔に持ってくるなんてな・・・・・・',
         aschText:
-          '・・・・・・ただの放熱だ',
+          '・・・・・・人の顔をジロジロ見るな',
         expression: 'look_away',
         faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: ['blush'] },
         moodDelta: 0,
         trustDelta: 1,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: '内部の熱交換器とかどういう設計になってるんだ？ 一度じっくり構造を見てみたいんだが',
+          },
+          {
+            speaker: 'ASCH',
+            text: '絶対に断る！',
+            expression: 'glare',
+            faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
+          },
+        ],
       },
     ],
   },
@@ -2837,7 +2849,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         spokenText:
           '机の上が散らかっていて悪いね。最近また古代の音機関の調査を手伝っていて、資料が山積みになってるんだ',
         aschText:
-          '・・・・・・おまえも相変わらずそういう音機関いじりが好きだな。\nディストの研究所にも、似たようなガラクタや通信機が山ほど転がっている',
+          '・・・・・・おまえ、そういうのが好きなのか',
         expression: 'normal',
         faceParts: { brow: 'normal', eyes: 'down', mouth: 'close', effects: [] },
         secondExpression: 'look_away',
@@ -2845,10 +2857,26 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         moodDelta: 1,
         trustDelta: 1,
         grantsLinkTags: ['hint_lab_comms'],
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: 'え？\nああ、そういえば昔は、こういう話はしなかったもんなぁ',
+          },
+          {
+            speaker: 'ASCH',
+            text: '・・・・・・',
+            expression: 'look_away',
+            faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+          },
+          {
+            speaker: 'GUY',
+            text: '興味あるなら、今度ゆっくり語ってやるよ',
+          },
+        ],
         badMoodResponse: {
-          aschText: '・・・・・・ディストの研究所にも似たようなガラクタや通信機が転がっているな',
+          aschText: '・・・・・・少しは整理整頓したらどうだ',
           expression: 'look_away',
-          faceParts: { brow: 'sad', eyes: 'down', mouth: 'close', effects: [] },
+          faceParts: { brow: 'angry', eyes: 'away', mouth: 'frown', effects: [] },
           moodDelta: 0,
         },
       },
@@ -2914,18 +2942,30 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
   // --- 【思考ひらめき新規話題】 ---
   {
     id: 'p2_hands_and_asch',
-    thoughtText: '消えた傷跡',
+    thoughtText: '精巧な機体',
     phase2Tab: '追求',
     contextCategory: 'body',
     stages: [
       {
         spokenText:
-          '・・・・・・お前が生きて戦ってきた傷跡も、その小さな手からは全部消えているな',
-        aschText: '・・・・・・そうだな',
+          '大体の譜業は、ちょっと見りゃそれなりに構造も分かるんだが・・・・・・\nおまえの機体は次元を越えちまってるな',
+        aschText: '・・・・・・',
         expression: 'look_away',
-        faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
+        faceParts: { brow: 'normal', eyes: 'down', mouth: 'close', effects: [] },
         moodDelta: 0,
         trustDelta: 1,
+        extraExchanges: [
+          {
+            speaker: 'GUY',
+            text: '内部の音機関や循環系がどう組まれてるのかとか、実際に中を開けて見てみたいな・・・・・・\n設計図があればそれも・・・・・・',
+          },
+          {
+            speaker: 'ASCH',
+            text: '・・・・・・変なことを言うな',
+            expression: 'glare',
+            faceParts: { brow: 'doubt', eyes: 'glare', mouth: 'frown', effects: [] },
+          },
+        ],
       },
     ],
   },
