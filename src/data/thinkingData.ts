@@ -271,7 +271,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_sword_limiter',
     label: '出力制限',
     guyThought:
-      '出力が二割に制限されてるのか・・・・・・。いや待てよ、二割であれだけ動けるなら、本来の性能ならどれだけ動けたんだ・・・・・・',
+      '出力が二割に制限されてるのか・・・・・・。\nいや待てよ、二割であれだけ動けるなら、本来の性能ならどれだけ動けたんだ・・・・・・',
     sourceDescription:
       '会話「その機体で剣は振れるのか」完了、または端末SEC-08閲覧後に獲得',
     unlockTrigger: {
@@ -342,7 +342,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_zura_speech',
     label: '語尾',
     guyThought:
-      '〜ズラ、か・・・・・・。\n怒り狂って端末ぶっ壊すあいつの顔、目に浮かぶようだぜ',
+      'ズラ、か・・・・・・。\n怒り狂って端末ぶっ壊すあいつの顔、目に浮かぶようだぜ',
     sourceDescription:
       '会話「『タルロウX』の語尾」完了、または端末SEC-01閲覧後に獲得',
     unlockTrigger: {
@@ -916,7 +916,7 @@ export const THINKING_KEYWORDS: ThinkingKeyword[] = [
     id: 'kw_taste',
     label: '味覚',
     guyThought:
-      '味覚センサーで味を数値化して、水分は気化排熱に回すって・・・・・・内部の配管や熱交換器、どういう構造になってんだ？',
+      '味覚センサーで味を数値化して、水分は気化排熱に回すって・・・・・・\n内部の配管や熱交換器、どういう構造になってんだ？',
     sourceDescription:
       '会話「食事はとるのか」(P1)や「砂糖は入れないでおく」(P2)完了、または端末SEC-05閲覧後に獲得',
     unlockTrigger: {
@@ -1188,7 +1188,7 @@ export const THINKING_RECIPES: ThinkingRecipe[] = [
     type: 'core',
     targetType: 'new',
     guyEpiphany:
-      'ギアも配線どころか、パーツの継ぎ目すら見当たらない・・・・・・\nこうも人間らしいと、こいつを譜業として見る方が難しいな',
+      'ギアや配線どころか、パーツの継ぎ目すら見当たらない・・・・・・\nこうも人間らしいと、こいつを譜業として見る方が難しいな',
     unlockedTopicId: 'p2_hands_and_asch',
     descriptionOrReaction:
       'ガイ「大体の譜業は、ちょっと見りゃそれなりに構造も分かるんだが・・・・・・おまえの機体は次元を越えちまってるな」／アッシュ「・・・・・・変なことを言うな」',
