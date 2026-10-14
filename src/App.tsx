@@ -6891,7 +6891,7 @@ export default function App() {
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 2.0.0</span>
+              <span>VERSION 2.1.0</span>
             </div>
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
