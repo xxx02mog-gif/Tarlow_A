@@ -35,7 +35,7 @@ export const INITIAL_MEMORY_SECTORS: MemorySector[] = [
     unlockedTitle: '機体基本仕様',
     unlockedCategory: '機体仕様',
     unlockedContent:
-      '自律譜業『タルロウA』（現・予備機体）の基本構造。\n第七音素循環系および擬似知覚センサーは正常稼働中。\n音素出力の上昇時、冷却系から顔面表皮へ排熱される構造につき、高負荷時は顔面表面温度の上昇（赤面化）が発生する。',
+      '自律譜業『タルロウA』（現・予備機体）の基本構造。\n第七音素循環系および擬似知覚センサーは正常稼働中。\n音素出力の上昇時、冷却系から顔面表皮へ排熱される構造につき、高負荷時は顔面表面温度の上昇が発生する。',
     dialogueUnlockedContent: '',
     errorCost: 0,
     reactionLine: '',
