@@ -2957,13 +2957,13 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         extraExchanges: [
           {
             speaker: 'GUY',
-            text: '内部の音機関や循環系がどう組まれてるのかとか、実際に中を開けて見てみたいな・・・・・・\n設計図があればそれも・・・・・・',
+            text: '内部の音機関はどう組まれてるんだ？　それに外装だって・・・・・・\n設計図があるなら是非見てみたいんだが',
           },
           {
             speaker: 'ASCH',
-            text: '・・・・・・変なことを言うな',
+            text: '・・・・・・楽しそうだな',
             expression: 'glare',
-            faceParts: { brow: 'doubt', eyes: 'glare', mouth: 'frown', effects: [] },
+            faceParts: { brow: 'doubt', eyes: 'down', mouth: 'frown', effects: [] },
           },
         ],
       },
