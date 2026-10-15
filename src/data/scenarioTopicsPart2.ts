@@ -2857,13 +2857,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
             speaker: 'GUY',
             text: 'え？\nああ、そういえば昔は、こういう話はしなかったもんなぁ',
           },
-          {
-            speaker: 'ASCH',
-            text: '・・・・・・',
-            expression: 'look_away',
-            faceParts: { brow: 'sad', eyes: 'away', mouth: 'close', effects: [] },
-          },
-          {
+                    {
             speaker: 'GUY',
             text: '興味あるなら、今度ゆっくり語ってやるよ',
           },
