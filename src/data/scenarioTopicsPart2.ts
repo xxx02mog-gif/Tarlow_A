@@ -736,7 +736,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '本当に顔が赤くなるんだな\nにしても、排熱させる機関をわざわざ顔に持ってくるなんて・・・・・・',
+          '本当に顔が赤くなるんだな\nしっかし、排熱させる機関をわざわざ顔に持ってくるなんて・・・・・・',
         aschText:
           '・・・・・・人の顔をジロジロ見るな',
         expression: 'look_away',
@@ -746,7 +746,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         extraExchanges: [
           {
             speaker: 'GUY',
-            text: '内部の熱交換器とかどういう設計になってるんだ？ 機体を開けて構造を見れれば・・・・・・',
+            text: '動力にしても熱交換器にしても、どういう設計になってるんだ？\n機体を開けて構造を見れればちょっとは・・・・・・',
           },
           {
             speaker: 'ASCH',
