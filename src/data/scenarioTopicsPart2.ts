@@ -746,11 +746,11 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
         extraExchanges: [
           {
             speaker: 'GUY',
-            text: '内部の熱交換器とかどういう設計になってるんだ？ 一度じっくり構造を見てみたいんだが',
+            text: '内部の熱交換器とかどういう設計になってるんだ？ 機体を開けて構造を見れれば・・・・・・',
           },
           {
             speaker: 'ASCH',
-            text: '・・・・・・断る！',
+            text: '・・・・・・っ、ガイ！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
           },
