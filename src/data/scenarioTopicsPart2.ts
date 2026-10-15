@@ -736,7 +736,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
     stages: [
       {
         spokenText:
-          '顔が赤いぞ？ もしかして、排熱させてるのか？\nにしても、わざわざ顔に持ってくるなんてな・・・・・・',
+          '本当に顔が赤くなるんだな\nにしても、排熱させる機関をわざわざ顔に持ってくるなんて・・・・・・',
         aschText:
           '・・・・・・人の顔をジロジロ見るな',
         expression: 'look_away',
@@ -750,7 +750,7 @@ export const SCENARIO_TOPICS_PART2: ConversationTopic[] = [
           },
           {
             speaker: 'ASCH',
-            text: '絶対に断る！',
+            text: '・・・・・・断る！',
             expression: 'glare',
             faceParts: { brow: 'angry', eyes: 'glare', mouth: 'shout', effects: ['blush'] },
           },
