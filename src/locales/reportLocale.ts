@@ -141,4 +141,39 @@ export const REPORT_LABELS = {
     en: 'Deactivate (Destroy)',
     ko: '기능 정지 (파괴)',
   },
+  creditCircleName: {
+    ja: 'サークル名',
+    en: 'Circle',
+    ko: '서클명',
+  },
+  creditAuthor: {
+    ja: '制作・シナリオ・イラスト',
+    en: 'Production / Scenario / Art',
+    ko: '제작·시나리오·일러스트',
+  },
+  creditBgm: {
+    ja: 'BGM素材',
+    en: 'BGM Assets',
+    ko: 'BGM 소재',
+  },
+  creditBgmSource: {
+    ja: 'イワシロ音楽素材（『魂の煮付け』）',
+    en: 'Iwashiro Music ("Tamashii no Nitsuke")',
+    ko: '이와시로 음악 소재 (『영혼의 조림』)',
+  },
+  creditAiAssistance: {
+    ja: 'プログラミング補助・テキスト入力補助',
+    en: 'Programming & Text Input Support',
+    ko: '프로그래밍 보조·텍스트 입력 보조',
+  },
+  creditOriginalWork: {
+    ja: '原作：『テイルズ オブ ジ アビス』',
+    en: 'Original: "Tales of the Abyss"',
+    ko: '원작: 『테일즈 오브 디 어비스』',
+  },
+  creditDisclaimer: {
+    ja: '※本作は非公式の個人二次創作ゲームであり、原作および関係各社様とは一切関係ございません。',
+    en: '* This is an unofficial fan-made derivative work, not affiliated with the original creators or copyright holders.',
+    ko: '※ 본 작품은 비공식 개인 2차 창작 게임이며, 원작 및 관계 각사와는 일절 관계가 없습니다.',
+  },
 };

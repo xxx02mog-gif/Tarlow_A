@@ -6861,7 +6861,13 @@ export default function App() {
                     prev.filter((item) => item.toastId !== toast.toastId)
                   );
                 }}
-                title="クリックして閉じる"
+                title={
+                  lang === 'en'
+                    ? 'Click to dismiss'
+                    : lang === 'ko'
+                      ? '클릭하여 닫기'
+                      : 'クリックして閉じる'
+                }
                 className="w-[248px] bg-[#0b0c10]/95 text-zinc-100 border border-zinc-400 shadow-[0_6px_20px_rgba(0,0,0,0.65)] px-3 py-2 cursor-pointer animate-bubble-in"
               >
                 <div className="flex items-center justify-between border-b border-zinc-700/80 pb-0.5 mb-1">

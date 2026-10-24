@@ -501,27 +501,27 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
 
             <div className="space-y-2 text-[11.5px] leading-relaxed text-zinc-300">
               <div className="flex justify-between border-b border-zinc-900 pb-1">
-                <span className="text-zinc-500">サークル名</span>
+                <span className="text-zinc-500">{REPORT_LABELS.creditCircleName[lang]}</span>
                 <span className="text-zinc-100 font-bold">咀嚼屋</span>
               </div>
               <div className="flex justify-between border-b border-zinc-900 pb-1">
-                <span className="text-zinc-500">制作・シナリオ・イラスト</span>
+                <span className="text-zinc-500">{REPORT_LABELS.creditAuthor[lang]}</span>
                 <span className="text-zinc-100 font-bold">中邑フエコ</span>
               </div>
               <div className="flex justify-between border-b border-zinc-900 pb-1">
-                <span className="text-zinc-500">BGM素材</span>
+                <span className="text-zinc-500">{REPORT_LABELS.creditBgm[lang]}</span>
                 <span className="text-zinc-100 font-bold">
-                  イワシロ音楽素材（『魂の煮付け』）
+                  {REPORT_LABELS.creditBgmSource[lang]}
                 </span>
               </div>
               <div className="flex justify-between border-b border-zinc-900 pb-1">
-                <span className="text-zinc-500">プログラミング補助・テキスト入力補助</span>
+                <span className="text-zinc-500">{REPORT_LABELS.creditAiAssistance[lang]}</span>
                 <span className="text-zinc-100 font-bold">Google AI Studio</span>
               </div>
               <div className="pt-1 text-[10px] text-zinc-500 leading-snug">
-                原作：『テイルズ オブ ジ アビス』
+                {REPORT_LABELS.creditOriginalWork[lang]}
                 <br />
-                ※本作は非公式の個人二次創作ゲームであり、原作および関係各社様とは一切関係ございません。
+                {REPORT_LABELS.creditDisclaimer[lang]}
               </div>
             </div>
           </div>

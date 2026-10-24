@@ -3286,8 +3286,8 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
   },
   'さっきは興味がないって言っていたけど、\nみんなのこと・・・・・・ナタリアのことだって、本当は少し気にかけているんじゃないのか？': {
     ja: 'さっきは興味がないって言っていたけど、\nみんなのこと・・・・・・ナタリアのことだって、本当は少し気にかけているんじゃないのか？',
-    en: 'You claimed you didn\'t care earlier, but aren\'t you secretly worried about everyone... about Natalia?',
-    ko: '아깐 관심 없다고 했지만, 실은 모두의 일…… 나탈리아에 대해서도 조금은 신경 쓰고 있는 거 아냐?',
+    en: 'You claimed you didn\'t care earlier, but\naren\'t you secretly worried about everyone... about Natalia?',
+    ko: '아깐 관심 없다고 했지만,\n실은 모두의 일…… 나탈리아에 대해서도 조금은 신경 쓰고 있는 거 아냐?',
   },
   '・・・・・・そう、だろうな\n俺にはもう、関係のないことだ': {
     ja: '・・・・・・そう、だろうな\n俺にはもう、関係のないことだ',
@@ -3401,7 +3401,7 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
   },
   'なっ・・・・・・！？\n・・・・・・ち、違う、あれは上の棚の資料を確認していただけだ！': {
     ja: 'なっ・・・・・・！？\n・・・・・・ち、違う、あれは上の棚の資料を確認していただけだ！',
-    en: 'Wha...?! ...N-No! I was simply checking references on the upper shelf!',
+    en: 'Wha...?! \n...N-No! I was simply checking references on the upper shelf!',
     ko: '뭐, 뭐라고……?!\n……아, 아냐! 그건 위쪽 선반의 자료를 확인하고 있었을 뿐이다!',
   },
   'その機体、栄養にはならなくても食事はできる仕様なんだって？　今度、好物のチキンでも用意しようか？': {
@@ -3446,8 +3446,8 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
   },
   'なになに・・・・・・？\n部屋の隅に立ったあと、今の身体じゃ丸見えだって気づいて、慌てて隠れ場所を探しかけた・・・・・・': {
     ja: 'なになに・・・・・・？\n部屋の隅に立ったあと、今の身体じゃ丸見えだって気づいて、慌てて隠れ場所を探しかけた・・・・・・',
-    en: 'What\'s this...? After freezing in the corner, you realized this body was in plain view and frantically scrambled for cover...',
-    ko: '어디 보자……? 방 구석에 선 뒤 지금 몸으론 훤히 다 보인다는 걸 깨닫고 허겁지겁 숨을 곳을 찾으려 했다……',
+    en: 'What\'s this...?\nAfter freezing in the corner, you realized this body was in plain view and frantically scrambled for cover...',
+    ko: '어디 보자……?\n방 구석에 선 뒤 지금 몸으론 훤히 다 보인다는 걸 깨닫고 허겁지겁 숨을 곳을 찾으려 했다……',
   },
   'う、うるさい！': {
     ja: 'う、うるさい！',
@@ -3911,8 +3911,8 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
   },
   '・・・・・・研究所で俺たちに声をかけなかったのも、\n大佐に勘付かれたくなかったからか？': {
     ja: '・・・・・・研究所で俺たちに声をかけなかったのも、\n大佐に勘付かれたくなかったからか？',
-    en: '...Was avoiding speaking to us at the lab also because you didn\'t want the Colonel noticing?',
-    ko: '……연구소에서 우리한테 말을 걸지 않은 것도 대령한테 들키기 싫어서였어?',
+    en: '...Was avoiding speaking to us at the lab\nalso because you didn\'t want the Colonel noticing?',
+    ko: '……연구소에서 우리한테 말을 걸지 않은 것도\n대령한테 들키기 싫어서였어?',
   },
   '・・・・・・あの死霊使いに知られてみろ、どんな実験材料にされるか分かったものじゃない': {
     ja: '・・・・・・あの死霊使いに知られてみろ、どんな実験材料にされるか分かったものじゃない',
@@ -3966,8 +3966,8 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
   },
   'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、\nディストにロックをかけられているんじゃないか？': {
     ja: 'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、\nディストにロックをかけられているんじゃないか？',
-    en: 'From Eldrant until one year ago... Has Dist locked those two missing years away from you?',
-    ko: '엘드란트부터 1년 전까지…… 그 2년만 빠져 있는 건 디스트가 잠금을 걸어둔 거 아냐?',
+    en: 'From Eldrant until one year ago... With those two years missing,\nHas Dist locked those memories away from you?',
+    ko: '엘드란트부터 1년 전까지…… 그 2년만 빠져 있는 건,\n디스트가 잠금을 걸어둔 거 아냐?',
   },
   '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の記憶をどう弄ったかなど知るか・・・・・・っ': {
     ja: '・・・・・・っ、くそ、頭が・・・・・・っ。\nあいつが俺の記憶をどう弄ったかなど知るか・・・・・・っ',
@@ -5020,6 +5020,281 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
     en: 'Dist',
     ko: '디스트',
   },
+
+  // === Ending Titles & Subtitles ===
+  'END 03 // また気が向いたら': {
+    ja: 'END 03 // また気が向いたら',
+    en: 'END 03 // See You Around',
+    ko: 'END 03 // 다시 생각나면',
+  },
+  'END 04 // たまにはゆっくり': {
+    ja: 'END 04 // たまにはゆっくり',
+    en: 'END 04 // Take It Easy for Once',
+    ko: 'END 04 // 가끔은 편히',
+  },
+  'END 05 // 一旦そういうことで': {
+    ja: 'END 05 // 一旦そういうことで',
+    en: 'END 05 // Asch for Now',
+    ko: 'END 05 // 일단 그런 걸로',
+  },
+  'END 06 // そういうことにした': {
+    ja: 'END 06 // そういうことにした',
+    en: 'END 06 // Left It at That',
+    ko: 'END 06 // 그렇게 하기로 했다',
+  },
+  'END 07 // 何も言えなかった': {
+    ja: 'END 07 // 何も言えなかった',
+    en: "END 07 // Couldn't Say a Word",
+    ko: 'END 07 // 아무 말도 할 수 없었다',
+  },
+  'END 08a // これで全部うまくいく': {
+    ja: 'END 08a // これで全部うまくいく',
+    en: 'END 08a // Everything Will Be Fine',
+    ko: 'END 08a // 이걸로 다 잘될 거야',
+  },
+  'END 08b // これで全部うまくいく': {
+    ja: 'END 08b // これで全部うまくいく',
+    en: 'END 08b // Everything Will Be Fine',
+    ko: 'END 08b // 이걸로 다 잘될 거야',
+  },
+  'END 09 // これで全部元通り': {
+    ja: 'END 09 // これで全部元通り',
+    en: 'END 09 // Everything Back to Normal',
+    ko: 'END 09 // 이걸로 전부 원래대로',
+  },
+  'END 10 // 魂の容れ物': {
+    ja: 'END 10 // 魂の容れ物',
+    en: 'END 10 // Vessel of the Soul',
+    ko: 'END 10 // 영혼의 그릇',
+  },
+  'CASUAL END // SEE YOU AROUND': {
+    ja: 'CASUAL END // SEE YOU AROUND',
+    en: 'CASUAL END // SEE YOU AROUND',
+    ko: 'CASUAL END // SEE YOU AROUND',
+  },
+  'CASUAL END // GOODNIGHT FOR NOW': {
+    ja: 'CASUAL END // GOODNIGHT FOR NOW',
+    en: 'CASUAL END // GOODNIGHT FOR NOW',
+    ko: 'CASUAL END // GOODNIGHT FOR NOW',
+  },
+  'PHASE 3 END // ASCH FOR NOW': {
+    ja: 'PHASE 3 END // ASCH FOR NOW',
+    en: 'PHASE 3 END // ASCH FOR NOW',
+    ko: 'PHASE 3 END // ASCH FOR NOW',
+  },
+  'PHASE 3 END // KIND ENOUGH TO LIE': {
+    ja: 'PHASE 3 END // KIND ENOUGH TO LIE',
+    en: 'PHASE 3 END // KIND ENOUGH TO LIE',
+    ko: 'PHASE 3 END // KIND ENOUGH TO LIE',
+  },
+  'PHASE 3 END // BETTER LEFT UNSAID': {
+    ja: 'PHASE 3 END // BETTER LEFT UNSAID',
+    en: 'PHASE 3 END // BETTER LEFT UNSAID',
+    ko: 'PHASE 3 END // BETTER LEFT UNSAID',
+  },
+  'SECRET END // LET IT BE UNSAID': {
+    ja: 'SECRET END // LET IT BE UNSAID',
+    en: 'SECRET END // LET IT BE UNSAID',
+    ko: 'SECRET END // LET IT BE UNSAID',
+  },
+  'DEAD END // NOTHING HAPPENED HERE': {
+    ja: 'DEAD END // NOTHING HAPPENED HERE',
+    en: 'DEAD END // NOTHING HAPPENED HERE',
+    ko: 'DEAD END // NOTHING HAPPENED HERE',
+  },
+  'Ghost in the mASCHine': {
+    ja: 'Ghost in the mASCHine',
+    en: 'Ghost in the mASCHine',
+    ko: 'Ghost in the mASCHine',
+  },
+
+  // === Ending Summary Texts ===
+  '『俺はタルロウAだ』という演技を見抜けないまま対話を終えた。どこか人間くさい反応に引っかかりを覚えつつも、彼はそのままディストの研究所へと戻っていった': {
+    ja: '『俺はタルロウAだ』という演技を見抜けないまま対話を終えた。どこか人間くさい反応に引っかかりを覚えつつも、彼はそのままディストの研究所へと戻っていった',
+    en: 'The dialogue ended without seeing through his "I am Tarlow A" act. Despite lingering doubts about his oddly human-like reactions, he returned to Dist\'s laboratory as he was.',
+    ko: '「나는 타로우 A다」라는 연기를 간파하지 못한 채 대화를 마쳤다. 어딘가 인간다운 반응에 미심쩍음을 느끼면서도, 그는 그대로 디스트의 연구소로 돌아갔다.',
+  },
+  'タルロウAの偽装を暴き、中身がアッシュ本人であることは確かめられたものの、怒らせて帰られてしまった': {
+    ja: 'タルロウAの偽装を暴き、中身がアッシュ本人であることは確かめられたものの、怒らせて帰られてしまった',
+    en: "Though Tarlow A's disguise was exposed and his identity as Asch was confirmed, he left in a fury.",
+    ko: '타로우 A의 위장을 밝혀내고 속 내용물이 애쉬 본인임을 확인했으나, 화나게 만들어 가 버리고 말았다.',
+  },
+  '正体がアッシュであることを確かめ、穏やかに雑談を交わして送り出した。深い事情には踏み込まないまま、秘密の共有者として静かに見送った': {
+    ja: '正体がアッシュであることを確かめ、穏やかに雑談を交わして送り出した。深い事情には踏み込まないまま、秘密の共有者として静かに見送った',
+    en: 'Confirmed his true identity as Asch and saw him off after a quiet conversation. Without prying into deeper truths, parted ways in silent solidarity.',
+    ko: '정체가 애쉬임을 확인하고 온화하게 담소를 나눈 뒤 배웅했다. 깊은 사정에는 파고들지 않은 채, 비밀의 공유자로서 조용히 떠나보냈다.',
+  },
+  '無理に深い事情を問い詰めることも研究所へ送り返すこともせず、この部屋で休んでいくよう声をかけた。静かな部屋のソファで、彼は穏やかに目を閉じた': {
+    ja: '無理に深い事情を問い詰めることも研究所へ送り返すこともせず、この部屋で休んでいくよう声をかけた。静かな部屋のソファで、彼は穏やかに目を閉じた',
+    en: 'Without pressing for answers or sending him back to the lab, offered him rest here. On the sofa in the quiet room, he peacefully closed his eyes.',
+    ko: '무리하게 깊은 사정을 추궁하거나 연구소로 돌려보내지 않고, 이 방에서 쉬어가라 권했다. 조용한 방 소파에서, 그는 온화하게 눈을 감았다.',
+  },
+  '身体が譜業であっても「おまえはおまえだ、一旦アッシュってことで」と笑い飛ばした。これ以上の理屈など必要なく、「またな」と去っていく背中を穏やかに見送った': {
+    ja: '身体が譜業であっても「おまえはおまえだ、一旦アッシュってことで」と笑い飛ばした。これ以上の理屈など必要なく、「またな」と去っていく背中を穏やかに見送った',
+    en: 'Even in a fontech body, laughed it off: "You\'re just you—Asch for now." Without needing further rationale, watched him leave with a gentle "See ya."',
+    ko: '몸이 포업이라도 「너는 너야, 일단 애쉬인 걸로」라며 웃어넘겼다. 더 이상의 논리는 필요 없이, 「또 보자」며 떠나가는 뒷모습을 온화하게 지켜보았다.',
+  },
+  '譜業人形だと告げられ、アッシュは「タルロウA」として去っていった。あいつのしたいようにやらせてやるのが一番なんだと自分に言い聞かせることしか、できなかった': {
+    ja: '譜業人形だと告げられ、アッシュは「タルロウA」として去っていった。あいつのしたいようにやらせてやるのが一番なんだと自分に言い聞かせることしか、できなかった',
+    en: 'Told he was a fontech automaton, Asch departed as "Tarlow A." The only thing left was convincing oneself that letting him do as he wished was best.',
+    ko: '포업 인형이란 말을 듣고 애쉬는 「타로우 A」로서 떠나갔다. 녀석이 하고 싶은 대로 하게 두는 게 최선이라 스스로를 타이르는 것밖에 할 수 없었다.',
+  },
+  '最後の問いかけに答えられないまま沈黙し、アッシュは部屋を出ていった。翌日研究所を訪ねたが彼の姿はなく、手元には管理端末だけが残された': {
+    ja: '最後の問いかけに答えられないまま沈黙し、アッシュは部屋を出ていった。翌日研究所を訪ねたが彼の姿はなく、手元には管理端末だけが残された',
+    en: 'Remaining silent before his final question, Asch left the room. Visiting the laboratory the next day, there was no sign of him, leaving only the management terminal behind.',
+    ko: '마지막 질문에 답하지 못한 채 침묵했고, 애쉬는 방을 나섰다. 다음 날 연구소를 찾아갔으나 녀석의 모습은 없었고, 손에는 관리 단말기만이 남겨졌다.',
+  },
+  '肉体の秘密を知りながらも真実を口にせず、もう一杯の茶を淹れた。真実を胸の奥にしまい込み、あいつと生きる平穏な日常を守ることを選んだ': {
+    ja: '肉体の秘密を知りながらも真実を口にせず、もう一杯の茶を淹れた。真実を胸の奥にしまい込み、あいつと生きる平穏な日常を守ることを選んだ',
+    en: 'Knowing the secret of his physical form yet uttering not a word, brewed another cup of tea. Locking the truth deep within, chose to protect a peaceful everyday life together.',
+    ko: '육체의 비밀을 알면서도 진실을 입에 담지 않고, 차 한 잔을 더 우렸다. 진실을 가슴속 깊이 묻어두고, 녀석과 살아갈 평온한 일상을 지키기를 택했다.',
+  },
+  '肉体の秘密を知りながらも真実を口にせず、研究所へ戻るあいつの背中を静かに見送った。バチカルの日常とあいつの日常、その両方を守るため、真実を胸の奥にしまい込むことを選んだ': {
+    ja: '肉体の秘密を知りながらも真実を口にせず、研究所へ戻るあいつの背中を静かに見送った。バチカルの日常とあいつの日常、その両方を守るため、真実を胸の奥にしまい込むことを選んだ',
+    en: 'Knowing the truth yet remaining silent, quietly watched him return to the lab. To preserve both everyday life in Baticul and his life, chose to bury the truth in silence.',
+    ko: '육체의 비밀을 알면서도 진실을 입에 담지 않고, 연구소로 돌아가는 녀석의 뒷모습을 조용히 지켜보았다. 바티칼의 일상과 녀석의 일상, 그 둘 모두를 지키기 위해 진실을 가슴속에 묻어두기를 택했다.',
+  },
+  '秘密を問い詰めることなく、動かなくなった機体をただ見下ろした。今バチカルにいるルークの日常を守るため、今日の記憶を自分だけの胸に葬り去った': {
+    ja: '秘密を問い詰めることなく、動かなくなった機体をただ見下ろした。今バチカルにいるルークの日常を守るため、今日の記憶を自分だけの胸に葬り去った',
+    en: "Without demanding answers, simply looked down at the lifeless chassis. To protect the peaceful days Luke now lives in Baticul, buried today's memories in solitary silence.",
+    ko: '비밀을 추궁하지 않고, 움직이지 않게 된 기체를 그저 내려다보았다. 지금 바티칼에 있는 루크의 일상을 지키기 위해, 오늘의 기억을 홀로 가슴속에 묻었다.',
+  },
+  'きっとあいつは誰かに認められたかったはずなのに、ガイは自分のためだけにあいつ自身に「アッシュ」と言わせてしまった。皆が涙を流して再会を喜ぶ中、何度自分に言い聞かせても、脳裏からはあの記録の文字が離れなかった': {
+    ja: 'きっとあいつは誰かに認められたかったはずなのに、ガイは自分のためだけにあいつ自身に「アッシュ」と言わせてしまった。皆が涙を流して再会を喜ぶ中、何度自分に言い聞かせても、脳裏からはあの記録の文字が離れなかった',
+    en: 'Surely he had longed for someone to acknowledge him, yet Guy forced him to call himself "Asch" purely for his own sake. Amid everyone\'s tearful joy at reuniting, no matter how many times he rationalized it, the words from that log refused to leave his mind.',
+    ko: '분명 녀석은 누군가에게 인정받고 싶었을 텐데, 가이는 오직 자신만을 위해 녀석 스스로에게 「애쉬」라고 말하게 하고 말았다. 모두가 눈물을 흘리며 재회를 기뻐하는 가운데, 몇 번을 되뇌어도 뇌리에서는 그 기록의 문자가 떠나지 않았다.',
+  },
+
+  // === Ending Dialogue Monologues & Multi-lines ===
+  'ただの譜業にしちゃ、妙に態度が人間臭かった気もするけど・・・・・・': {
+    ja: 'ただの譜業にしちゃ、妙に態度が人間臭かった気もするけど・・・・・・',
+    en: 'For a simple fontech automaton, his attitude felt oddly human...',
+    ko: '단순한 포업치고는 묘하게 태도가 인간다웠던 것 같기도 하지만……',
+  },
+  'まあ、気のせいか': {
+    ja: 'まあ、気のせいか',
+    en: 'Well, must just be my imagination.',
+    ko: '뭐, 기분 탓인가.',
+  },
+  'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・': {
+    ja: 'あんな風に突っ撥ねるところはどう見てもアッシュなんだけど・・・・・・',
+    en: 'The way he lashed out and stormed off was undeniably Asch, though...',
+    ko: '저렇게 퉁명스럽게 내치는 건 아무리 봐도 애쉬인데……',
+  },
+  'もう少し落ち着いて話せばよかったな': {
+    ja: 'もう少し落ち着いて話せばよかったな',
+    en: "I should've spoken to him a bit more calmly.",
+    ko: '조금 더 차분하게 이야기할걸 그랬나.',
+  },
+  '翌日、研究所に出向いたが、奴の姿はなかった。': {
+    ja: '翌日、研究所に出向いたが、奴の姿はなかった。',
+    en: 'I visited the lab the next day, but there was no sign of him.',
+    ko: '다음 날, 연구소를 찾아갔으나 녀석의 모습은 없었다.',
+  },
+  '残ったのは、この管理端末だけだ': {
+    ja: '残ったのは、この管理端末だけだ',
+    en: 'All that remained was this management terminal.',
+    ko: '남은 것은 이 관리 단말기뿐이다.',
+  },
+  'きっとあいつは誰かに「アッシュ」だと': {
+    ja: 'きっとあいつは誰かに「アッシュ」だと',
+    en: 'Surely he wanted someone to recognize him',
+    ko: '분명 녀석은 누군가에게 「애쉬」라고',
+  },
+  '認められたかったんだろう': {
+    ja: '認められたかったんだろう',
+    en: 'as "Asch."',
+    ko: '인정받고 싶었겠지.',
+  },
+  'それを、俺は、俺のためだけに': {
+    ja: 'それを、俺は、俺のためだけに',
+    en: 'And yet, solely for my own peace of mind,',
+    ko: '그것을 나는, 오직 나만을 위해',
+  },
+  'あいつ自身に「アッシュ」だと言わせてしまった': {
+    ja: 'あいつ自身に「アッシュ」だと言わせてしまった',
+    en: 'I made him proclaim himself "Asch."',
+    ko: '녀석 스스로에게 「애쉬」라고 말하게 하고 말았다.',
+  },
+  '先日、皆に会いに行ったようだ': {
+    ja: '先日、皆に会いに行ったようだ',
+    en: 'He seems to have gone to see everyone recently.',
+    ko: '얼마 전, 모두를 만나러 갔던 모양이다.',
+  },
+  'ルークも、ナタリアも・・・・・・皆泣いて喜んだらしい': {
+    ja: 'ルークも、ナタリアも・・・・・・皆泣いて喜んだらしい',
+    en: 'Luke, Natalia... they all wept with joy, I heard.',
+    ko: '루크도, 나탈리아도…… 모두 울며 기뻐했다고 한다.',
+  },
+  '何度、自分にそう言い聞かせても': {
+    ja: '何度、自分にそう言い聞かせても',
+    en: 'No matter how many times I tell myself it was right,',
+    ko: '몇 번이고 스스로에게 그렇게 타이르고 있어도,',
+  },
+  'あの記録の文字が、頭にこびりついて離れない': {
+    ja: 'あの記録の文字が、頭にこびりついて離れない',
+    en: 'those written words from that log remain burned into my mind.',
+    ko: '그 기록의 문자가 머리에 달라붙어 떨어지지 않는다.',
+  },
+  'そうだ。それできっと、全部うまくいく': {
+    ja: 'そうだ。それできっと、全部うまくいく',
+    en: 'Right. That way, surely everything will turn out fine.',
+    ko: '그래. 그러면 분명, 전부 잘될 거야.',
+  },
+
+  // === Ending Extra Exchanges & Split Lines ===
+  '・・・・・・今日、おまえと話せてよかったよ。\nおまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ': {
+    ja: '・・・・・・今日、おまえと話せてよかったよ。\nおまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ',
+    en: "...I'm glad I got to talk with you today.\nI understand your circumstances now, so I won't tell a soul. Feel free to drop by whenever you like.",
+    ko: '……오늘, 너랑 이야기해서 좋았어.\n네 사정도 알았으니, 아무에게도 말하지 않을게. 생각나면 언제든 또 들러.',
+  },
+  'おまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ': {
+    ja: 'おまえの事情も分かったから、誰にも言わずにおく。気が向いたら、またいつでも顔を出せよ',
+    en: "I understand your circumstances now, so I won't tell a soul. Feel free to drop by whenever you like.",
+    ko: '네 사정도 알았으니, 아무에게도 말하지 않을게. 생각나면 언제든 또 들러.',
+  },
+
+  // === Phase 2 Deep/Past Topics Individual Lines ===
+  'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、': {
+    ja: 'エルドラントから1年前まで・・・・・・その2年間だけ抜けているのは、',
+    en: 'From Eldrant until one year ago... With those two years missing,',
+    ko: '엘드란트부터 1년 전까지…… 그 2년만 빠져 있는 건,',
+  },
+  'ディストにロックをかけられているんじゃないか？': {
+    ja: 'ディストにロックをかけられているんじゃないか？',
+    en: 'Has Dist locked those memories away from you?',
+    ko: '디스트가 잠금을 걸어둔 거 아냐?',
+  },
+  'さっきは興味がないって言っていたけど、': {
+    ja: 'さっきは興味がないって言っていたけど、',
+    en: "You claimed you didn't care earlier, but",
+    ko: '아깐 관심 없다고 했지만,',
+  },
+  '・・・・・・ち、違う、あれは上の棚の資料を確認していただけだ！': {
+    ja: '・・・・・・ち、違う、あれは上の棚の資料を確認していただけだ！',
+    en: '...N-No! I was simply checking references on the upper shelf!',
+    ko: '……아, 아냐! 그건 위쪽 선반의 자료를 확인하고 있었을 뿐이다!',
+  },
+  'なになに・・・・・・？': {
+    ja: 'なになに・・・・・・？',
+    en: "What's this...?",
+    ko: '어디 보자……?',
+  },
+  '部屋の隅に立ったあと、今の身体じゃ丸見えだって気づいて、慌てて隠れ場所を探しかけた・・・・・・': {
+    ja: '部屋の隅に立ったあと、今の身体じゃ丸見えだって気づいて、慌てて隠れ場所を探しかけた・・・・・・',
+    en: 'After freezing in the corner, you realized this body was in plain view and frantically scrambled for cover...',
+    ko: '방 구석에 선 뒤 지금 몸으론 훤히 다 보인다는 걸 깨닫고 허겁지겁 숨을 곳을 찾으려 했다……',
+  },
+  '・・・・・・研究所で俺たちに声をかけなかったのも、': {
+    ja: '・・・・・・研究所で俺たちに声をかけなかったのも、',
+    en: '...Was avoiding speaking to us at the lab',
+    ko: '……연구소에서 우리한테 말을 걸지 않은 것도',
+  },
+  '大佐に勘付かれたくなかったからか？': {
+    ja: '大佐に勘付かれたくなかったからか？',
+    en: "also because you didn't want the Colonel noticing?",
+    ko: '대령한테 들키기 싫어서였어?',
+  },
 };
 
 export function getLocalizedDialogue(text: string, lang: Language): string {
@@ -5032,6 +5307,22 @@ export function getLocalizedDialogue(text: string, lang: Language): string {
   for (const [key, val] of Object.entries(DIALOGUE_TRANSLATIONS)) {
     if (trimmed === key.trim()) {
       return val[lang] || text;
+    }
+  }
+
+  // 複数行テキストで全体一致しなかった場合、各行を個別に翻訳して再構成を試みる
+  if (trimmed.includes('\n')) {
+    const lines = trimmed.split('\n');
+    let hasTranslation = false;
+    const translated = lines.map((line) => {
+      const t = line.trim();
+      if (!t) return line;
+      const res = getLocalizedDialogue(t, lang);
+      if (res !== t) hasTranslation = true;
+      return res;
+    });
+    if (hasTranslation) {
+      return translated.join('\n');
     }
   }
 
@@ -5051,3 +5342,4 @@ export function getLocalizedDialogue(text: string, lang: Language): string {
 
   return text;
 }
+
