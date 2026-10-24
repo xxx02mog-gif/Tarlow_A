@@ -16,6 +16,13 @@ import {
   AchievementSaveData,
   ENDING_ARCHIVE_LIST,
 } from '../utils/achievementStore';
+import { useLanguage } from '../utils/i18n';
+import { REPORT_LABELS } from '../locales/reportLocale';
+import { getLocalizedDialogue } from '../locales/dialogueLocale';
+import {
+  getLocalizedAchievement,
+  getLocalizedEndingHint,
+} from '../locales/achievementLocale';
 
 // 観測ログ（INFO）の集計対象ID（通常時5件、メイドモード時6件）
 export const TARGET_ORAL_INFO_IDS = [
@@ -52,6 +59,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
   achievementSave,
   onResetSession,
 }) => {
+  const [lang] = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ENDINGS' | 'ACHIEVEMENTS'>('ENDINGS');
   const [selectedEndingKey, setSelectedEndingKey] = useState<string | null>(null);
@@ -99,12 +107,12 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
     customEndingKey || resolveEndingKey(endingDisposition, endingApproach);
   const reachedEnding = ENDING_SCENARIOS[resolvedEndingKey];
   const dispositionLabel = reachedEnding
-    ? reachedEnding.title
+    ? getLocalizedDialogue(reachedEnding.title, lang)
     : endingDisposition === 'KEEP'
-      ? 'このまま自分の部屋に置く'
+      ? REPORT_LABELS.dispositionKeep[lang]
       : endingDisposition === 'RETURN'
-        ? 'ディストの研究所へ送り返す'
-        : '機能停止（破壊）';
+        ? REPORT_LABELS.dispositionReturn[lang]
+        : REPORT_LABELS.dispositionDestroy[lang];
 
   // 累計データの集計
   return (
@@ -119,7 +127,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
       <div className="flex items-end justify-between border-b-2 border-zinc-900 pb-2 shrink-0">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[17px] font-bold tracking-wider text-zinc-950 font-zen">
-            対話観測記録
+            {REPORT_LABELS.headerTitle[lang]}
           </h2>
           <span className="text-[10px] tracking-[0.2em] text-zinc-500 font-mono">
             SESSION: {stats.sessionId}
@@ -127,7 +135,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
         </div>
         <div>
           <span className="inline-block px-2.5 py-0.5 text-[11px] bg-zinc-900 text-zinc-100 tracking-wider">
-            {reachedEnding ? reachedEnding.subtitle : `DISPOSITION: ${endingDisposition}`}
+            {reachedEnding ? getLocalizedDialogue(reachedEnding.subtitle, lang) : `DISPOSITION: ${endingDisposition}`}
           </span>
         </div>
       </div>
@@ -139,25 +147,25 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
           {/* 1. 対話の記録 */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5">
-              <span>▼ 対話の記録</span>
+              <span>▼ {REPORT_LABELS.dialogueRecord[lang]}</span>
             </div>
             <div className="divide-y divide-zinc-300 text-[11.5px]">
               <div className="py-1 flex items-baseline justify-between gap-2">
-                <span className="text-zinc-600 font-medium shrink-0">到達エンディング</span>
+                <span className="text-zinc-600 font-medium shrink-0">{REPORT_LABELS.reachedEnding[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right leading-tight">
                   {dispositionLabel}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">完了トピック</span>
+                <span className="text-zinc-600">{REPORT_LABELS.completedTopics[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.completedTopicsCount}（選択 {stats.totalTurns}回）
+                  {stats.completedTopicsCount} {REPORT_LABELS.choicesCount(stats.totalTurns, lang)}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">端末データ開示</span>
+                <span className="text-zinc-600">{REPORT_LABELS.terminalDisclosure[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  自然 {naturalUnlockedCount} ／ 強制 {forcedUnlockedCount} ／ 未 {remainingLockedCount}
+                  {REPORT_LABELS.terminalDisclosureCounts(naturalUnlockedCount, forcedUnlockedCount, remainingLockedCount, lang)}
                 </span>
               </div>
             </div>
@@ -166,31 +174,31 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
           {/* 2. 返答の様子 */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5">
-              <span>▼ 返答の様子（思考傾向）</span>
+              <span>▼ {REPORT_LABELS.responsePatterns[lang]}</span>
             </div>
             <div className="divide-y divide-zinc-300 text-[11.5px]">
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">平均思考時間</span>
+                <span className="text-zinc-600">{REPORT_LABELS.avgThinkingTime[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {avgResponseSec}秒
+                  {REPORT_LABELS.secondsUnit(avgResponseSec, lang)}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">即答（2秒以内）</span>
+                <span className="text-zinc-600">{REPORT_LABELS.quickReply[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.quickReplyCount}回
+                  {REPORT_LABELS.timesUnit(stats.quickReplyCount, lang)}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">選択の迷い</span>
+                <span className="text-zinc-600">{REPORT_LABELS.choiceHesitation[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.choiceHoverSwitchCount}回
+                  {REPORT_LABELS.timesUnit(stats.choiceHoverSwitchCount, lang)}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">沈黙・無言</span>
+                <span className="text-zinc-600">{REPORT_LABELS.silenceCount[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.idleTimeoutCount}回
+                  {REPORT_LABELS.timesUnit(stats.idleTimeoutCount, lang)}
                 </span>
               </div>
             </div>
@@ -199,19 +207,19 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
           {/* 3. 行動検知 */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-zinc-700 tracking-wider border-b border-zinc-400/90 pb-0.5">
-              <span>▼ 行動検知</span>
+              <span>▼ {REPORT_LABELS.behaviorDetection[lang]}</span>
             </div>
             <div className="divide-y divide-zinc-300 text-[11.5px]">
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">管理端末の閲覧</span>
+                <span className="text-zinc-600">{REPORT_LABELS.terminalViews[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.terminalOpenCount}回（計 {terminalTotalSec}秒）
+                  {REPORT_LABELS.terminalViewsCount(stats.terminalOpenCount, terminalTotalSec, lang)}
                 </span>
               </div>
               <div className="py-1 flex items-center justify-between gap-2">
-                <span className="text-zinc-600">よそ見（別タブ移動）</span>
+                <span className="text-zinc-600">{REPORT_LABELS.tabSwitches[lang]}</span>
                 <span className="font-bold text-zinc-950 text-right">
-                  {stats.tabSwitchCount}回
+                  {REPORT_LABELS.timesUnit(stats.tabSwitchCount, lang)}
                 </span>
               </div>
             </div>
@@ -237,7 +245,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                エンディング
+                {REPORT_LABELS.tabEndings[lang]}
               </button>
 
               <button
@@ -254,12 +262,12 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                実績
+                {REPORT_LABELS.tabAchievements[lang]}
               </button>
             </div>
 
             <span className="text-[10px] text-zinc-500">
-              ※クリックでヒント表示
+              {REPORT_LABELS.clickHint[lang]}
             </span>
           </div>
 
@@ -289,13 +297,14 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                   const isFirstRow = rowIndex === 0;
                   const tooltipAlignClass = colIndex === 0 ? 'left-0' : 'right-0';
 
+                  const localizedTitle = scenario ? getLocalizedDialogue(scenario.title, lang) : '';
                   const cleanTitle = isSubItem
                     ? isReached
-                      ? 'これで全部うまくいく'
-                      : '？？？？？？'
+                      ? (lang === 'en' ? 'Everything will be fine' : lang === 'ko' ? '이걸로 전부 잘 풀릴 거야' : 'これで全部うまくいく')
+                      : (lang === 'en' ? '??????' : '？？？？？？')
                     : isReached && scenario
-                      ? scenario.title.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
-                      : '？？？？？？';
+                      ? localizedTitle.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
+                      : (lang === 'en' ? '??????' : '？？？？？？');
 
                   return (
                     <button
@@ -318,7 +327,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                             isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
                           } w-max max-w-[280px] whitespace-normal bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                         >
-                          {item.hint}
+                          {getLocalizedEndingHint(item.key, lang) || item.hint}
                         </div>
                       )}
 
@@ -384,6 +393,10 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                         ? 'left-1/2 -translate-x-1/2'
                         : 'right-0';
 
+                  const locAch = getLocalizedAchievement(ach.id, lang);
+                  const achTitle = locAch ? locAch.title : ach.title;
+                  const achDesc = locAch ? locAch.description : ach.description;
+
                   return (
                     <button
                       key={ach.id}
@@ -405,7 +418,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                             isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
                           } w-max whitespace-nowrap bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                         >
-                          {ach.description}
+                          {achDesc}
                         </div>
                       )}
 
@@ -421,7 +434,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
                           isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                         }`}
                       >
-                        {ach.title}
+                        {achTitle}
                       </span>
                     </button>
                   );
@@ -447,7 +460,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
             }}
             className="px-3.5 py-1 text-[11.5px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
           >
-            クレジット
+            {REPORT_LABELS.btnCredits[lang]}
           </button>
 
           <button
@@ -458,7 +471,7 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
             }}
             className="px-4 py-1 text-[11.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-950 transition-colors cursor-pointer font-bold"
           >
-            最初からやり直す
+            {REPORT_LABELS.btnRestart[lang]}
           </button>
         </div>
       </div>
@@ -475,14 +488,14 @@ export const ObservationReport: React.FC<ObservationReportProps> = ({
           >
             <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
               <h3 className="text-[13px] font-bold tracking-wider text-zinc-100">
-                クレジット
+                {REPORT_LABELS.btnCredits[lang]}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsCreditsOpen(false)}
                 className="px-2 py-0.5 text-[11px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 cursor-pointer"
               >
-                ✕ 閉じる
+                ✕ {REPORT_LABELS.btnClose[lang]}
               </button>
             </div>
 

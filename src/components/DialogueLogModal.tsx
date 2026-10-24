@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { DialogueLogEntry } from '../types/game';
 import { formatParagraphText } from '../utils/japaneseLineWrap';
+import { useLanguage } from '../utils/i18n';
+
+import { getLocalizedDialogue } from '../locales/dialogueLocale';
 
 interface DialogueLogModalProps {
   isOpen: boolean;
@@ -13,6 +16,7 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
   onClose,
   entries,
 }) => {
+  const [lang] = useLanguage();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -22,6 +26,13 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
   }, [isOpen, entries.length]);
 
   if (!isOpen) return null;
+
+  const getSpeakerName = (speaker: 'ASCH' | 'GUY') => {
+    if (speaker === 'ASCH') {
+      return lang === 'en' ? 'Asch' : lang === 'ko' ? '애쉬' : 'アッシュ';
+    }
+    return lang === 'en' ? 'Guy' : lang === 'ko' ? '가이' : 'ガイ';
+  };
 
   return (
     <div
@@ -35,13 +46,17 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
         {/* ヘッダー */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-2 shrink-0">
           <span className="text-[13px] tracking-widest text-zinc-200">
-            DIALOGUE LOG // 対話履歴
+            {lang === 'en'
+              ? 'DIALOGUE LOG // Records'
+              : lang === 'ko'
+                ? 'DIALOGUE LOG // 대화 기록'
+                : 'DIALOGUE LOG // 対話履歴'}
           </span>
           <button
             onClick={onClose}
             className="px-2.5 py-0.5 text-[12px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer"
           >
-            閉じる
+            {lang === 'en' ? 'Close' : lang === 'ko' ? '닫기' : '閉じる'}
           </button>
         </div>
 
@@ -52,11 +67,15 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
         >
           {entries.length === 0 ? (
             <p className="text-[12px] text-zinc-500">
-              履歴はまだありません。
+              {lang === 'en'
+                ? 'No dialogue recorded yet.'
+                : lang === 'ko'
+                  ? '아직 대화 기록이 없습니다.'
+                  : '履歴はまだありません。'}
             </p>
           ) : (
             entries.map((item) => {
-              const speakerName = item.speaker === 'ASCH' ? 'アッシュ' : 'ガイ';
+              const speakerName = getSpeakerName(item.speaker);
               return item.lines.map((line, i) => (
                 <div
                   key={`${item.id}-${i}`}
@@ -65,8 +84,8 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
                   <span className="w-[5.2em] shrink-0 text-zinc-400">
                     {speakerName}
                   </span>
-                  <span className="text-zinc-100 whitespace-pre-line break-words">
-                    {formatParagraphText(line, 44.0)}
+                  <span className="dialogue-text text-zinc-100 whitespace-pre-line break-words">
+                    {formatParagraphText(getLocalizedDialogue(line, lang), 44.0)}
                   </span>
                 </div>
               ));
@@ -78,3 +97,4 @@ export const DialogueLogModal: React.FC<DialogueLogModalProps> = ({
     </div>
   );
 };
+

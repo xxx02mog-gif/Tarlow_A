@@ -9,6 +9,15 @@ import {
 } from '../data/thinkingData';
 import { GuyBodyReaction, GuyFaceParts } from './GuyPortrait';
 import { soundEngine } from '../utils/chiptuneAudio';
+import { useLanguage } from '../utils/i18n';
+import {
+  getLocalizedKeywordLabel,
+  getLocalizedKeywordThought,
+  getLocalizedRecipeLabel,
+  getLocalizedRecipeEpiphany,
+  FAIL_MONOLOGUES_I18N,
+  THINKING_UI_LABELS,
+} from '../locales/thinkingLocale';
 
 interface ThinkingAreaProps {
   unlockedKeywordIds: string[];
@@ -37,6 +46,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
   isDp002Unlocked = false,
   isMaidMode = false,
 }) => {
+  const [lang] = useLanguage();
   const [selectedKeywordId, setSelectedKeywordId] = useState<string | null>(
     null
   );
@@ -170,7 +180,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
       }
     } else {
       // 通常時（単なるセリフ閲覧、または1枠目のみの投入時）はキーワード思考セリフを表示
-      setActiveThoughtText(kw.guyThought);
+      setActiveThoughtText(getLocalizedKeywordThought(kw.id, kw.guyThought, lang));
       if (kw.guyFace) {
         onGuyFaceChange?.(kw.guyFace, kw.guyReaction ?? 'auto');
       } else {
@@ -226,7 +236,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
         );
       }
     } else if (kw) {
-      setActiveThoughtText(kw.guyThought);
+      setActiveThoughtText(getLocalizedKeywordThought(kw.id, kw.guyThought, lang));
       if (kw.guyFace) {
         onGuyFaceChange?.(kw.guyFace, kw.guyReaction ?? 'auto');
       } else {
@@ -291,8 +301,8 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
         const isAlreadyDiscovered = discoveredRecipeIds.includes(
           matchedRecipe.id
         );
-        setActiveThoughtText(matchedRecipe.guyEpiphany);
-        setDiscoveredTopicLabel(matchedRecipe.label);
+        setActiveThoughtText(getLocalizedRecipeEpiphany(matchedRecipe.id, matchedRecipe.guyEpiphany, lang));
+        setDiscoveredTopicLabel(getLocalizedRecipeLabel(matchedRecipe.id, matchedRecipe.label, lang));
         // ひらめき時の表情＆動き（レシピ指定があれば優先、なければ納得）
         if (matchedRecipe.guyFace) {
           onGuyFaceChange?.(matchedRecipe.guyFace, matchedRecipe.guyReaction ?? 'auto');
@@ -304,11 +314,9 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
         }
       } else {
         soundEngine.playTerminalClose();
-        const randomFail =
-          GENERIC_FAIL_MONOLOGUES[
-            Math.floor(Math.random() * GENERIC_FAIL_MONOLOGUES.length)
-          ];
-        setActiveThoughtText(randomFail);
+        const randIdx = Math.floor(Math.random() * GENERIC_FAIL_MONOLOGUES.length);
+        const failText = FAIL_MONOLOGUES_I18N[randIdx]?.[lang] || GENERIC_FAIL_MONOLOGUES[randIdx];
+        setActiveThoughtText(failText);
         setDiscoveredTopicLabel(null);
         // 組み合わせ不一致：やれやれ・冷や汗の困り顔
         onGuyFaceChange?.({ base: 'base', brow: 'stunned', eyes: 'away', mouth: 'close', ex: 'EX1' }, 'sigh');
@@ -388,7 +396,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
       <div className="flex-1 min-h-0 flex flex-col justify-end">
         <div className="text-[11px] text-zinc-400 tracking-wider mb-1.5 border-b border-zinc-800 pb-1 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span>思考の手がかり（{unlockedKeywords.length}件）</span>
+            <span>{THINKING_UI_LABELS.cluesCount(unlockedKeywords.length, lang)}</span>
             <button
               onClick={() => {
                 soundEngine.playTerminalTab();
@@ -396,7 +404,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
               }}
               className="text-[10px] text-zinc-400 hover:text-zinc-200 border border-zinc-800 hover:border-zinc-600 px-1.5 py-0.5 cursor-pointer transition-colors"
             >
-              ひらめき記録（{discoveredVisibleCount}/{visibleRecipes.length}） {showRecordList ? '▲ 手がかり' : '▼ 一覧表'}
+              {THINKING_UI_LABELS.recordsCount(discoveredVisibleCount, visibleRecipes.length, showRecordList, lang)}
             </button>
           </div>
           <span className="text-[9.5px] text-zinc-500 font-mono">
@@ -409,8 +417,8 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
             <table className="w-full text-[11px] text-zinc-300 border-collapse">
               <thead>
                 <tr className="border-b border-zinc-800 text-zinc-500 text-left font-mono text-[10px]">
-                  <th className="py-1 px-2 font-normal">話題</th>
-                  <th className="py-1 px-2 font-normal">組み合わせ</th>
+                  <th className="py-1 px-2 font-normal">{THINKING_UI_LABELS.thTopic[lang]}</th>
+                  <th className="py-1 px-2 font-normal">{THINKING_UI_LABELS.thCombination[lang]}</th>
                 </tr>
               </thead>
               <tbody>
@@ -430,9 +438,11 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                               )
                           )
                           .map((id2) => {
-                            const a1 = THINKING_KEYWORDS.find((k) => k.id === id1)?.label ?? id1;
-                            const a2 = THINKING_KEYWORDS.find((k) => k.id === id2)?.label ?? id2;
-                            return `【${a1}】 ＋ 【${a2}】`;
+                            const a1 = THINKING_KEYWORDS.find((k) => k.id === id1);
+                            const a2 = THINKING_KEYWORDS.find((k) => k.id === id2);
+                            const l1 = a1 ? getLocalizedKeywordLabel(a1.id, a1.label, lang) : id1;
+                            const l2 = a2 ? getLocalizedKeywordLabel(a2.id, a2.label, lang) : id2;
+                            return `【${l1}】 ＋ 【${l2}】`;
                           })
                       )
                     : [];
@@ -445,23 +455,27 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                       }`}
                     >
                       <td className="py-1 px-2 font-medium">
-                        {isDiscovered ? r.label : '？？？？？？'}
+                        {isDiscovered
+                          ? getLocalizedRecipeLabel(r.id, r.label, lang)
+                          : lang === 'en'
+                            ? '??????'
+                            : '？？？？？？'}
                       </td>
                       <td className="py-1 px-2 font-mono text-[10.5px]">
                         {isDiscovered ? (
                           <span>
-                            {`【${kw1?.label ?? ''}】 ＋ 【${kw2?.label ?? ''}】`}
+                            {`【${kw1 ? getLocalizedKeywordLabel(kw1.id, kw1.label, lang) : ''}】 ＋ 【${kw2 ? getLocalizedKeywordLabel(kw2.id, kw2.label, lang) : ''}】`}
                             {hasAlternatives && (
                               <span
                                 className="ml-1 text-[9.5px] text-zinc-500 font-sans cursor-help"
-                                title={`他の組み合わせ:\n${altPairs.join('\n')}`}
+                                title={`${THINKING_UI_LABELS.otherCombinations[lang]}\n${altPairs.join('\n')}`}
                               >
-                                (※他あり)
+                                {THINKING_UI_LABELS.hasOthers[lang]}
                               </span>
                             )}
                           </span>
                         ) : (
-                          '？？？ ＋ ？？？'
+                          lang === 'en' ? '??? + ???' : '？？？ ＋ ？？？'
                         )}
                       </td>
                     </tr>
@@ -474,7 +488,7 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
           <div className="flex flex-wrap content-start items-start gap-1.5 overflow-y-auto h-[156px] pr-1 py-1">
             {unlockedKeywords.length === 0 ? (
               <div className="w-full text-[12px] text-zinc-500 py-3 italic text-center">
-                （まだ思考の手がかりがありません。会話や端末の記録を確認してみよう）
+                {THINKING_UI_LABELS.noCluesYet[lang]}
               </div>
             ) : (
               unlockedKeywords.map((kw) => {
@@ -518,17 +532,17 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                     }`}
                     title={
                       isLockedDeep
-                        ? '（今は、この記録（真相）について考えるしかない・・・・・・）'
+                        ? THINKING_UI_LABELS.lockedDeepTip[lang]
                         : isGreyedOut
-                          ? '（思考支援：組み合わせ不可）'
+                          ? THINKING_UI_LABELS.greyedOutTip[lang]
                           : isTargetPartner
-                            ? '（思考支援：この単語と組み合わせ可能）'
+                            ? THINKING_UI_LABELS.targetPartnerTip[lang]
                             : isSlot
-                              ? '（スロット投入中）'
-                              : `${kw.label}（クリックで思考確認、ドラッグでスロットへ投入）`
+                              ? THINKING_UI_LABELS.inSlotTip[lang]
+                              : THINKING_UI_LABELS.keywordActionTip(getLocalizedKeywordLabel(kw.id, kw.label, lang), lang)
                     }
                   >
-                    {kw.label}
+                    {getLocalizedKeywordLabel(kw.id, kw.label, lang)}
                   </button>
                 );
               })
@@ -565,9 +579,13 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                   ? 'border-zinc-400 bg-zinc-900 text-zinc-100'
                   : 'border-dashed border-zinc-700 bg-zinc-950/50 text-zinc-500 hover:border-zinc-500'
             }`}
-            title={slot1Keyword ? 'クリックで解除' : 'クリックして選択後、上の単語をクリックで投入（またはドラッグ投入）'}
+            title={slot1Keyword ? THINKING_UI_LABELS.releaseSlotTip[lang] : THINKING_UI_LABELS.slotSelectTip[lang]}
           >
-            {slot1Keyword ? slot1Keyword.label : activeTargetSlot === 1 ? '［選択中］' : '手がかり 1'}
+            {slot1Keyword
+              ? getLocalizedKeywordLabel(slot1Keyword.id, slot1Keyword.label, lang)
+              : activeTargetSlot === 1
+                ? (lang === 'en' ? '[Selected]' : lang === 'ko' ? '[선택 중]' : '［選択中］')
+                : (lang === 'en' ? 'Clue 1' : lang === 'ko' ? '단서 1' : '手がかり 1')}
           </div>
 
           <span className="text-zinc-500 font-mono text-xs">＋</span>
@@ -596,23 +614,27 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                   ? 'border-zinc-400 bg-zinc-900 text-zinc-100'
                   : 'border-dashed border-zinc-700 bg-zinc-950/50 text-zinc-500 hover:border-zinc-500'
             }`}
-            title={slot2Keyword ? 'クリックで解除' : 'クリックして選択後、上の単語をクリックで投入（またはドラッグ投入）'}
+            title={slot2Keyword ? THINKING_UI_LABELS.releaseSlotTip[lang] : THINKING_UI_LABELS.slotSelectTip[lang]}
           >
-            {slot2Keyword ? slot2Keyword.label : activeTargetSlot === 2 ? '［選択中］' : '手がかり 2'}
+            {slot2Keyword
+              ? getLocalizedKeywordLabel(slot2Keyword.id, slot2Keyword.label, lang)
+              : activeTargetSlot === 2
+                ? (lang === 'en' ? '[Selected]' : lang === 'ko' ? '[선택 중]' : '［選択中］')
+                : (lang === 'en' ? 'Clue 2' : lang === 'ko' ? '단서 2' : '手がかり 2')}
           </div>
 
           {/* 状態表示・クリアボタン（固定幅で確保し、手がかり1・2の枠幅変化を完全防止） */}
           <div className="w-[58px] shrink-0 flex items-center justify-end">
             {isSynthesizing ? (
               <span className="w-full h-[34px] flex items-center justify-center text-[11px] text-zinc-400 tracking-wider">
-                思考中…
+                {lang === 'en' ? 'Thinking...' : lang === 'ko' ? '사고 중...' : '思考中…'}
               </span>
             ) : (
               (slot1KeywordId || slot2KeywordId) ? (
                 <button
                   onClick={handleClearSlots}
                   className="px-2.5 h-[34px] text-[11px] text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-600 transition-colors"
-                  title="スロットをクリア"
+                  title={lang === 'en' ? 'Clear slots' : lang === 'ko' ? '슬롯 초기화' : 'スロットをクリア'}
                 >
                   ✕
                 </button>
@@ -626,11 +648,15 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
           <div
             onClick={handleClearSlots}
             className="absolute inset-0 top-1.5 z-10 flex items-center justify-between px-3 bg-zinc-900/95 border border-zinc-400 shadow-md animate-[overlay-appear_0.2s_ease-out] cursor-pointer"
-            title="クリックでスロットをリセット"
+            title={lang === 'en' ? 'Click to reset slots' : lang === 'ko' ? '클릭하여 슬롯 리셋' : 'クリックでスロットをリセット'}
           >
             <div className="flex items-center gap-2">
               <span className="text-[12px] tracking-wide font-medium text-zinc-100">
-                話題【{discoveredTopicLabel}】を入手
+                {lang === 'en'
+                  ? `Topic Unlocked: [${discoveredTopicLabel}]`
+                  : lang === 'ko'
+                    ? `화제 【${discoveredTopicLabel}】 획득`
+                    : `話題【${discoveredTopicLabel}】を入手`}
               </span>
             </div>
             <button
@@ -639,9 +665,9 @@ export const ThinkingArea: React.FC<ThinkingAreaProps> = ({
                 handleClearSlots();
               }}
               className="px-2 py-0.5 text-[11px] text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:border-zinc-500 bg-zinc-950 transition-colors"
-              title="スロットをクリア"
+              title={lang === 'en' ? 'Clear slots' : lang === 'ko' ? '슬롯 초기화' : 'スロットをクリア'}
             >
-              閉じる
+              {lang === 'en' ? 'Close' : lang === 'ko' ? '닫기' : '閉じる'}
             </button>
           </div>
         )}

@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { DistCommentData } from '../data/distComments';
 import { soundEngine } from '../utils/chiptuneAudio';
 import { getAssetUrl } from '../utils/assetPath';
+import { useLanguage } from '../utils/i18n';
+import { getLocalizedDialogue } from '../locales/dialogueLocale';
 
 interface DistSkitBoxProps {
   data: DistCommentData;
@@ -14,6 +16,7 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
   lineIndex = 0,
   className = '',
 }) => {
+  const [lang] = useLanguage();
   useEffect(() => {
     soundEngine.playProtectCaptured();
   }, []);
@@ -88,7 +91,7 @@ export const DistSkitBox: React.FC<DistSkitBoxProps> = ({
           key={lineIndex}
           className="text-[14px] leading-relaxed tracking-wider text-zinc-100 whitespace-pre-wrap select-none font-sans animate-bubble-in"
         >
-          {activeLine}
+          {getLocalizedDialogue(activeLine, lang)}
         </p>
       </div>
     </div>

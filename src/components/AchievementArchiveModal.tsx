@@ -11,6 +11,13 @@ import {
   ENDING_ARCHIVE_LIST,
 } from '../utils/achievementStore';
 import { soundEngine } from '../utils/chiptuneAudio';
+import { useLanguage } from '../utils/i18n';
+import { getLocalizedDialogue } from '../locales/dialogueLocale';
+import {
+  ARCHIVE_MODAL_LABELS,
+  getLocalizedAchievement,
+  getLocalizedEndingHint,
+} from '../locales/achievementLocale';
 
 interface AchievementArchiveModalProps {
   isOpen: boolean;
@@ -37,6 +44,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
   isMaidMode = false,
   onToggleMaidMode,
 }) => {
+  const [lang] = useLanguage();
   const [activeTab, setActiveTab] = useState<'ENDINGS' | 'ACHIEVEMENTS' | 'DATA'>('ENDINGS');
   const [selectedEndingKey, setSelectedEndingKey] = useState<string | null>(null);
   const [selectedAchId, setSelectedAchId] = useState<string | null>(null);
@@ -78,12 +86,12 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
       await navigator.clipboard.writeText(code);
       setStatusMessage({
         type: 'success',
-        text: '引き継ぎコードをコピーしました。',
+        text: ARCHIVE_MODAL_LABELS.msgCopied[lang],
       });
     } catch {
       setStatusMessage({
         type: 'success',
-        text: '下の欄から引き継ぎコードをコピーしてください。',
+        text: ARCHIVE_MODAL_LABELS.msgCopyFallback[lang],
       });
     }
   };
@@ -93,7 +101,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     if (!importInput.trim()) {
       setStatusMessage({
         type: 'error',
-        text: '引き継ぎコードを入力してください。',
+        text: ARCHIVE_MODAL_LABELS.msgEnterCode[lang],
       });
       return;
     }
@@ -101,7 +109,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     if (!decoded) {
       setStatusMessage({
         type: 'error',
-        text: '引き継ぎコードの形式が正しくありません。',
+        text: ARCHIVE_MODAL_LABELS.msgInvalidCode[lang],
       });
       return;
     }
@@ -109,7 +117,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     setImportInput('');
     setStatusMessage({
       type: 'success',
-      text: '実績・回収記録データを読み込みました！',
+      text: ARCHIVE_MODAL_LABELS.msgImportSuccess[lang],
     });
   };
 
@@ -120,7 +128,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
     setIsConfirmingReset(false);
     setStatusMessage({
       type: 'success',
-      text: '実績・回収記録データを初期化しました。',
+      text: ARCHIVE_MODAL_LABELS.msgResetSuccess[lang],
     });
   };
 
@@ -143,7 +151,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
         <div className="flex items-end justify-between border-b-2 border-zinc-900 pb-2 shrink-0">
           <div className="flex items-baseline gap-3">
             <h2 className="text-[17px] font-bold tracking-wider text-zinc-950 font-zen">
-              実績・記録
+              {ARCHIVE_MODAL_LABELS.headerTitle[lang]}
             </h2>
             <span className="text-[10px] tracking-[0.2em] text-zinc-500 font-mono">
               ARCHIVE DOSSIER
@@ -159,7 +167,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
               }}
               className="px-3 py-0.5 text-[11.5px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
             >
-              ✕ 閉じる
+              {ARCHIVE_MODAL_LABELS.btnClose[lang]}
             </button>
           </div>
         </div>
@@ -182,7 +190,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <span>エンディング</span>
+              <span>{ARCHIVE_MODAL_LABELS.tabEndings[lang]}</span>
               <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
                 <div
                   className="h-full bg-zinc-900 transition-all duration-300"
@@ -209,7 +217,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <span>実績</span>
+              <span>{ARCHIVE_MODAL_LABELS.tabAchievements[lang]}</span>
               <div className="w-14 h-1.5 bg-zinc-300 overflow-hidden">
                 <div
                   className="h-full bg-zinc-900 transition-all duration-300"
@@ -237,13 +245,13 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              引き継ぎ・初期化
+              {ARCHIVE_MODAL_LABELS.tabData[lang]}
             </button>
           </div>
 
           {activeTab !== 'DATA' && (
             <span className="text-[10px] text-zinc-500">
-              ※クリックでヒント表示
+              {ARCHIVE_MODAL_LABELS.clickHint[lang]}
             </span>
           )}
         </div>
@@ -274,13 +282,16 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                 const isFirstRow = rowIndex === 0;
                 const tooltipAlignClass = colIndex === 0 ? 'left-0' : 'right-0';
 
+                const localizedTitle = scenario ? getLocalizedDialogue(scenario.title, lang) : '';
                 const cleanTitle = isSubItem
                   ? isReached
-                    ? 'これで全部うまくいく'
-                    : '？？？？？？'
+                    ? (lang === 'en' ? 'Everything will be fine' : lang === 'ko' ? '이걸로 전부 잘 풀릴 거야' : 'これで全部うまくいく')
+                    : (lang === 'en' ? '??????' : '？？？？？？')
                   : isReached && scenario
-                    ? scenario.title.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
-                    : '？？？？？？';
+                    ? localizedTitle.replace(/^END\s*[0-9a-zA-Z]+\s*\/\/\s*/, '')
+                    : (lang === 'en' ? '??????' : '？？？？？？');
+
+                const endingHint = getLocalizedEndingHint(item.key, lang) || item.hint;
 
                 return (
                   <button
@@ -303,7 +314,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                           isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
                         } w-max max-w-[280px] whitespace-normal bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                       >
-                        {item.hint}
+                        {endingHint}
                       </div>
                     )}
 
@@ -367,6 +378,10 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                       ? 'left-1/2 -translate-x-1/2'
                       : 'right-0';
 
+                const locAch = getLocalizedAchievement(ach.id, lang);
+                const achTitle = locAch ? locAch.title : ach.title;
+                const achDesc = locAch ? locAch.description : ach.description;
+
                 return (
                   <button
                     key={ach.id}
@@ -388,7 +403,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                           isFirstRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
                         } w-max whitespace-nowrap bg-zinc-900 text-zinc-100 px-2.5 py-1 text-[10.5px] leading-snug shadow-xl z-50 pointer-events-none`}
                       >
-                        {ach.description}
+                        {achDesc}
                       </div>
                     )}
 
@@ -404,7 +419,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                         isUnlocked ? 'font-bold text-zinc-950' : 'text-zinc-400'
                       }`}
                     >
-                      {ach.title}
+                      {achTitle}
                     </span>
                   </button>
                 );
@@ -430,14 +445,14 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
               <div className="border-b border-zinc-300 pb-2 space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-zinc-950">
-                    引き継ぎコードの書き出し（エクスポート）
+                    {ARCHIVE_MODAL_LABELS.exportTitle[lang]}
                   </span>
                   <button
                     type="button"
                     onClick={handleCopyExportCode}
                     className="px-3 py-0.5 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-700 transition-colors cursor-pointer"
                   >
-                    コピー
+                    {ARCHIVE_MODAL_LABELS.btnCopy[lang]}
                   </button>
                 </div>
                 <input
@@ -453,21 +468,21 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
               <div className="border-b border-zinc-300 pb-2 space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-zinc-950">
-                    引き継ぎコードの読み込み（インポート）
+                    {ARCHIVE_MODAL_LABELS.importTitle[lang]}
                   </span>
                   <button
                     type="button"
                     onClick={handleImportCode}
                     className="px-3 py-0.5 text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold transition-colors cursor-pointer"
                   >
-                    読み込む
+                    {ARCHIVE_MODAL_LABELS.btnImport[lang]}
                   </button>
                 </div>
                 <input
                   type="text"
                   value={importInput}
                   onChange={(e) => setImportInput(e.target.value)}
-                  placeholder="GITM1:... のコードをここに貼り付け"
+                  placeholder={ARCHIVE_MODAL_LABELS.importPlaceholder[lang]}
                   className="w-full px-2 py-1 text-[10.5px] font-mono bg-white border border-zinc-400 text-zinc-900 select-text outline-none"
                 />
               </div>
@@ -475,7 +490,7 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
               {/* 初期化 */}
               <div className="flex items-center justify-between pt-1">
                 <span className="text-zinc-600">
-                  実績・回収記録の初期化
+                  {ARCHIVE_MODAL_LABELS.resetTitle[lang]}
                 </span>
 
                 {!isConfirmingReset ? (
@@ -487,26 +502,26 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                     }}
                     className="text-zinc-600 hover:text-red-700 underline transition-colors cursor-pointer"
                   >
-                    データをリセット
+                    {ARCHIVE_MODAL_LABELS.btnResetData[lang]}
                   </button>
                 ) : (
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-bold text-red-700">
-                      本当に消去しますか？
+                      {ARCHIVE_MODAL_LABELS.confirmReset[lang]}
                     </span>
                     <button
                       type="button"
                       onClick={handleExecuteReset}
                       className="px-3 py-0.5 text-[11px] bg-red-800 hover:bg-red-700 text-white font-bold transition-colors cursor-pointer"
                     >
-                      消去する
+                      {ARCHIVE_MODAL_LABELS.btnConfirmExecute[lang]}
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsConfirmingReset(false)}
                       className="px-2.5 py-0.5 text-[11px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 border border-zinc-500 transition-colors cursor-pointer"
                     >
-                      やめる
+                      {ARCHIVE_MODAL_LABELS.btnCancel[lang]}
                     </button>
                   </div>
                 )}
@@ -531,9 +546,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   onOpenBonusViewer();
                 }}
                 className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
-                title="実績17解放ご褒美：アッシュの表情パーツを自由に組み合わせて鑑賞できます"
+                title={ARCHIVE_MODAL_LABELS.tipExpressionViewer[lang]}
               >
-                表情鑑賞
+                {ARCHIVE_MODAL_LABELS.btnExpressionViewer[lang]}
               </button>
             )}
 
@@ -545,9 +560,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                   onOpenScenarioInspector();
                 }}
                 className="px-2.5 py-0.5 text-[10.5px] bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-bold border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
-                title="実績18解放ご褒美：全シナリオ・分岐セリフ・演出の実機プレビューと台本"
+                title={ARCHIVE_MODAL_LABELS.tipScenarioInspector[lang]}
               >
-                シナリオ台本
+                {ARCHIVE_MODAL_LABELS.btnScenarioInspector[lang]}
               </button>
             )}
 
@@ -563,9 +578,9 @@ export const AchievementArchiveModal: React.FC<AchievementArchiveModalProps> = (
                     ? 'bg-zinc-900 text-zinc-100 border-zinc-950 shadow-sm'
                     : 'bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border-zinc-500'
                 }`}
-                title="実績11（なでなでマスター）解放ご褒美：立ち絵のベース素体をメイド姿（base2.png）に切り替えます"
+                title={ARCHIVE_MODAL_LABELS.tipMaidMode[lang]}
               >
-                <span>メイドも～ど:</span>
+                <span>{ARCHIVE_MODAL_LABELS.btnMaidMode[lang]}</span>
                 <span className="inline-block w-6 text-center">{isMaidMode ? 'ON' : 'OFF'}</span>
               </button>
             )}

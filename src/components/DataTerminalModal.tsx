@@ -8,6 +8,12 @@ import {
 } from '../types/game';
 import { soundEngine } from '../utils/chiptuneAudio';
 import { formatParagraphText } from '../utils/japaneseLineWrap';
+import { useLanguage } from '../utils/i18n';
+import {
+  getLocalizedSectorTitle,
+  getLocalizedSectorContent,
+} from '../locales/sectorLocale';
+import { getLocalizedDialogue } from '../locales/dialogueLocale';
 
 interface DataTerminalModalProps {
   isOpen: boolean;
@@ -47,6 +53,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
   onOverrideSector,
   onReadSector,
 }) => {
+  const [lang] = useLanguage();
   const [pageIndex, setPageIndex] = useState(0);
   const [phase, setPhase] = useState(0);
   const [expandedInfoIds, setExpandedInfoIds] = useState<Record<string, boolean>>({});
@@ -387,8 +394,8 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                   ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
                   : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer active:bg-zinc-700'
               }`}
-              title="前のページ"
-              aria-label="前のページ"
+              title={lang === 'en' ? 'Previous page' : lang === 'ko' ? '이전 페이지' : '前のページ'}
+              aria-label={lang === 'en' ? 'Previous page' : lang === 'ko' ? '이전 페이지' : '前のページ'}
             >
               <svg viewBox="0 0 10 10" className="w-2 h-2 fill-current shrink-0" aria-hidden="true">
                 <polygon points="7,1 2,5 7,9" />
@@ -402,8 +409,8 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                   ? 'bg-zinc-950 text-zinc-600 border-zinc-900 opacity-40 cursor-not-allowed'
                   : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 cursor-pointer active:bg-zinc-700'
               }`}
-              title="次のページ"
-              aria-label="次のページ"
+              title={lang === 'en' ? 'Next page' : lang === 'ko' ? '다음 페이지' : '次のページ'}
+              aria-label={lang === 'en' ? 'Next page' : lang === 'ko' ? '다음 페이지' : '次のページ'}
             >
               <svg viewBox="0 0 10 10" className="w-2 h-2 fill-current shrink-0" aria-hidden="true">
                 <polygon points="3,1 8,5 3,9" />
@@ -546,7 +553,13 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                           : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200'
                       }`}
                     >
-                      {f.label}
+                      {f.id === 'ALL'
+                        ? lang === 'en' ? 'ALL' : lang === 'ko' ? '전체' : f.label
+                        : f.id === '機体ログ'
+                          ? lang === 'en' ? 'MC:Hardware' : lang === 'ko' ? 'MC:기체로그' : f.label
+                          : f.id === '情動反応'
+                            ? lang === 'en' ? 'EM:Emotion' : lang === 'ko' ? 'EM:정동반응' : f.label
+                            : lang === 'en' ? 'DP:DeepMemory' : lang === 'ko' ? 'DP:심층기억' : f.label}
                     </button>
                   );
                 })}
@@ -560,11 +573,49 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                 {filteredInfoItems.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-center">
                     <span className="text-[9px] text-zinc-500">
-                      該当する記録はまだありません
+                      {lang === 'en'
+                        ? 'No records found.'
+                        : lang === 'ko'
+                          ? '해당하는 기록이 없습니다.'
+                          : '該当する記録はまだありません'}
                     </span>
                   </div>
                 ) : (
                   filteredInfoItems.map((item) => {
+                    const sectorKey = item.sectorId || item.id;
+                    let displayTitle = getLocalizedSectorTitle(sectorKey, item.title, lang);
+                    if (displayTitle === item.title && lang !== 'ja') {
+                      displayTitle = getLocalizedDialogue(item.title, lang);
+                    }
+                    let displayContent = getLocalizedSectorContent(sectorKey, item.content, lang);
+                    if (displayContent === item.content && lang !== 'ja') {
+                      const directTrans = getLocalizedDialogue(item.content, lang);
+                      if (directTrans !== item.content) {
+                        displayContent = directTrans;
+                      } else {
+                        displayContent = item.content
+                          .split('\n')
+                          .map((line) => {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('発言：「') && trimmed.endsWith('」')) {
+                              const inner = trimmed.slice(4, -1);
+                              const transInner = getLocalizedDialogue(inner, lang);
+                              const prefix = lang === 'en' ? 'Speech: "' : '발언: 「';
+                              const suffix = lang === 'en' ? '"' : '」';
+                              return `${prefix}${transInner}${suffix}`;
+                            }
+                            if (trimmed.startsWith('訂正：「') && trimmed.endsWith('」')) {
+                              const inner = trimmed.slice(4, -1);
+                              const transInner = getLocalizedDialogue(inner, lang);
+                              const prefix = lang === 'en' ? 'Correction: "' : '정정: 「';
+                              const suffix = lang === 'en' ? '"' : '」';
+                              return `${prefix}${transInner}${suffix}`;
+                            }
+                            return getLocalizedDialogue(line, lang);
+                          })
+                          .join('\n');
+                      }
+                    }
                     const isExpanded = !!expandedInfoIds[item.id];
                     const isRead = !!readInfoIds[item.id];
                     const isUnread = !item.isProtected && !isRead;
@@ -604,7 +655,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             onPointerCancel={cancelHold}
                             onContextMenu={(e) => e.preventDefault()}
                             className="relative w-full h-[26px] px-1.5 flex items-center justify-between gap-1 text-left cursor-pointer select-none overflow-hidden"
-                            title="長押ししてプロテクトを解除"
+                            title={lang === 'en' ? 'Long-press to remove protect' : lang === 'ko' ? '길게 눌러 프로텍트 해제' : '長押ししてプロテクトを解除'}
                           >
                             {/* 長押ししている時は項目全体を覆うバーが出る */}
                             {isCurrentlyHolding && (
@@ -636,7 +687,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                     : 'bg-[#828894] text-[#828894]'
                                 }`}
                               >
-                                {item.title}
+                                {displayTitle}
                               </span>
                             </div>
 
@@ -675,7 +726,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                                     isHighlight ? 'text-[#e4e4e7]' : 'text-[#8b8b95]'
                                   }`}
                                 >
-                                  {item.title}
+                                  {displayTitle}
                                 </span>
                               </div>
                               <span
@@ -690,7 +741,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             {isExpanded && (
                               <div className="px-2 py-1.5 border-t border-zinc-800/90 bg-[#070709] space-y-1">
                                 <p className="text-[9px] leading-relaxed text-zinc-200 whitespace-pre-wrap">
-                                  {formatParagraphText(item.content, 33.5)}
+                                  {formatParagraphText(displayContent, 33.5)}
                                 </p>
                                 {item.subWarning && (
                                   <p className="text-[8px] leading-snug text-red-400 border-t border-red-950/70 pt-1 whitespace-pre-wrap">
