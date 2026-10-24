@@ -5295,6 +5295,56 @@ export const DIALOGUE_TRANSLATIONS: Record<string, Record<Language, string>> = {
     en: "also because you didn't want the Colonel noticing?",
     ko: '대령한테 들키기 싫어서였어?',
   },
+  '応答波形ログ（ルークをモデルに造ったのか聞いたとき）': {
+    ja: '応答波形ログ（ルークをモデルに造ったのか聞いたとき）',
+    en: 'Response Waveform Log (When asked if modeled on Luke)',
+    ko: '응답 파형 로그 (루크를 모델로 제작되었는지 물었을 때)',
+  },
+  '応答波形ログ（ディストを尊敬しているのか聞いたとき）': {
+    ja: '応答波形ログ（ディストを尊敬しているのか聞いたとき）',
+    en: 'Response Waveform Log (When asked if respecting Dist)',
+    ko: '응답 파형 로그 (디스트를 존경하는지 물었을 때)',
+  },
+  '応答波形ログ（不意に頭へ手を伸ばしたとき）': {
+    ja: '応答波形ログ（不意に頭へ手を伸ばしたとき）',
+    en: 'Response Waveform Log (When reaching for his head)',
+    ko: '응답 파형 로그 (불시에 머리로 손을 뻗었을 때)',
+  },
+  '応答波形ログ（『宝刀ガルディオス』を見せたとき）': {
+    ja: '応答波形ログ（『宝刀ガルディオス』を見せたとき）',
+    en: 'Response Waveform Log (When showing the Treasure Sword Gardios)',
+    ko: '응답 파형 로그 (『보도 갈디우스』를 보여주었을 때)',
+  },
+  '応答波形ログ（ナタリアの話を振ったとき）': {
+    ja: '応答波形ログ（ナタリアの話を振ったとき）',
+    en: 'Response Waveform Log (When bringing up Natalia)',
+    ko: '응답 파형 로그 (나탈리아 이야기를 꺼냈을 때)',
+  },
+  '応答波形ログ（ブウサギの『アッシュ』の話をしたとき）': {
+    ja: '応答波形ログ（ブウサギの『アッシュ』の話をしたとき）',
+    en: 'Response Waveform Log (When mentioning the rappig "Asch")',
+    ko: '응답 파형 로그 (부우토끼 『애쉬』 이야기를 했을 때)',
+  },
+  '応答波形ログ（食事に誘ったとき）': {
+    ja: '応答波形ログ（食事に誘ったとき）',
+    en: 'Response Waveform Log (When inviting him to a meal)',
+    ko: '응답 파형 로그 (식사에 초대했을 때)',
+  },
+  '応答波形ログ（『鮮血のアッシュ』の噂話をしたとき）': {
+    ja: '応答波形ログ（『鮮血のアッシュ』の噂話をしたとき）',
+    en: 'Response Waveform Log (When discussing rumors of "Asch the Bloody")',
+    ko: '응답 파형 로그 (『선혈의 애쉬』 소문을 이야기했을 때)',
+  },
+  '応答波形ログ（タルロウXの語尾のことを聞いたとき）': {
+    ja: '応答波形ログ（タルロウXの語尾のことを聞いたとき）',
+    en: 'Response Waveform Log (When asked about Tarlow X\'s verbal tic)',
+    ko: '응답 파형 로그 (타루로우 X의 말버릇을 물었을 때)',
+  },
+  '応答波形ログ（部屋の隅で何をしていたのか聞いたとき）': {
+    ja: '応答波形ログ（部屋の隅で何をしていたのか聞いたとき）',
+    en: 'Response Waveform Log (When asked what he was doing in the room corner)',
+    ko: '응답 파형 로그 (방구석에서 무엇을 하고 있었는지 물었을 때)',
+  },
 };
 
 export function getLocalizedDialogue(text: string, lang: Language): string {
@@ -5302,6 +5352,15 @@ export function getLocalizedDialogue(text: string, lang: Language): string {
   const trimmed = text.trim();
   const directMatch = DIALOGUE_TRANSLATIONS[trimmed]?.[lang];
   if (directMatch) return directMatch;
+
+  // 応答波形ログ（...）の動的パターンマッチ
+  const slipMatch = trimmed.match(/^応答波形ログ（(.+)）$/);
+  if (slipMatch) {
+    const inner = slipMatch[1];
+    const transInner = getLocalizedDialogue(inner, lang);
+    if (lang === 'en') return `Response Waveform Log (${transInner})`;
+    if (lang === 'ko') return `응답 파형 로그 (${transInner})`;
+  }
 
   // 改行や句読点の微小な差異を吸収
   for (const [key, val] of Object.entries(DIALOGUE_TRANSLATIONS)) {

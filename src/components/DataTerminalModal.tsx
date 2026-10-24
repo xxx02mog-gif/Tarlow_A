@@ -589,10 +589,7 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                     }
                     let displayContent = getLocalizedSectorContent(sectorKey, item.content, lang);
                     if (displayContent === item.content && lang !== 'ja') {
-                      const directTrans = getLocalizedDialogue(item.content, lang);
-                      if (directTrans !== item.content) {
-                        displayContent = directTrans;
-                      } else {
+                      if (item.content.includes('発言：「') || item.content.includes('訂正：「')) {
                         displayContent = item.content
                           .split('\n')
                           .map((line) => {
@@ -614,6 +611,8 @@ export const DataTerminalModal: React.FC<DataTerminalModalProps> = ({
                             return getLocalizedDialogue(line, lang);
                           })
                           .join('\n');
+                      } else {
+                        displayContent = getLocalizedDialogue(item.content, lang);
                       }
                     }
                     const isExpanded = !!expandedInfoIds[item.id];

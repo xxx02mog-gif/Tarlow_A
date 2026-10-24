@@ -35,9 +35,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '현재 기체',
     },
     thought: {
-      ja: 'どう見ても10歳前後の背丈だ・・・・・・。\nあいつが誘拐された、あの頃と同じ姿をしてる',
-      en: "No matter how you look at it, he has the build of a 10-year-old... Just like the day he was kidnapped.",
-      ko: '어딜 봐도 10살 안팎의 체구야...... 납치당했던 그 시절 모습 그대로야.',
+      ja: '・・・・・・ちっこいな。11年前に屋敷で見た姿そのままだ',
+      en: "...He's small. Looks just like he did back at the manor eleven years ago.",
+      ko: '......조그맣네. 11년 전 저택에서 봤던 모습 그대로야.',
     },
   },
   kw_sword_limiter: {
@@ -47,9 +47,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '출력 제한',
     },
     thought: {
-      ja: '四肢の出力が18%に抑えられてる・・・・・・。\nこれじゃあ剣を握るどころか、まともに走ることすらできねえな',
-      en: "His limb output is capped at 18%... At this rate, he can't even run properly, let alone hold a sword.",
-      ko: '사지 출력이 18%로 억제되어 있어...... 이래선 검을 쥐기는커녕 제대로 달릴 수도 없겠어.',
+      ja: '出力が二割に制限されてるのか・・・・・・。\nいや待てよ、二割であれだけ動けるなら、本来の性能ならどれだけ動けたんだ・・・・・・',
+      en: "His output is limited to twenty percent...? Wait, if he can move like that at twenty percent, how would he move at full spec...?",
+      ko: '출력이 20%로 제한되어 있는 건가......? 아니 잠깐, 20%로 저 정도로 움직인다면, 본래 성능이라면 대체 얼마나 움직였던 거지......',
     },
   },
   kw_apron: {
@@ -59,21 +59,21 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '앞치마',
     },
     thought: {
-      ja: 'タルロウ用のお手伝いエプロン・・・・・・。\nあいつ、まさか本当にこれを着せられてたのか？',
-      en: "A helper apron for a Tarlow unit... Did Dist seriously make him wear this?",
-      ko: '타르로우용 도우미 앞치마...... 설마 그 녀석, 진짜 이걸 입었던 건가?',
+      ja: 'こんなヒラヒラしたもん着せられて・・・・・・\nすげえ嫌そうな顔してるのが、逆にいつものあいつらしいというか・・・・・・',
+      en: "Forced to wear something so frilly... The sheer disgust on his face is ironically just like him...",
+      ko: '이런 팔랑거리는 걸 입혀놓고...... 엄청 싫어하는 표정을 짓고 있는 게, 역으로 녀석답다고 해야 할지......',
     },
   },
   kw_zura_speech: {
     label: {
       ja: '語尾',
-      en: 'Verbal Tic',
-      ko: '말끝 어미',
+      en: 'Speech Ending',
+      ko: '말끝',
     },
     thought: {
-      ja: 'タルロウ共通の『〜ズラ』って語尾設定・・・・・・。\n入力しようとしたディストを、コンソールごとぶん殴ったらしいな',
-      en: "The standard '~zura' speech filter for Tarlow models... Sounds like he smashed the console when Dist tried to install it.",
-      ko: '타르로우 공통의 『~즈라』 어미 설정...... 설치하려던 디스트를 콘솔째 때려눕힌 모양이군.',
+      ja: 'ズラ、か・・・・・・。\n怒り狂って端末ぶっ壊すあいつの顔、目に浮かぶようだぜ',
+      en: "'-zura', huh...? I can practically see him smashing the terminal in sheer fury.",
+      ko: "'~즈라'라니, 참...... 분노에 차서 단말기를 때려부수는 녀석의 얼굴이 눈에 선하네.",
     },
   },
   kw_step_stool: {
@@ -83,9 +83,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '디딤대',
     },
     thought: {
-      ja: '高い棚の本に手が届かなくて、踏み台を探してた記録がある。\n不便そうにしてるあいつの姿が、妙に目に浮かぶぜ',
-      en: "There's a log of him looking for a step stool to reach high shelves. I can vividly picture him struggling with it.",
-      ko: '높은 선반에 손이 닿지 않아 디딤대를 찾던 기록이 있어. 끙끙대던 그 녀석 모습이 눈에 선하네.',
+      ja: '棚に手が届かなくて部屋中踏み台探して歩き回ってたのか？\nさぞ屈辱だっただろうな・・・・・・',
+      en: "He couldn't reach the shelf, so he wandered the room looking for a stool? Must have been utterly humiliating for him...",
+      ko: '선반에 손이 닿지 않아서 온 방 안을 디딤대 찾으러 돌아다닌 건가? 꽤나 굴욕적이었겠네......',
     },
   },
   kw_lab: {
@@ -95,9 +95,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '연구소',
     },
     thought: {
-      ja: 'ディストの研究施設・・・・・・。\n外の世界から隔絶された場所で、あいつは何を思って過ごしてたんだ？',
-      en: "Dist's research lab... Isolated from the outside world, what was going through his mind all that time?",
-      ko: '디스트의 연구시설...... 바깥세상과 단절된 곳에서, 녀석은 무슨 생각을 하며 지냈을까?',
+      ja: 'あんな薄気味の悪い研究所で、ディストと二人で・・・・・・。\n息が詰まりそうだな',
+      en: "Just him and Dist in a creepy lab like that... Sounds suffocating.",
+      ko: '저런 으스스한 연구소에서 디스트와 단둘이...... 숨이 막힐 지경이겠어.',
     },
   },
   kw_chassis_swap: {
@@ -107,21 +107,21 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '기체 환장',
     },
     thought: {
-      ja: '最初は丸っこいタルロウの姿だったのが、今の機体に移されたのか。\nディストなりの配慮・・・・・・いや、執着の結果か',
-      en: "He started inside a round little Tarlow chassis before being moved to this one... Dist's twisted consideration, or pure obsession?",
-      ko: '처음엔 둥글넙적한 타르로우 모습이었다가 지금의 기체로 옮겨진 건가. 디스트 나름의 배려였을까, 아니면 집착의 결과였을까.',
+      ja: '二ヶ月前の機体大破・・・・・・\n研究所にいただけのやつが、なんでそんなボロボロに壊れるんだ？',
+      en: "The chassis was wrecked two months ago...? Why would someone who was just staying in a lab end up so utterly shattered?",
+      ko: '두 달 전 기체 대파...... 연구소에만 있던 녀석이 대체 왜 그렇게 만신창이로 부서진 거지?',
     },
   },
   kw_blank_2years: {
     label: {
       ja: '空白の2年',
-      en: 'Blank 2 Years',
+      en: 'The Blank Two Years',
       ko: '공백의 2년',
     },
     thought: {
-      ja: 'あいつがエルドラントで消えてから、研究所で目覚めるまでの2年間。\n記録がぷっつりと途切れてる・・・・・・何があったんだ？',
-      en: "Two years between his disappearance at Eldrant and waking up in the lab. The logs cut off completely... What happened?",
-      ko: '엘드란트에서 사라진 뒤 연구소에서 눈을 뜨기까지의 2년. 기록이 완전히 끊겨 있어...... 대체 무슨 일이 있었던 거지?',
+      ja: 'エルドラント崩落後の2年間・・・・・・\nあいつ、どこで何をしてたんだ？',
+      en: "The two years after Eldrant collapsed... Where was he, and what was he doing?",
+      ko: '엘드란트 붕괴 후 2년 동안...... 녀석, 어디서 뭘 하고 있었던 거지?',
     },
   },
   kw_memory_separation: {
@@ -131,21 +131,21 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '기억 분리',
     },
     thought: {
-      ja: '記憶のプロテクト・・・・・・いや、意図的な分離か。\n痛切すぎる記憶を、自ら切り離そうとした形跡がある',
-      en: "Protected sectors... or intentional memory separation. Traces show he deliberately tried to sever agonizing memories.",
-      ko: '기억의 프로텍트...... 아니, 의도적인 분리인가. 너무나 고통스러운 기억을 스스로 잘라내려 한 흔적이 있어.',
+      ja: 'じゃあ、今バチカルにいるルークは・・・・・・！？\n目の前にいるこいつは・・・・・・っ',
+      en: "Then who is the Luke in Baticul right now...?! And who is this right in front of me...!",
+      ko: '그럼 지금 바티칼에 있는 루크는......?! 눈앞에 있는 이 녀석은......윽!',
     },
   },
   kw_self_destruct: {
     label: {
       ja: '自壊の記録',
-      en: 'Self-Destruct Log',
+      en: 'Self-Destruct Record',
       ko: '자괴 기록',
     },
     thought: {
-      ja: '生体炉の臨界暴走インシデント・・・・・・。\nあいつ、自ら命を絶とうとしたんじゃないだろうな',
-      en: "Bioloop critical overload incident... Don't tell me he tried to end his own existence.",
-      ko: '생체로의 임계 폭주 인시던트...... 설마 스스로 목숨을 끊으려 했던 건 아니겠지.',
+      ja: '無茶どころじゃない！\nあいつ、自分の身体を自分で・・・・・・！？',
+      en: "This goes way beyond reckless! Did he... try to destroy his own body...?!",
+      ko: '무리하는 수준이 아니잖아! 녀석, 자기 몸을 스스로......?!',
     },
   },
   kw_tatalian: {
@@ -155,9 +155,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '타타르 계곡',
     },
     thought: {
-      ja: 'ルークと俺たちが旅を始めた場所、そしてあいつが第七音素を集めていた場所だ',
-      en: "Where Luke and I began our journey... and where Asch was collecting Seventh Fonons.",
-      ko: '루크와 우리가 여행을 시작했던 곳이자, 애쉬가 제7음소를 모으던 장소야.',
+      ja: 'ルークが戻ってきた時の記録を、あいつが何度も漁ってた・・・・・・？\n一体どんな気持ちで見てたんだよ・・・・・・',
+      en: "He repeatedly looked through the records from when Luke returned...? What on earth was going through his head...?",
+      ko: '루크가 돌아왔을 때의 기록을 녀석이 몇 번이고 뒤져봤다고......? 도대체 어떤 심정으로 보고 있었던 거야......',
     },
   },
   kw_asch_alias: {
@@ -167,9 +167,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '애쉬',
     },
     thought: {
-      ja: '『灰燼』を意味する名前・・・・・・。\n奪われた本名を捨ててまで、あいつが背負い続けた呪いのような呼び名だ',
-      en: "A name meaning 'ashes'... A cursed moniker he carried after abandoning his stolen true name.",
-      ko: '『재』를 뜻하는 이름...... 빼앗긴 본명을 버리면서까지 그 녀석이 짊어졌던 저주 같은 호칭이야.',
+      ja: '目の前にいるこいつは、一体誰なんだ？\n憎まれ口も目つきも以前のあいつのままだが・・・・・・',
+      en: "Who on earth is this in front of me? His sharp tongue and glare are just like they used to be, but...",
+      ko: '눈앞에 있는 이 녀석은 대체 누구지? 얄미운 입버릇도 눈빛도 예전 그대로이긴 하지만......',
     },
   },
   kw_luke: {
@@ -179,9 +179,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '루크',
     },
     thought: {
-      ja: '俺の可愛いお坊ちゃまで、あいつのレプリカ。\nあいつも、ずっとルークのことを気にかけ続けてたはずだ',
-      en: "My dear young master, and Asch's replica. Asch never stopped watching over him deep down.",
-      ko: '나의 소중한 도련님이자, 애쉬의 레플리카. 애쉬도 줄곧 루크를 마음속 깊이 신경 쓰고 있었을 거야.',
+      ja: 'バチカルのルークからは、たまに手紙が届く。あっちで元気にやってるみたいだな',
+      en: "I get letters from Luke in Baticul from time to time. Sounds like he's doing well over there.",
+      ko: '바티칼의 루크한테선 가끔 편지가 와. 저쪽에서 잘 지내는 모양이더군.',
     },
   },
   kw_parents: {
@@ -191,9 +191,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '파브레 공작가',
     },
     thought: {
-      ja: '公爵様と奥様・・・・・・あいつの本当の両親だ。\n誘拐されたあの日から、家族の歯車は狂いっぱなしだった',
-      en: "The Duke and Duchess... his true parents. The gears of their family have been broken ever since that kidnapping.",
-      ko: '공작님과 사모님...... 녀석의 진짜 부모님이지. 유괴당했던 그날부터 가족의 톱니바퀴는 어긋나기만 했어.',
+      ja: 'バチカルのお屋敷に、ルークが戻って一年になるのか。\n俺があの家を離れてもう何年になるか・・・・・・懐かしささえ感じるな',
+      en: "It's been a year since Luke returned to the manor in Baticul.\nHow many years has it been since I left that house...? I almost feel a bit of nostalgia.",
+      ko: '바티칼 저택에 루크가 돌아온 지도 1년인가.\n내가 그 집을 떠난 지도 벌써 몇 년이 지난 건지...... 그리움마저 느껴지네.',
     },
   },
   kw_natalia: {
@@ -203,21 +203,21 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '나탈리아',
     },
     thought: {
-      ja: 'あいつの幼馴染で、かつての婚約者。\nナタリアはずっと、あいつの帰りを待ち望んでるんだが・・・・・・',
-      en: "His childhood friend and former fiancée. Natalia has been waiting for his return all along...",
-      ko: '녀석의 소꿉친구이자 과거의 약혼녀. 나탈리아는 줄곧 녀석이 돌아오기만을 기다리고 있는데......',
+      ja: 'ナタリアは今でもおまえのことを信じて待ってるっていうのに・・・・・・\nあいつ、何でそんな頑なに拒むんだ',
+      en: "Natalia still believes in you and is waiting, and yet...\nWhy does he refuse her so stubbornly?",
+      ko: '나탈리아는 지금도 널 믿고 기다리고 있는데......\n녀석, 어째서 그렇게 완강하게 거부하는 거지?',
     },
   },
   kw_galdios_sword: {
     label: {
       ja: '宝刀ガルディオス',
-      en: 'Jeweled Sword of Gardios',
-      ko: '보도 가르디오스',
+      en: 'Gardios Sword',
+      ko: '가르디오스 보도',
     },
     thought: {
-      ja: '俺の生家、ガルディオス伯爵家に代々伝わる宝刀だ。\nあいつもこの刀にはただならぬ視線を向けてたな',
-      en: "The heirloom sword of House Gardios, my birthplace. Asch always cast an intense gaze at this blade.",
-      ko: '내 생가인 가르디오스 백작가에 대대로 전해지는 가보지. 녀석도 이 검엔 남다른 시선을 보내더군.',
+      ja: '俺の剣を見るあいつの目・・・・・・\n機体はこんなになっちまっても、やっぱりあいつは剣士なんだな',
+      en: "The way he looks at my sword...\nEven trapped in a chassis like this, he's still a swordsman through and through.",
+      ko: '내 검을 바라보는 녀석의 눈빛......\n기체가 이렇게 되어버렸어도, 역시 녀석은 검사로군.',
     },
   },
   kw_jade_visit: {
@@ -227,9 +227,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '제이드',
     },
     thought: {
-      ja: 'ジェイド・カーティス大佐。\nあの大佐がディストの研究所に立ち寄っていた形跡がある・・・・・・気づいてたのか？',
-      en: "Colonel Jade Curtiss. There are traces of him visiting Dist's lab... Did he know?",
-      ko: '제이드 커티스 대령. 그 대령이 디스트의 연구소에 들렀던 흔적이 있어...... 눈치채고 있었던 건가?',
+      ja: 'あの喰えない男のことだ、全部知ってて面白がってたんじゃねえだろうな',
+      en: "Knowing that sly man, don't tell me he knew everything and was just amused by it all.",
+      ko: '그 만만찮은 남자의 성격상, 다 알고 있으면서 재미있어했던 건 아니겠지.',
     },
   },
   kw_dist: {
@@ -239,9 +239,9 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '디스트',
     },
     thought: {
-      ja: '神託の盾六神将の死神ディスト。\nあんな奴だが、アッシュに対してだけは常軌を逸した執着を見せてるぜ',
-      en: "Dist the Reaper of the God-Generals. Eccentric as he is, his obsession with Asch bordered on madness.",
-      ko: '신탁의 방패 6신장, 사신 디스트. 얼토당토않은 자식이지만, 애쉬에게만큼은 상식을 벗어난 집착을 보였어.',
+      ja: 'よりによってディストなんかに拾われるとはな。あんなやつに生殺与奪を握られてるなんて、\nあいつにすりゃ屈辱以外の何物でもねえだろうに',
+      en: "Of all people, to be picked up by Dist.\nHaving his life in the hands of someone like that must be nothing short of utter humiliation for him.",
+      ko: '하필 디스트 따위에게 거둬지다니. 저런 녀석에게 생사여탈권을 쥐여 있다니,\n녀석에겐 굴욕 이외의 그 무엇도 아닐 텐데.',
     },
   },
   kw_taste: {
@@ -251,21 +251,21 @@ export const KEYWORD_TRANSLATIONS: Record<string, KeywordTranslation> = {
       ko: '미각',
     },
     thought: {
-      ja: '今の機体でも味覚センサーはあるらしいが・・・・・・。\nあいつ、紅茶の味すら遠い昔のことみたいに呟いてたな',
-      en: "His current body has taste sensors, yet he spoke of tea as if it belonged to a distant lifetime.",
-      ko: '지금 기체에도 미각 센서는 있는 모양이지만...... 홍차 맛조차 까마득한 옛일처럼 중얼거리더군.',
+      ja: '味覚センサーで味を数値化して、水分は気化排熱に回すって・・・・・・\n内部の配管や熱交換器、どういう構造になってんだ？',
+      en: "Converting taste into numbers with sensors and routing moisture to evaporative cooling...?\nWhat kind of plumbing and heat exchangers does he have inside?",
+      ko: '미각 센서로 맛을 수치화하고 수분은 기화 방열로 돌린다니......\n내부 배관이랑 열교환기는 어떤 구조로 되어 있는 거지?',
     },
   },
   kw_age: {
     label: {
       ja: '年齢',
       en: 'Age',
-      ko: '연령',
+      ko: '나이',
     },
     thought: {
-      ja: '外見は10歳、肉体の実年齢は20歳、そして譜業としての稼働年数。\n今のあいつの『年齢』は、一体どれなんだ？',
-      en: "Physical appearance of a 10-year-old, actual age 20, plus uptime as a fonic craft... What is his true 'age' now?",
-      ko: '외견은 10살, 육체의 실연령은 20살, 그리고 포업으로서의 가동 연수. 지금 녀석의 진짜 『나이』는 어느 쪽일까?',
+      ja: '見た目と実際の年齢に差があるが、昔から小難しい顔していたからあんまり気にならないもんだな',
+      en: "There's a huge gap between his appearance and actual age, but he always made sour faces anyway, so it doesn't feel that out of place.",
+      ko: '겉모습과 실제 나이에 차이가 있긴 하지만, 옛날부터 까다로운 표정을 짓고 있었으니 그리 신경 쓰이지는 않네.',
     },
   },
 };
@@ -299,120 +299,120 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
     label: {
       ja: 'ルークのこと',
       en: 'About Luke',
-      ko: '루크에 대하여',
+      ko: '루크에 대해',
     },
     epiphany: {
-      ja: 'あいつ、口では邪険にしつつもルークの行く末を気にかけてやがったな',
-      en: 'Harsh as he sounded, he always kept an eye on Luke’s path.',
-      ko: '말로는 모질게 굴면서도, 은근히 루크의 앞날을 걱정하고 있었단 말이지.',
+      ja: 'あいつ、ルークのことは気にしてるみたいだが、本当はどう思ってるんだ？',
+      en: 'He seems concerned about Luke, but what does he truly think deep down?',
+      ko: '녀석, 루크를 신경 쓰는 모양이지만 진짜 속마음은 어떻게 생각하고 있는 거지?',
     },
   },
   recipe_why_10yo_body: {
     label: {
       ja: 'どうしてその機体なのか',
-      en: 'Why This Specific Chassis',
-      ko: '어째서 그 기체인 건가',
+      en: 'Why That Body',
+      ko: '어째서 그 기체인가',
     },
     epiphany: {
-      ja: '10歳の姿・・・・・・ディストがこの機体を選んだ理由と、あいつがこれを受け入れた理由があるはずだ',
-      en: "A 10-year-old form... There must be a reason Dist chose this frame, and a reason Asch accepted it.",
-      ko: '10살 때의 모습...... 디스트가 이 기체를 택한 이유와, 녀석이 이를 수긍한 이유가 분명히 있을 거야.',
+      ja: 'あいつが何でその機体に入ってるのか・・・・・・ディストの趣味だけで片付く話じゃねえよな',
+      en: "Why is he in that chassis...? There has to be more to it than just Dist's twisted hobby.",
+      ko: '녀석이 왜 그 기체에 들어가 있는 건지...... 디스트의 취향만으로 치부할 문제는 아니겠지.',
     },
   },
   recipe_memory_lock: {
     label: {
       ja: 'ロックをかけられている？',
-      en: 'Locked Away by Design?',
+      en: 'Locked Memories?',
       ko: '잠겨 있는 건가?',
     },
     epiphany: {
-      ja: '端末の深層記憶・・・・・・ディストが勝手に封印したのか、それともあいつが拒んだのか',
-      en: "The deep memories in the terminal... Did Dist seal them unilaterally, or did Asch reject them?",
-      ko: '단말기의 심층 기억...... 디스트가 제멋대로 봉인한 걸까, 아니면 녀석이 거부한 걸까.',
+      ja: '抜け落ちている・・・・・・\nまさか、意図的にロックをかけられているんじゃないか？',
+      en: "It's missing...\nCould it be that a lock was placed on it intentionally?",
+      ko: '누락되어 있어......\n설마, 의도적으로 락이 걸려 있는 건 아닌가?',
     },
   },
   recipe_deep_truth_confront: {
     label: {
       ja: '嘘だよな、こんな記録・・・・・・',
-      en: "This Record Must Be a Lie...",
-      ko: '거짓말이지, 이런 기록은......',
+      en: 'This Record Must Be a Lie...',
+      ko: '거짓말이지, 이런 기록......',
     },
     epiphany: {
-      ja: '自壊の記録と記憶分離・・・・・・あいつ、自分が何なのか分からなくなって壊れそうになってたのか？',
-      en: "Self-destruct logs and severed memories... Was he about to shatter, completely lost as to who he was?",
-      ko: '자괴 기록과 기억 분리...... 녀석, 자기가 대체 누구인지 알 수 없게 되어 부서져 가고 있었던 건가?',
+      ja: 'だから、こいつは自壊までしなきゃいけなかった・・・・・・？\n嘘だ、そんなはずない。そんなこと、あってたまるかよ・・・・・・！！',
+      en: "So that's why he had to go as far as self-destructing...?\nNo, that can't be. How could something like that happen...!!",
+      ko: '그래서, 이 녀석은 자괴까지 해야만 했던 건가......?\n거짓말이야, 그럴 리 없어. 그런 일이 있어선 안 된다고......!!',
     },
   },
   recipe_parents_thought: {
     label: {
       ja: '屋敷の公爵様や奥様のこと',
-      en: 'About the Duke & Duchess',
-      ko: '저택의 공작님과 사모님에 대해',
+      en: 'The Duke and Duchess',
+      ko: '저택의 공작님과 부인',
     },
     epiphany: {
-      ja: '本当の親父とお袋さんのこと・・・・・・あいつ、一度だって忘れたことはなかったはずだ',
-      en: "His real mother and father... There's no way he ever forgot them, not even for a day.",
-      ko: '진짜 아버지와 어머니에 대한 것...... 녀석, 단 한 번도 잊은 적 없었을 거야.',
+      ja: 'こんな姿で屋敷に戻ったら、奥様がどれだけ取り乱すか・・・・・・あいつ自身、誰よりも分かってるんだろうな',
+      en: "If he returned to the manor looking like this, how distraught the Duchess would be... He must understand that better than anyone.",
+      ko: '이런 모습으로 저택에 돌아가면 부인께서 얼마나 충격을 받으실지...... 녀석 자신이 누구보다 잘 알고 있겠지.',
     },
   },
   recipe_sword_limiter: {
     label: {
       ja: 'その機体で剣は振れるのか',
-      en: 'Can You Swing a Sword in That Body?',
-      ko: '그 기체로 검을 휘두를 수 있나',
+      en: 'Can He Wield a Sword?',
+      ko: '그 기체로 검을 휘두를 수 있는가',
     },
     epiphany: {
-      ja: '18%の出力制限・・・・・・剣士として生きてきたあいつにとって、これはどれほど屈辱的な縛りなんだ？',
-      en: "An 18% limiter... For someone who lived by the blade, how humiliating must this shackle feel?",
-      ko: '18%의 출력 제한...... 검사로 살아온 녀석에게, 이건 얼마나 굴욕적인 족쇄일까.',
+      ja: 'その小さな手足じゃ、剣を握ることすらできねえんじゃねえのか？',
+      en: "With those tiny hands and feet, can he even grip a sword at all?",
+      ko: '그 조그만 손발로는 검을 쥐는 것조차 불가능한 것 아닌가?',
     },
   },
   recipe_hands_and_asch_alias: {
     label: {
       ja: '精巧な機体',
-      en: 'An Exquisite Craft',
+      en: 'Exquisite Chassis',
       ko: '정교한 기체',
     },
     epiphany: {
-      ja: '遠目には人間と見分けがつかない皮膚と指先。ディストの技術力の異様さが際立つぜ',
-      en: "Skin and fingertips indistinguishable from a human at a glance. Dist's skill is chillingly abnormal.",
-      ko: '얼핏 보면 인간과 분간이 안 가는 피부와 손가락 끝. 디스트의 비정상적인 기술력이 돋보이네.',
+      ja: 'ギアや配線どころか、パーツの継ぎ目すら見当たらない・・・・・・\nこうも人間らしいと、こいつを譜業として見る方が難しいな',
+      en: "No gears, no wires, not even a seam between parts...\nWhen it's this human-like, it's harder to see him as fontech.",
+      ko: '기어나 배선은커녕 부품의 이음매조차 보이지 않아......\n이렇게나 인간다우면, 이 녀석을 음기관으로 보기가 더 힘들군.',
     },
   },
   recipe_tea_memory: {
     label: {
       ja: '屋敷の紅茶の香り',
-      en: 'Aroma of Manor Black Tea',
+      en: 'Scent of Manor Black Tea',
       ko: '저택의 홍차 향기',
     },
     epiphany: {
-      ja: '屋敷で飲んでいた紅茶の香り・・・・・・今の機体の味覚センサーでも、思い出せるもんなのか？',
-      en: "The scent of black tea from the manor... Can sensors in this chassis even recall that taste?",
-      ko: '저택에서 마시던 홍차 향기...... 지금 기체의 미각 센서로도 떠올릴 수 있는 걸까?',
+      ja: 'その姿を見てると、昔屋敷で飲んでた紅茶を思い出すぜ。・・・・・・あいつも覚えてるのかね',
+      en: "Looking at him like that reminds me of the tea we drank at the manor. ...I wonder if he remembers too.",
+      ko: '그 모습을 보고 있으니 예전 저택에서 마시던 홍차가 떠오르네. ......녀석도 기억하고 있을까.',
     },
   },
   recipe_stepstool: {
     label: {
       ja: '高い棚と『踏み台』の記録',
-      en: 'High Shelves & Step Stool Log',
-      ko: '높은 선반과 『디딤대』의 기록',
+      en: 'High Shelf & Step Stool',
+      ko: '높은 선반과 디딤대 기록',
     },
     epiphany: {
-      ja: '届かない棚に悪戦苦闘して踏み台を持ち出すアッシュ・・・・・・ちょっと見てみたかったな',
-      en: "Asch wrestling with high shelves and dragging out a step stool... Part of me wishes I'd seen that.",
-      ko: '손이 닿지 않는 선반과 씨름하며 디딤대를 끌고 오는 애쉬...... 솔직히 조금 보고 싶었네.',
+      ja: '棚に手が届かねえからって、踏み台探してウロウロしてたのか。くくっ、ちょっとからかってやるか',
+      en: "Pacing around searching for a stool because he couldn't reach the shelf? Heh, maybe I'll tease him a little.",
+      ko: '선반에 손이 닿지 않는다고 디딤대 찾아서 어슬렁거렸던 건가. 큭큭, 조금 놀려줘 볼까.',
     },
   },
   recipe_joke_dist_tea: {
     label: {
       ja: '研究所の薬品臭いお茶',
-      en: "The Lab's Chemical-Smelling Tea",
+      en: 'Chemical-Smelling Lab Tea',
       ko: '연구소의 약품 냄새 나는 차',
     },
     epiphany: {
-      ja: 'ディストが淹れたお茶なんて、絶対に怪しい試薬が混ざってただろうな',
-      en: "Tea brewed by Dist? I bet my life there were dubious reagents mixed into that cup.",
-      ko: '디스트가 끓인 차라니, 수상쩍은 시약이 잔뜩 섞여 있었을 게 뻔하잖아.',
+      ja: '研究所にいた頃、ディストの淹れたお茶を飲んだりしたのか？ 薬品臭くて飲めたもんじゃなさそうだが',
+      en: "When he was at the lab, did he ever drink tea Dist brewed? Sounds like it'd reek of chemicals and be undrinkable.",
+      ko: '연구소에 있던 시절, 디스트가 끓인 차를 마시기도 한 걸까? 약품 냄새가 진동해서 마실 게 못 됐을 텐데.',
     },
   },
   recipe_joke_ask_zura: {
@@ -422,9 +422,9 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '한 번만이라도',
     },
     epiphany: {
-      ja: 'あいつが『〜ズラ』って喋るところ、一度くらい聞いてみたい気もするが・・・・・・殺されるな',
-      en: "Part of me wants to hear him say '~zura' just once... but he'd definitely murder me.",
-      ko: '녀석이 『~즈라』 하고 말하는 거, 딱 한 번쯤 들어보고 싶긴 한데...... 죽도록 맞겠지.',
+      ja: '怒られるのは百も承知だが、一回くらい『ズラ』って言わせてみてえよな',
+      en: "I know he'll chew me out, but I'd love to make him say '-zura' just once.",
+      ko: '혼날 건 뻔히 알지만, 한 번쯤은 "~즈라"라고 말하게 해보고 싶단 말이지.',
     },
   },
   recipe_joke_tarlow_apron: {
@@ -434,9 +434,9 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '앞치마를 두른 타르로우',
     },
     epiphany: {
-      ja: 'あのぶっきらぼうな顔でエプロン着けて雑用・・・・・・想像しただけで笑いが止まらねえ',
-      en: "Doing chores in an apron with that sullen scowl... Just picturing it is killing me.",
-      ko: '그 뾰로통한 얼굴로 앞치마를 두르고 심부름이라니...... 상상만 해도 웃음이 안 멈추네.',
+      ja: 'あの掃除機みたいなタルロウにエプロン巻いて給仕してたのか・・・・・・？',
+      en: "Did that vacuum cleaner-looking Tarlow wear an apron to serve meals...?",
+      ko: '그 청소기 같은 타르로우에 앞치마를 두르고 시중을 들었던 건가......?',
     },
   },
   recipe_joke_cup_break: {
@@ -446,9 +446,9 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '나탈리아의 요리',
     },
     epiphany: {
-      ja: 'ナタリアの手料理の話・・・・・・あいつ、昔本気で気絶しかけたことあったよな',
-      en: "Natalia's cooking... He genuinely almost passed out from it back in the day.",
-      ko: '나탈리아의 손요리 이야기...... 옛날에 그 녀석 진짜로 기절할 뻔했었지.',
+      ja: 'この機体にも味覚センサーがあるらしいが、\nナタリアの手料理を食わされたらどうなるんだろう',
+      en: "Apparently this chassis has taste sensors too...\nWhat would happen if he were fed Natalia's home cooking?",
+      ko: '이 기체에도 미각 센서가 있다던데,\n나탈리아의 손요리를 먹게 되면 어떻게 될까.',
     },
   },
   recipe_joke_asch_age: {
@@ -458,9 +458,9 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '애쉬의 나이',
     },
     epiphany: {
-      ja: '見た目は10歳、実年齢は20歳・・・・・・おまえ、結局いくつなんだよってツッコミ待ちか？',
-      en: "Looks 10, aged 20... Are you waiting for me to ask how old you actually are?",
-      ko: '겉모습은 10살, 실제 나이는 20살...... 너 결국 몇 살인 거냐고 딴죽이라도 걸어달라는 건가?',
+      ja: '見た目は10歳、生きてりゃもう21歳か。・・・・・・あいつ自身、自分のこと今何歳だと思ってるんだ？',
+      en: "Looks 10, but if he were alive he'd be 21 now... I wonder how old he considers himself to be?",
+      ko: '겉모습은 10살, 살아있다면 벌써 21살인가. ......녀석 자신은 스스로를 몇 살이라고 생각하고 있을까?',
     },
   },
   recipe_joke_luke_age: {
@@ -470,21 +470,21 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '루크의 나이',
     },
     epiphany: {
-      ja: 'ルークは生まれてから7年・・・・・・あいつから見れば、とんでもない年下弟分だな',
-      en: "Luke has only lived 7 years... To Asch, he really must seem like a tiny younger brother.",
-      ko: '루크는 태어난 지 고작 7년...... 애쉬 입장에선 까마득히 어린 남동생이겠네.',
+      ja: 'そういえばルークの奴、まだ19歳の感覚だとか言ってたな',
+      en: "Come to think of it, Luke mentioned he still felt like he was 19.",
+      ko: '그러고 보니 루크 녀석, 아직 19살 같은 느낌이라고 말했었지.',
     },
   },
   recipe_why_dist: {
     label: {
       ja: 'ディストを頼った理由',
-      en: 'Reason for Trusting Dist',
+      en: 'Reason for Relying on Dist',
       ko: '디스트를 의지한 이유',
     },
     epiphany: {
-      ja: 'あいつが唯一コンタクトを取ったのがディストだった理由・・・・・・他に行き場がなかったのか',
-      en: "Why Dist was the only one he contacted... Did he truly have nowhere else to turn?",
-      ko: '유일하게 연락을 취한 상대가 디스트였던 이유...... 갈 곳이 그곳밖에 없었던 걸까.',
+      ja: 'そもそも、あいつはなんでディストのところへ行ったんだ？ ろくなことにならないくらい、あいつだって分かってただろうに',
+      en: "In the first place, why did he go to Dist? He must have known nothing good would come of it.",
+      ko: '애초에 녀석은 왜 디스트에게 간 거지? 제대로 된 꼴이 못 될 거란 건 녀석도 알고 있었을 텐데.',
     },
   },
   recipe_dist_life: {
@@ -494,33 +494,33 @@ export const RECIPE_TRANSLATIONS: Record<string, RecipeTranslation> = {
       ko: '디스트와의 단둘 생활',
     },
     epiphany: {
-      ja: 'ディストと二人きりの研究所生活・・・・・・考えただけで胃が痛くなりそうだぜ',
-      en: "Living alone with Dist in that lab... My stomach hurts just thinking about it.",
-      ko: '디스트와 단둘이 연구소 생활이라니...... 생각만 해도 위장이 쓰려오네.',
+      ja: 'あのディストと二人きりじゃ、鬱陶しいこと山ほどあっただろうな。・・・・・・少し聞いてやるか',
+      en: "Being alone with that Dist, there must have been endless annoyances. ...Maybe I'll hear him out a bit.",
+      ko: '그 디스트와 단둘이라니 귀찮고 짜증 나는 일이 산더미였겠지. ......조금 들어줘 볼까.',
     },
   },
   recipe_dist_rebellion: {
     label: {
       ja: 'ディストへの小さな反抗',
-      en: "Petty Defiance Against Dist",
+      en: 'Minor Rebellion against Dist',
       ko: '디스트를 향한 소소한 반항',
     },
     epiphany: {
-      ja: '命令を無視したり嫌がらせしたり・・・・・・あいつなりに意地を張ってたんだな',
-      en: "Ignoring orders, being stubborn... In his own way, he was clinging to his pride.",
-      ko: '명령을 씹고 곯려주고...... 녀석 나름대로 필사적으로 자존심을 지켰던 거군.',
+      ja: '出力制限かけられてたって、あいつの気性ならディストの隙を見て一発くらい蹴り飛ばしてそうだな',
+      en: "Even with the limiter on, with his temper, he probably took a shot at kicking Dist the moment his back was turned.",
+      ko: '출력 제한이 걸려 있었다 해도, 녀석 성격이라면 디스트의 빈틈을 노려 한 대쯤 걷어찼을 것 같네.',
     },
   },
   recipe_jade_suspicion: {
     label: {
       ja: '研究所に来ていた大佐のこと',
       en: 'About the Colonel at the Lab',
-      ko: '연구소에 찾아왔던 대령에 대해',
+      ko: '연구소에 들렀던 대령에 대해',
     },
     epiphany: {
-      ja: 'ジェイドが研究所に来ていた・・・・・・あいつに気付かれないように立ち去ったのか？',
-      en: "Jade was at the lab... Did he slip away before Asch even noticed him?",
-      ko: '제이드가 연구소에 왔었다니...... 녀석에게 들키지 않도록 조용히 물러난 걸까?',
+      ja: 'あのジェイドが気付いてないなんてこと、あるのか・・・・・・？\nわざと見逃されてるってことか？',
+      en: "Is it even possible that Jade didn't notice...?\nDoes that mean he intentionally turned a blind eye?",
+      ko: '그 제이드가 눈치채지 못했을 리가 있나......?\n일부러 모른 척 넘어가 준 건가?',
     },
   },
 };

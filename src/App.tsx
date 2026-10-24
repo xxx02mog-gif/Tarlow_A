@@ -249,6 +249,17 @@ const buildPreSpeechFaceParts = (
   };
 };
 
+const PHASE1_SLIP_RECORD_TITLES: Record<string, string> = {
+  p1_luke_model: '予備機体モデルへの反応ログ',
+  p1_dist_loyalty: '管理者に関する応答ログ',
+  p1_touch_shoulder: '頭部接触時の反射行動と呼称出力',
+  p1_galdios_sword: '宝刀ガルディオス視認時の反応ログ',
+  p1_natalia_rumor: 'キムラスカ王女に関する応答ログ',
+  p1_peony_rabbits: '個体名『アッシュ』への反応ログ',
+  p1_octopus_meal: '特定食材（タコ）への拒絶反応ログ',
+  p1_asch_rumor: '六神将当時の身体的特徴への反応ログ',
+};
+
 const getPreSpeechTameDurationMs = (
   expr: ExpressionId,
   parts?: Partial<FaceParts>
@@ -3796,18 +3807,8 @@ export default function App() {
               if (chosenPhase1SlipVariant) {
                 setMood(-2);
                 const slipCfg = PHASE1_TOPIC_SLIP_CONFIGS[topic.id];
-                const SLIP_TITLES: Record<string, string> = {
-                  p1_luke_model: '予備機体モデルへの反応ログ',
-                  p1_dist_loyalty: '管理者に関する応答ログ',
-                  p1_touch_shoulder: '頭部接触時の反射行動と呼称出力',
-                  p1_galdios_sword: '宝刀ガルディオス視認時の反応ログ',
-                  p1_natalia_rumor: 'キムラスカ王女に関する応答ログ',
-                  p1_peony_rabbits: '個体名『アッシュ』への反応ログ',
-                  p1_octopus_meal: '特定食材（タコ）への拒絶反応ログ',
-                  p1_asch_rumor: '六神将当時の身体的特徴への反応ログ',
-                };
                 const chartTitle =
-                  SLIP_TITLES[topic.id] ??
+                  PHASE1_SLIP_RECORD_TITLES[topic.id] ??
                   `応答波形ログ（${slipCfg?.shortLabel ?? topic.id}）`;
                 const quoteBlock =
                   chosenPhase1SlipVariant.type === 'REWRITE' &&
@@ -5977,7 +5978,9 @@ export default function App() {
         addOralInfo({
           id: `oral-p1-slip-${slip.topicId}`,
           category: '情動反応',
-          title: `応答波形ログ（${slip.shortLabel}）`,
+          title:
+            PHASE1_SLIP_RECORD_TITLES[slip.topicId] ??
+            `応答波形ログ（${slip.shortLabel}）`,
           content: slip.variant.terminalRecordSummary,
         });
       });
