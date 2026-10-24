@@ -104,6 +104,10 @@ import {
 } from './data/thinkingData';
 import { GuyBodyReaction, GuyFaceParts, GuyPortrait } from './components/GuyPortrait';
 import { ThinkingArea } from './components/ThinkingArea';
+import { useLanguage } from './utils/i18n';
+import { LanguageSelector } from './components/LanguageSelector';
+import { getLocalizedDialogue } from './locales/dialogueLocale';
+import { getLocalizedAchievement } from './locales/achievementLocale';
 import './game.css';
 
 // 実績17（百面相）で表情鑑賞、実績18（もう寝よう）でシナリオ台本が解放されます
@@ -533,6 +537,7 @@ function calculateLineDelayMs(
 }
 
 export default function App() {
+  const [lang] = useLanguage();
   // === 16:9 (800x450) 固定キャンバスの拡大・縮小スケール計算 ＆ スマホ縦持ち時の横画面自動回転 ===
   const [stageScale, setStageScale] = useState<number>(1);
   const [isPortraitRotated, setIsPortraitRotated] = useState<boolean>(false);
@@ -1526,7 +1531,8 @@ export default function App() {
 
         const calcTotalHeight = (list: typeof next) =>
           list.reduce((sum, b) => {
-            const formatted = formatBubbleText(b.text, b.voiceEffect ?? 'normal');
+            const localized = getLocalizedDialogue(b.text, lang);
+            const formatted = formatBubbleText(localized, b.voiceEffect ?? 'normal');
             const linesCount = formatted.split('\n').length;
             // py-2/py-1.5 (~12px padding) + linesCount * line-height (~18px) + mb-2 (8px margin)
             return sum + 12 + linesCount * 18 + 8;
@@ -1550,7 +1556,7 @@ export default function App() {
         },
       ]);
     },
-    [recordSeenLine]
+    [recordSeenLine, lang]
   );
 
   // === 全シナリオ台本用の実機プレビュー実行（本番の演出・タメ・分割・積み重ねと完全同期） ===
@@ -6866,12 +6872,27 @@ export default function App() {
                     NO.{toast.numberLabel}
                   </span>
                 </div>
-                <div className="text-[12px] font-bold tracking-wide text-white leading-snug">
-                  実績解除：{toast.title}
-                </div>
-                <div className="text-[10px] text-zinc-300 leading-snug mt-0.5">
-                  {toast.description}
-                </div>
+                {(() => {
+                  const loc = getLocalizedAchievement(toast.id, lang);
+                  const displayTitle = loc?.title || toast.title;
+                  const displayDesc = loc?.description || toast.description;
+                  const prefix =
+                    lang === 'en'
+                      ? 'Achievement Unlocked: '
+                      : lang === 'ko'
+                        ? '도전과제 달성: '
+                        : '実績解除：';
+                  return (
+                    <>
+                      <div className="text-[12px] font-bold tracking-wide text-white leading-snug">
+                        {prefix}{displayTitle}
+                      </div>
+                      <div className="text-[10px] text-zinc-300 leading-snug mt-0.5">
+                        {displayDesc}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -6887,12 +6908,37 @@ export default function App() {
               setPrologueStep(0);
               setGamePhase('PROLOGUE');
             }}
-            className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-between py-10 px-12 cursor-pointer"
+            className="w-full h-full bg-[#08080a] text-zinc-100 flex flex-col items-center justify-between py-10 px-12 cursor-pointer relative"
           >
             <div className="w-full flex items-center justify-between text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
               <span>UNOFFICIAL FAN MADE GAME</span>
-              <span>VERSION 2.1.0</span>
+              <div className="flex items-center gap-3">
+                <LanguageSelector variant="title" />
+                <span>VERSION 2.2.0</span>
+              </div>
             </div>
+
+            {lang !== 'ja' && (
+              <div
+                className="absolute top-[70px] left-12 right-12 flex justify-end pointer-events-none select-none z-10"
+                style={lang === 'ko' ? { fontFamily: "'Dongle', sans-serif" } : undefined}
+              >
+                <div
+                  className="text-zinc-500 flex items-center gap-1.5"
+                  style={lang === 'ko' ? { fontFamily: "'Dongle', sans-serif" } : undefined}
+                >
+                  <AlertTriangle className="w-2.5 h-2.5 text-zinc-600 shrink-0" />
+                  <span
+                    className={lang === 'ko' ? 'text-[15px] leading-tight tracking-normal text-zinc-400' : 'font-mono text-[9.5px] tracking-wide text-zinc-400'}
+                    style={lang === 'ko' ? { fontFamily: "'Dongle', sans-serif" } : undefined}
+                  >
+                    {lang === 'ko'
+                      ? '안내: 이 번역은 AI를 통해 기계적으로 번역되었습니다. 정확한 뉘앙스는 일본어판을 확인해 주세요.'
+                      : 'Notice: This translation was generated by AI. Please refer to the Japanese version for accurate nuances.'}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col items-center text-center my-auto space-y-6">
               <div className="space-y-2">
@@ -6917,20 +6963,20 @@ export default function App() {
                 <div className="pr-2.5 border-r border-zinc-800/80 flex flex-col space-y-0.5">
                   <div className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 border-b border-zinc-800/70 pb-0.5">
                     <AlertTriangle className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
-                    <span>注意事項</span>
+                    <span>{lang === 'en' ? 'Notice' : lang === 'ko' ? '주의사항' : '注意事項'}</span>
                   </div>
                   <ul className="text-[8.5px] leading-tight text-zinc-400 space-y-0.5">
                     <li className="flex items-center gap-1 whitespace-nowrap">
                       <BookOpen className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
-                      <span>ED後の独自捏造設定</span>
+                      <span>{lang === 'en' ? 'Post-ED original fan fiction' : lang === 'ko' ? 'ED 후의 독자적인 2차 창작 설정' : 'ED後の独自捏造設定'}</span>
                     </li>
                     <li className="flex items-center gap-1 whitespace-nowrap">
                       <Users className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
-                      <span>ガイアシュ（恋愛描写なし）</span>
+                      <span>{lang === 'en' ? 'Guy & Asch (No romance)' : lang === 'ko' ? '가이&애쉬 (연애 묘사 없음)' : 'ガイアシュ（恋愛描写なし）'}</span>
                     </li>
                     <li className="flex items-center gap-1 whitespace-nowrap">
                       <Skull className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
-                      <span>死亡ルート有り</span>
+                      <span>{lang === 'en' ? 'Contains death routes' : lang === 'ko' ? '사망 루트 포함' : '死亡ルート有り'}</span>
                     </li>
                   </ul>
                 </div>
@@ -6939,14 +6985,34 @@ export default function App() {
                 <div className="flex flex-col space-y-0.5">
                   <div className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 border-b border-zinc-800/70 pb-0.5">
                     <Info className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
-                    <span>このゲームについて</span>
+                    <span>{lang === 'en' ? 'About This Game' : lang === 'ko' ? '이 게임에 대하여' : 'このゲームについて'}</span>
                   </div>
                   <p className="text-[8.5px] leading-snug text-zinc-400 whitespace-nowrap">
-                    本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
-                    <br />
-                    原作および関係各社様とは一切関係ございません。
-                    <br />
-                    素人が作ってるので多目にみてください！
+                    {lang === 'en' ? (
+                      <>
+                        This is an unofficial fan game based on "Tales of the Abyss".
+                        <br />
+                        It has no affiliation with the original creators or related companies.
+                        <br />
+                        Created by a fan—thank you for your understanding!
+                      </>
+                    ) : lang === 'ko' ? (
+                      <>
+                        본 작품은 『테일즈 오브 디 어비스』의 비공식 2차 창작 게임입니다.
+                        <br />
+                        원작 및 관련 기업과는 일절 관계가 없습니다.
+                        <br />
+                        아마추어가 제작한 작품이니 너그럽게 봐주세요!
+                      </>
+                    ) : (
+                      <>
+                        本作は『テイルズ オブ ジ アビス』の非公式二次創作ゲームです。
+                        <br />
+                        原作および関係各社様とは一切関係ございません。
+                        <br />
+                        素人が作ってるので多目にみてください！
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -6964,7 +7030,7 @@ export default function App() {
                     }}
                     className="px-3.5 py-1.5 text-[11.5px] tracking-wider border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer font-zen"
                   >
-                    実績・記録
+                    {lang === 'en' ? 'Archives & Records' : lang === 'ko' ? '업적·기록' : '実績・記録'}
                   </button>
                 )}
               </div>
@@ -7006,10 +7072,10 @@ export default function App() {
                     setIsScenarioInspectorOpen(true);
                   }}
                   className="fixed top-4 left-4 z-50 px-3 py-1 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 text-[11px] font-zen flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
-                  title="台本一覧に戻ります"
+                  title={lang === 'en' ? 'Return to script list' : lang === 'ko' ? '대본 목록으로 복귀' : '台本一覧に戻ります'}
                 >
                   <span>◀</span>
-                  <span>台本に戻る</span>
+                  <span>{lang === 'en' ? 'Back to Scripts' : lang === 'ko' ? '대본으로 복귀' : '台本に戻る'}</span>
                 </button>
               )}
               {currentStepData.image ? (
@@ -7036,8 +7102,8 @@ export default function App() {
                       }`}
                     >
                       {currentStepData.singleLine
-                        ? currentStepData.lines[0]
-                        : formatParagraphText(currentStepData.lines[0], 35)}
+                        ? getLocalizedDialogue(currentStepData.lines[0], lang)
+                        : formatParagraphText(getLocalizedDialogue(currentStepData.lines[0], lang), 35)}
                     </p>
 
                     {/* 2行目がある場合：1行目の下に絶対配置し、スチル＋1行目の中心位置を変化させない */}
@@ -7047,7 +7113,7 @@ export default function App() {
                           key={`p-line-${prologueStep}-1`}
                           className="text-[14px] leading-relaxed tracking-wider text-zinc-200 text-center whitespace-pre-line animate-prologue-text-in-2"
                         >
-                          {formatParagraphText(currentStepData.lines[1], 35)}
+                          {formatParagraphText(getLocalizedDialogue(currentStepData.lines[1], lang), 35)}
                         </p>
                       </div>
                     )}
@@ -7064,7 +7130,7 @@ export default function App() {
                       key={`p-line-${prologueStep}-${idx}`}
                       className="text-[14px] leading-relaxed tracking-wider text-zinc-200 text-center whitespace-pre-line"
                     >
-                      {formatParagraphText(line, 35)}
+                      {formatParagraphText(getLocalizedDialogue(line, lang), 35)}
                     </p>
                   ))}
                 </div>
@@ -7117,28 +7183,28 @@ export default function App() {
                     setIsScenarioInspectorOpen(true);
                   }}
                   className="fixed top-4 left-4 z-50 px-3 py-1 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 text-[11px] font-zen flex items-center gap-1.5 cursor-pointer shadow-lg transition-colors"
-                  title="台本一覧に戻ります"
+                  title={lang === 'en' ? 'Return to script list' : lang === 'ko' ? '대본 목록으로 복귀' : '台本一覧に戻ります'}
                 >
                   <span>◀</span>
-                  <span>台本に戻る</span>
+                  <span>{lang === 'en' ? 'Back to Scripts' : lang === 'ko' ? '대본으로 복귀' : '台本に戻る'}</span>
                 </button>
               )}
               {!isDistSkitStep ? (
                 <div className="max-w-[480px] w-full space-y-4">
                   <div className="border-b border-zinc-800 pb-2 mb-2">
                     <p className="text-[11px] text-zinc-400 tracking-widest">
-                      {currentEndingScenario.subtitle}
+                      {getLocalizedDialogue(currentEndingScenario.subtitle, lang)}
                     </p>
                     <h2 className="text-[18px] text-zinc-100 tracking-wider">
-                      {currentEndingScenario.title}
+                      {getLocalizedDialogue(currentEndingScenario.title, lang)}
                     </h2>
                   </div>
                   {endingLines.slice(0, endingStep + 1).map((line, idx) => (
                     <p
                       key={idx}
-                      className="text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
+                      className="dialogue-text text-[14px] leading-relaxed tracking-wider text-zinc-200 whitespace-pre-line animate-bubble-in"
                     >
-                      {formatParagraphText(line, 34.0)}
+                      {formatParagraphText(getLocalizedDialogue(line, lang), 34.0)}
                     </p>
                   ))}
                 </div>
@@ -7212,12 +7278,23 @@ export default function App() {
                     <circle cx="8" cy="11.85" r="1.2" fill="currentColor" />
                   </svg>
                 </span>
-                <span className="text-[14px] leading-none tracking-wider text-zinc-100 font-medium">
-                  {isThinkingMode
-                    ? 'THINK // 考える'
-                    : isPhase2OrLater
-                      ? 'TALK // アッシュと会話する'
-                      : 'TALK // タルロウAと会話する'}
+                <span className="text-[14px] leading-none tracking-wider text-zinc-100 font-medium inline-flex items-baseline">
+                  {isThinkingMode ? (
+                    <>
+                      <span>THINK //&nbsp;</span>
+                      <span className="header-talk-title">{lang === 'en' ? 'Consider' : lang === 'ko' ? '생각하기' : '考える'}</span>
+                    </>
+                  ) : isPhase2OrLater ? (
+                    <>
+                      <span>TALK //&nbsp;</span>
+                      <span className="header-talk-title">{lang === 'en' ? 'Converse with Asch' : lang === 'ko' ? '애쉬와 대화하기' : 'アッシュと会話する'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>TALK //&nbsp;</span>
+                      <span className="header-talk-title">{lang === 'en' ? 'Converse with Tarlow A' : lang === 'ko' ? '타르로우 A와 대화하기' : 'タルロウAと会話する'}</span>
+                    </>
+                  )}
                 </span>
               </div>
 
@@ -7230,7 +7307,7 @@ export default function App() {
                     setIsThinkingMode(false);
                     setIsDialogueLogOpen((prev) => !prev);
                   }}
-                  title="セリフログ"
+                  title={lang === 'en' ? 'Dialogue Log' : lang === 'ko' ? '대화 로그' : 'セリフログ'}
                   className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1.5 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isDialogueLogOpen
                       ? 'bg-zinc-200 text-zinc-950 border-zinc-100'
@@ -7260,7 +7337,7 @@ export default function App() {
                       soundEngine.playTerminalTab();
                     }
                   }}
-                  title="BGM・SEを一括でON/OFF切り替え"
+                  title={lang === 'en' ? 'Toggle BGM & SE ON/OFF' : lang === 'ko' ? 'BGM/SE 일괄 ON/OFF 전환' : 'BGM・SEを一括でON/OFF切り替え'}
                   className={`relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer ${
                     isSoundMuted
                       ? 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700'
@@ -7290,7 +7367,7 @@ export default function App() {
                   className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 flex items-center gap-1 px-2.5 py-0.5 text-[11.5px] text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 bg-zinc-900/80 transition-colors cursor-pointer"
                 >
                   <span>?</span>
-                  <span>説明書</span>
+                  <span>{lang === 'en' ? 'Manual' : lang === 'ko' ? '설명서' : '説明書'}</span>
                 </button>
               </div>
             </header>
@@ -7375,8 +7452,9 @@ export default function App() {
                     const isGuyTremble =
                       resolvedEffect === 'tremble' || resolvedEffect === 'tremble_glitch';
 
+                    const localizedBubbleText = getLocalizedDialogue(bubble.text, lang);
                     const formattedGuyText = !isAsch
-                      ? formatBubbleText(bubble.text, resolvedEffect)
+                      ? formatBubbleText(localizedBubbleText, resolvedEffect)
                       : '';
                     const isGuyMultiLine3Plus =
                       !isAsch && formattedGuyText.split('\n').length >= 3;
@@ -7406,7 +7484,7 @@ export default function App() {
                       >
                         {isAsch ? (
                           <AschBubbleItem
-                            text={bubble.text}
+                            text={localizedBubbleText}
                             effect={resolvedEffect}
                             isLatest={isLatest}
                           />
@@ -7435,7 +7513,7 @@ export default function App() {
 
                 {/* 下部：ガイの思考選択肢（上部の吹き出し領域(上限y=206px)と重ならず、右端をアッシュのセリフ枠右端と揃える） */}
                 <div
-                  className={`absolute left-7 -right-3 bottom-3.5 h-[134px] flex flex-col justify-start transition-opacity duration-150 ${
+                  className={`choice-container absolute left-7 -right-3 bottom-3.5 h-[134px] flex flex-col justify-start transition-opacity duration-150 ${
                     isAschAbsent ? 'opacity-0 pointer-events-none' : 'opacity-100'
                   }`}
                 >
@@ -7638,16 +7716,16 @@ export default function App() {
                       isDecisionEventActive && !activeAschQuestion
                         ? !linkTags.includes('phase2_started') &&
                           phase1AccuseStep === 'SELECT_TOPIC'
-                          ? 'いつの反応が怪しかった？'
+                          ? (lang === 'en' ? 'Which reaction was suspicious?' : lang === 'ko' ? '어느 반응이 수상했지?' : 'いつの反応が怪しかった？')
                           : !linkTags.includes('phase2_started') &&
                               phase1AccuseStep === 'SELECT_REASON'
-                            ? 'どこでボロが出た？'
-                            : 'どうする？'
+                            ? (lang === 'en' ? 'Where did he slip up?' : lang === 'ko' ? '어디서 꼬리를 밟혔지?' : 'どこでボロが出た？')
+                            : (lang === 'en' ? 'What to do?' : lang === 'ko' ? '어떻게 할까?' : 'どうする？')
                         : isReplyingMode
-                          ? 'どう返す？'
+                          ? (lang === 'en' ? 'How to reply?' : lang === 'ko' ? '어떻게 대답할까?' : 'どう返す？')
                           : !linkTags.includes('phase2_started')
-                            ? '何について聞く？'
-                            : '何について話す？';
+                            ? (lang === 'en' ? 'What to ask about?' : lang === 'ko' ? '무엇에 대해 물을까?' : '何について聞く？')
+                            : (lang === 'en' ? 'What to talk about?' : lang === 'ko' ? '무엇에 대해 이야기할까?' : '何について話す？');
 
                     const choiceListClass =
                       'relative h-[100px] flex flex-col justify-start gap-[7px] overflow-hidden';
@@ -7679,7 +7757,7 @@ export default function App() {
                                 }}
                                 className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                               >
-                                [ ◀ 質問を選び直す ]
+                                {lang === 'en' ? '[ ◀ Reselect Question ]' : lang === 'ko' ? '[ ◀ 질문 다시 고르기 ]' : '[ ◀ 質問を選び直す ]'}
                               </button>
                             ) : isDecisionEventActive &&
                               !activeAschQuestion &&
@@ -7696,7 +7774,7 @@ export default function App() {
                                   }}
                                   className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                                 >
-                                  [ ◀ 戻る ]
+                                  {lang === 'en' ? '[ ◀ Back ]' : lang === 'ko' ? '[ ◀ 뒤로 ]' : '[ ◀ 戻る ]'}
                                 </button>
                               ) : null
                             ) : isDecisionEventActive &&
@@ -7713,7 +7791,7 @@ export default function App() {
                                 }}
                                 className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-700 hover:text-black cursor-pointer whitespace-nowrap"
                               >
-                                [ ◀ 話題に戻る ]
+                                {lang === 'en' ? '[ ◀ Back to Topics ]' : lang === 'ko' ? '[ ◀ 화제로 복귀 ]' : '[ ◀ 話題に戻る ]'}
                               </button>
                             ) : !isDecisionEventActive &&
                               !isHardForcedEvent &&
@@ -7731,9 +7809,9 @@ export default function App() {
                                   }
                                 }}
                                 className="relative after:content-[''] after:absolute after:-inset-y-2 after:-inset-x-1 pb-1 text-[11px] text-zinc-600 hover:text-black cursor-pointer whitespace-nowrap transition-colors"
-                                title="話を切り上げてアッシュの処遇を決める"
+                                title={lang === 'en' ? 'Conclude talk & decide Asch\'s disposition' : lang === 'ko' ? '대화를 마치고 애쉬의 처분을 결정한다' : '話を切り上げてアッシュの処遇を決める'}
                               >
-                                [ 話を切り上げる ]
+                                {lang === 'en' ? '[ Wrap Up ]' : lang === 'ko' ? '[ 대화 정리 ]' : '[ 話を切り上げる ]'}
                               </button>
                             ) : null}
 
@@ -7757,15 +7835,15 @@ export default function App() {
                                   ? 'text-zinc-800 font-semibold hover:text-black active:text-zinc-500 cursor-pointer'
                                   : 'text-zinc-400/75 cursor-default pointer-events-none'
                               }`}
-                              title={
-                                headerTotalPages > 1
-                                  ? '次のページへ切り替え'
-                                  : undefined
-                              }
+                                title={
+                                  headerTotalPages > 1
+                                    ? (lang === 'en' ? 'Switch to next page' : lang === 'ko' ? '다음 페이지로 전환' : '次のページへ切り替え')
+                                    : undefined
+                                }
                             >
                               {isReplyingMode
-                                ? '[ ▶ 他の返答 ]'
-                                : '[ ▶ 他の話題 ]'}
+                                ? (lang === 'en' ? '[ ▶ Other Replies ]' : lang === 'ko' ? '[ ▶ 다른 대답 ]' : '[ ▶ 他の返答 ]')
+                                : (lang === 'en' ? '[ ▶ Other Topics ]' : lang === 'ko' ? '[ ▶ 다른 화제 ]' : '[ ▶ 他の話題 ]')}
                             </button>
                           </div>
                         </div>
@@ -7798,7 +7876,7 @@ export default function App() {
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                       <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
-                                        {opt.thoughtText}
+                                        {getLocalizedDialogue(opt.thoughtText, lang)}
                                       </span>
                                     </div>
                                   </button>
@@ -7834,7 +7912,7 @@ export default function App() {
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                       <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
-                                        {opt.thoughtText}
+                                        {getLocalizedDialogue(opt.thoughtText, lang)}
                                       </span>
                                     </div>
                                   </button>
@@ -7885,7 +7963,7 @@ export default function App() {
                                             <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                             <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                               <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
-                                                {label}
+                                                {getLocalizedDialogue(label, lang)}
                                               </span>
                                             </div>
                                           </button>
@@ -7913,7 +7991,7 @@ export default function App() {
                                       <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                       <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                         <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
-                                          {choice.label}
+                                          {getLocalizedDialogue(choice.label, lang)}
                                         </span>
                                       </div>
                                     </button>
@@ -7944,7 +8022,7 @@ export default function App() {
                                           <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                           <div className={`flex flex-col justify-center ${choiceInnerPyClass} min-w-0`}>
                                             <span className="text-[12.5px] leading-snug text-zinc-900 group-hover:text-black whitespace-nowrap truncate">
-                                              {item.label}
+                                              {getLocalizedDialogue(item.label, lang)}
                                             </span>
                                           </div>
                                         </button>
@@ -7967,7 +8045,7 @@ export default function App() {
                                   <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                   <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
                                     <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                      少し休んでいけと声をかける
+                                      {getLocalizedDialogue('少し休んでいけと声をかける', lang)}
                                     </span>
                                   </div>
                                 </button>
@@ -7983,7 +8061,7 @@ export default function App() {
                                   <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                   <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
                                     <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                      ディストの研究所へ帰す
+                                      {getLocalizedDialogue('ディストの研究所へ帰す', lang)}
                                     </span>
                                   </div>
                                 </button>
@@ -8005,7 +8083,7 @@ export default function App() {
                                     <div className="w-[3px] shrink-0 mr-2.5 bg-zinc-900 group-hover:bg-black transition-colors" />
                                     <div className={`flex flex-col justify-center ${choiceInnerPyClass}`}>
                                       <span className="text-[13px] leading-snug text-zinc-900 group-hover:text-black">
-                                        機能停止させる
+                                        {getLocalizedDialogue('機能停止させる', lang)}
                                       </span>
                                     </div>
                                   </button>
@@ -8069,7 +8147,7 @@ export default function App() {
                                                   : 'text-zinc-900 group-hover:text-black'
                                               }`}
                                             >
-                                              {topic.thoughtText}
+                                              {getLocalizedDialogue(topic.thoughtText, lang)}
                                             </span>
                                           </div>
                                         </button>
@@ -8160,7 +8238,7 @@ export default function App() {
                                                 : 'text-zinc-900 group-hover:text-black'
                                             }`}
                                           >
-                                            {label}
+                                            {getLocalizedDialogue(label, lang)}
                                           </span>
                                         </div>
                                       </button>
@@ -8208,10 +8286,10 @@ export default function App() {
                     type="button"
                     title={
                       !linkTags.includes('phase2_started')
-                        ? '頭に手を伸ばす'
-                        : '頭を撫でる'
+                        ? (lang === 'en' ? 'Reach for his head' : lang === 'ko' ? '머리에 손을 뻗는다' : '頭に手を伸ばす')
+                        : (lang === 'en' ? 'Pat his head' : lang === 'ko' ? '머리를 쓰다듬는다' : '頭を撫でる')
                     }
-                    aria-label="アッシュの頭部を触る"
+                    aria-label={lang === 'en' ? 'Touch Asch\'s head' : lang === 'ko' ? '애쉬의 머리를 만진다' : 'アッシュの頭部を触る'}
                     disabled={
                       isInteractionBlocked ||
                       isTerminalOpen ||
@@ -8321,14 +8399,14 @@ export default function App() {
                           soundEngine.playTerminalTab();
                           setIsThinkingSupportEnabled((prev) => !prev);
                         }}
-                        title="思考支援：手持ちで組み合わせ不可能な単語を取り消し線で表示"
+                        title={lang === 'en' ? 'Thinking Support: Strikethrough non-combinable words' : lang === 'ko' ? '사고 지원: 조합 불가능한 단어를 취소선으로 표시' : '思考支援：手持ちで組み合わせ不可能な単語を取り消し線で表示'}
                         className={`px-2 py-0.5 text-[10.5px] border transition-colors cursor-pointer ${
                           isThinkingSupportEnabled
                             ? 'bg-zinc-800 text-zinc-100 border-zinc-400 font-medium'
                             : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700 hover:text-zinc-400'
                         }`}
                       >
-                        思考支援: {isThinkingSupportEnabled ? 'ON' : 'OFF'}
+                        {lang === 'en' ? 'Support: ' : lang === 'ko' ? '사고지원: ' : '思考支援: '}{isThinkingSupportEnabled ? 'ON' : 'OFF'}
                       </button>
 
                       {/* 対話に戻るボタン */}
@@ -8337,10 +8415,10 @@ export default function App() {
                           soundEngine.playTerminalTab();
                           setIsThinkingMode(false);
                         }}
-                        title="対話画面に戻る"
+                        title={lang === 'en' ? 'Return to Dialogue' : lang === 'ko' ? '대화 화면으로 복귀' : '対話画面に戻る'}
                         className="px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer bg-zinc-200 text-zinc-950 border-zinc-100 font-medium hover:bg-white"
                       >
-                        対話に戻る
+                        {lang === 'en' ? 'Return' : lang === 'ko' ? '대화로' : '対話に戻る'}
                       </button>
                     </>
                   ) : (
@@ -8369,14 +8447,14 @@ export default function App() {
                         }
                         setIsThinkingMode(true);
                       }}
-                      title="思考整理（考える）画面を開く"
+                      title={lang === 'en' ? 'Open Thinking Screen' : lang === 'ko' ? '사고 정리(생각하기) 화면 열기' : '思考整理（考える）画面を開く'}
                       className="relative px-2.5 py-0.5 text-[11.5px] border transition-colors cursor-pointer bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border-zinc-700 hover:border-zinc-500"
                     >
-                      考える
+                      {lang === 'en' ? 'Thinking' : lang === 'ko' ? '사고' : '考える'}
                       {hasAvailableThinkingRecipe && (
                         <span
                           className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-zinc-950 pointer-events-none"
-                          title="新しいひらめきが可能です！"
+                          title={lang === 'en' ? 'New inspiration available!' : lang === 'ko' ? '새로운 번뜩임이 가능합니다!' : '新しいひらめきが可能です！'}
                         />
                       )}
                     </button>
@@ -8387,7 +8465,11 @@ export default function App() {
                 <button
                   onClick={isThinkingMode ? undefined : handleToggleTerminal}
                   disabled={isThinkingMode}
-                  title={isThinkingMode ? "思考中は管理端末を開けません" : "管理端末"}
+                  title={
+                    isThinkingMode
+                      ? (lang === 'en' ? 'Cannot open terminal during thinking' : lang === 'ko' ? '사고 중에는 관리 단말기를 열 수 없습니다' : '思考中は管理端末を開けません')
+                      : (lang === 'en' ? 'Terminal' : lang === 'ko' ? '관리 단말기' : '管理端末')
+                  }
                   className={`relative px-2.5 py-0.5 flex items-center gap-1.5 text-[11.5px] border transition-colors ${
                     isThinkingMode
                       ? 'bg-zinc-950/60 text-zinc-600 border-zinc-800/60 cursor-not-allowed opacity-50'
@@ -8407,7 +8489,7 @@ export default function App() {
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <line x1="7" y1="12" x2="7.01" y2="12" />
                   </svg>
-                  <span>管理端末</span>
+                  <span>{lang === 'en' ? 'Terminal' : lang === 'ko' ? '관리 단말기' : '管理端末'}</span>
 
                   {hasUnreadSector && !isTerminalOpen && !isThinkingMode && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
